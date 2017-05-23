@@ -40,7 +40,7 @@ implements CommandExecutor{
 						eb.setTitle("Moderation:", null);
 						eb.setColor(guild.getMember(bot.getSelf()).getColor());
 						eb.setDescription("Successfully thrown " + Integer.valueOf(args[0]) + " messages out of the airlock!");
-						eb.setThumbnail("https://raw.githubusercontent.com/Wrzlprnft/EndlessSky-Discord-Bot/embed_thumbnails/cross.png");
+						eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/embed_thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
 					}));
 				});

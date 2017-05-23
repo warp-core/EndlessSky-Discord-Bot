@@ -28,6 +28,20 @@ public class ESBotMain {
 		
 		Scanner keyboard = new Scanner(System.in);
 		String input = "";
+		
+		// Start bot on launch.
+		try{
+			Scanner in = new Scanner(new FileReader("token.txt"));
+			token = in.nextLine();
+			in.close();
+			System.out.println("Reading successfull");
+		}catch(Exception e){
+			System.out.println("Reading failed");
+			e.printStackTrace();
+		}
+		botRunning = true;
+		esBot = new ESBot(token);
+		
 		while(running){
 			input = keyboard.nextLine();
 			if(!botRunning){
