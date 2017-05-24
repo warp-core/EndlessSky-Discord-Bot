@@ -1,0 +1,12 @@
+pug:Pug Permitting.
+no:MZ noed it.
+syndicatestory:IT'S BEING WORKED ON, OK?
+navystory:IT'S BEING WORKED ON, OK?
+bactrain:CHOO CHOO 
+bactrian:OP pls nerf
+spaceport:Go South Spam Spaceport!
+story:Go South Spam Spaceport! 
+bank:It's a crime how much interest the banks charge to first-timers.
+leave:Beat it, old-timer, I've got more important things to do than chat with you.
+notokay:Please don't joke about that sort of thing.
+boarding: You lose 1 crew, they lose 0. You have been killed, your ship is lost.

@@ -1,0 +1,8 @@
+Bactrain:Bactrian*
+Bacterian:Bactrian*
+Backtrian:Bactrian*
+Backtrain:Bactrian*
+Backterian:Bactrian*
+Bacceterian:Bactrian*
+Battican:Bactrian*
+Hypderdrive:Hyperdrive*
