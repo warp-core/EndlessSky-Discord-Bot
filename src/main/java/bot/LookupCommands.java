@@ -25,7 +25,7 @@ implements CommandExecutor{
 		String data = "";
 		try {
 			LinkedList<URL> dataFiles = new LinkedList<>();
-			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/data/dataFileNames.txt").openStream()))) {
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/data/dataFileNames.txt").openStream()))) {
 				String line = br.readLine();
 
 				while (line != null) {

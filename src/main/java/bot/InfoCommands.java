@@ -42,7 +42,7 @@ implements CommandExecutor{
 					if (!description.equals("none")) {
 						eb.setDescription(description);
 					}					
-					eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/embed_thumbnails/cmd.png");
+					eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/cmd.png");
 					channel.sendMessage(eb.build()).queue();
 				}				
 			}
@@ -67,7 +67,7 @@ implements CommandExecutor{
 			eb.setTitle("EndlessSky-Discord-Bot", "https://github.com/Nechochwen-D/EndlessSky-Discord-Bot");
 			eb.setDescription("Available Commands");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/embed_thumbnails/cmd.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/cmd.png");
 			eb.addField("To get information about a command, use \"-help command\", e.g. \"-help -help\"", builder.toString(), false);
 			channel.sendMessage(eb.build()).queue();
 		}
@@ -83,7 +83,7 @@ implements CommandExecutor{
 				"- **Utilized Libraries:** JDA3,lavaplayer & sdcf4j";
 		eb.setDescription(description);
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
-		eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/embed_thumbnails/info.png");
+		eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/info.png");
 		channel.sendMessage(eb.build()).queue();
 
 	}
@@ -94,7 +94,7 @@ implements CommandExecutor{
 		eb.setTitle("EndlessSky-Discord-Bot", "https://github.com/Nechochwen-D/EndlessSky-Discord-Bot");
 		eb.setDescription(bot.getPing() + "ms");
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
-		eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/embed_thumbnails/info.png");
+		eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/info.png");
 		channel.sendMessage(eb.build()).queue();
 	}
 }
