@@ -52,6 +52,33 @@ implements CommandExecutor{
 		return data;
 	}
 	
+	@Command(aliases = {"-issue"}, description = "Provide link for \"X\" Endless Sky issue.", usage = "-issue X", privateMessages = true)
+	public void onIssueCommand(MessageChannel channel, String[] args){
+		if(args.length>=1){
+			String request = args[0];
+			String path = "https://github.com/endless-sky/endless-sky/issues/" + request;
+			channel.sendMessage(path).queue();
+		}
+	}
+	
+	@Command(aliases = {"-pull"}, description = "Provide link for \"X\" Endless Sky pull request.", usage = "-pull X", privateMessages = true)
+	public void onPullCommand(MessageChannel channel, String[] args){
+		if(args.length>=1){
+			String request = args[0];
+			String path = "https://github.com/endless-sky/endless-sky/pulls/" + request;
+			channel.sendMessage(path).queue();
+		}
+	}
+	
+	@Command(aliases = {"-commit"}, description = "Provide link for \"X\" Endless Sky commit.", usage = "-commit X", privateMessages = true)
+	public void onCommitCommand(MessageChannel channel, String[] args){
+		if(args.length>=1){
+			String request = args[0];
+			String path = "https://github.com/endless-sky/endless-sky/commit/" + request;
+			channel.sendMessage(path).queue();
+		}
+	}
+	
 	@Command(aliases = {"-lookup"}, description = "Shows image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
