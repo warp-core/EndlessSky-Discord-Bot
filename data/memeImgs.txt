@@ -4,3 +4,4 @@ navylicense:navylicense.png
 nl:navylicense.png
 hai:hai.png
 ion:hai.png
+kryes:kryes.png
