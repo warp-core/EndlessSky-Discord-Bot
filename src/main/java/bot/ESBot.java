@@ -20,7 +20,6 @@ public class ESBot {
 			cmdHandler.registerCommand(new ModeratorCommands(this));
 			cmdHandler.registerCommand(new LookupCommands());
 			cmdHandler.registerCommand(new MemeCommands());
-			cmdHandler.registerCommand(new PlayerControl(this, jda));
 	        jda.addEventListener(new SpellCheckListener(this));
 		} catch (LoginException e) {
 			e.printStackTrace();
