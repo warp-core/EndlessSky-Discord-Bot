@@ -10,4 +10,3 @@ bank:It's a crime how much interest the banks charge to first-timers.
 leave:Beat it, old-timer, I've got more important things to do than chat with you.
 notokay:Please don't joke about that sort of thing.
 boarding: You lose 1 crew, they lose 0. You have been killed, your ship is lost.
-kryes: I swear to god @陛下 Kryes#6778 I will beat you if you make one more role
