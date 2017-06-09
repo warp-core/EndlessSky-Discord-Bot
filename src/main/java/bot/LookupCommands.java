@@ -65,7 +65,7 @@ implements CommandExecutor{
 	public void onPullCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			String path = "https://github.com/endless-sky/endless-sky/pulls/" + request;
+			String path = "https://github.com/endless-sky/endless-sky/pull/" + request;
 			channel.sendMessage(path).queue();
 		}
 	}
