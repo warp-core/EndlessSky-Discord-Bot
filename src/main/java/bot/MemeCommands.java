@@ -35,7 +35,7 @@ implements CommandExecutor{
 			if(!isImgMeme(args[0])){
 				channel.sendMessage(getMeme(args[0])).queue();
 			}else{
-				String path = "https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/data/memes/" +getImgMemePath(args[0]);
+				String path = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/data/memes/" +getImgMemePath(args[0]);
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setImage(path);
 				channel.sendMessage(eb.build()).queue();
@@ -49,10 +49,10 @@ implements CommandExecutor{
 	public void onListmemesCommand(User user, MessageChannel channel, Message message, String[] args){
 		if(args.length == 0){
 			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("Available Memes:", "https://github.com/Nechochwen-D/EndlessSky-Discord-Bot/tree/data");
+			eb.setTitle("Available Memes:", "https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/data");
 			eb.addField("Text-based Memes", getMemelist(), false);
 			eb.addField("Image-based Memes", getMemelistImgs(), false);
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/meme.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/meme.png");
 			if(user.hasPrivateChannel()){
 				user.getPrivateChannel().sendMessage(eb.build()).queue();
 			}else{
@@ -71,7 +71,7 @@ implements CommandExecutor{
 	private void readMemes() {
 		Properties memes = new Properties();
 		try {
-			memes.load(new URL("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/data/memes.txt").openStream());
+			memes.load(new URL("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/data/memes.txt").openStream());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -80,7 +80,7 @@ implements CommandExecutor{
 		this.memes = memes;
 		memes = new Properties();
 		try {
-			memes.load(new URL("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/data/memeImgs.txt").openStream());
+			memes.load(new URL("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/data/memeImgs.txt").openStream());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

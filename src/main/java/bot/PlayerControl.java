@@ -117,7 +117,7 @@ implements CommandExecutor {
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setDescription(nowplaying);
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/info.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/info.png");
 			channel.sendMessage(eb.build()).queue();
 		}
 		else{
@@ -125,7 +125,7 @@ implements CommandExecutor {
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setDescription("The player is not currently playing anything!");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/info.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/info.png");
 			channel.sendMessage(eb.build()).queue();
 		}
 	}
@@ -155,7 +155,7 @@ implements CommandExecutor {
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setDescription(sb.toString());
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/info.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/info.png");
 			channel.sendMessage(eb.build()).queue();
 		}
 	}
@@ -173,7 +173,7 @@ implements CommandExecutor {
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("The queue has been shuffled!");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/shuffle.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/shuffle.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 		}
@@ -195,7 +195,7 @@ implements CommandExecutor {
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setDescription("Playback has been completely stopped and the queue has been cleared.");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/stop.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/stop.png");
 			channel.sendMessage(eb.build()).queue();
 			System.out.println("AXAXAXAX");
 		}
@@ -224,7 +224,7 @@ implements CommandExecutor {
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			eb.setDescription("Currently are " + guildVoters.size() + " captains voting to skip, but " + (int)((guild.getAudioManager().getConnectedChannel().getMembers().size()-1)/2+0.5) + " are needed to skip!");
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/voteskip.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/voteskip.png");
 			channel.sendMessage(eb.build()).queue();
 		}
 		skipvoters.put(Long.parseLong(guild.getId()), guildVoters);
@@ -250,7 +250,7 @@ implements CommandExecutor {
 					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 					eb.setColor(guild.getMember(bot.getSelf()).getColor());
 					eb.setDescription(m.getEffectiveName() + " has been banned from requesting songs.");
-					eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/cross.png");
+					eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/cross.png");
 					channel.sendMessage(eb.build()).queue();
 				}else{
 					guild.getController().removeRolesFromMember(m, guild.getRolesByName("Anti-DJ", true)).queue();
@@ -258,7 +258,7 @@ implements CommandExecutor {
 					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 					eb.setColor(guild.getMember(bot.getSelf()).getColor());
 					eb.setDescription(m.getEffectiveName() + " has been un-banned from requesting songs.");
-					eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/check.png");
+					eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/check.png");
 					channel.sendMessage(eb.build()).queue();
 				}
 			}
@@ -278,7 +278,7 @@ implements CommandExecutor {
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setDescription("The audio-player has been paused.");
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/pause.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/pause.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 		}
@@ -297,7 +297,7 @@ implements CommandExecutor {
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setDescription("The audio-player has been unpaused.");
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/play.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/play.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 		}
@@ -319,7 +319,7 @@ implements CommandExecutor {
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setDescription("Player volume changed from `" + oldVolume + "` to `" + newVolume + "`");
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 			catch (NumberFormatException e)
@@ -328,7 +328,7 @@ implements CommandExecutor {
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setDescription("`" + args[0] + "` is not a valid integer. (10 - 100)");
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 		}else{
@@ -338,7 +338,7 @@ implements CommandExecutor {
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			eb.setDescription("Current player volume: **" + player.getVolume() + "**");
-			eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
+			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
 			channel.sendMessage(eb.build()).queue();
 		}
 	}
@@ -365,7 +365,7 @@ implements CommandExecutor {
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Adding to queue " + firstTrack.getInfo().title + " (first track of playlist " + playlist.getName() + ")");
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/play.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/play.png");
 				channel.sendMessage(eb.build()).queue();
 
 				play(channel.getGuild(), musicManager, firstTrack);
@@ -376,7 +376,7 @@ implements CommandExecutor {
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Nothing found by " + trackUrl);
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/cross.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 
@@ -385,7 +385,7 @@ implements CommandExecutor {
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Could not play: " + exception.getMessage());
-				eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/info.png");
+				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/info.png");
 				channel.sendMessage(eb.build()).queue();
 			}
 		});
@@ -401,7 +401,7 @@ implements CommandExecutor {
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 		eb.setDescription("Skipped to next track.");
-		eb.setThumbnail("https://raw.githubusercontent.com/Nechochwen-D/EndlessSky-Discord-Bot/master/thumbnails/skip.png");
+		eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/skip.png");
 		channel.sendMessage(eb.build()).queue();
 	}
 
