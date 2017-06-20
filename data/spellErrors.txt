@@ -5,4 +5,5 @@ Backtrain:Bactrian*
 Backterian:Bactrian*
 Bacceterian:Bactrian*
 Battican:Bactrian*
+Bacatercran:Bactrian*
 Hypderdrive:Hyperdrive*
