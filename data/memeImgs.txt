@@ -5,4 +5,4 @@ nl:navylicense.png
 hai:hai.png
 ion:hai.png
 kryes:kryes.png
-startome:startome.jpg
+startome:startome.png
