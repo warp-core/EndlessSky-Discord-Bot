@@ -35,7 +35,8 @@ public class ESBotMain {
 			token = in.nextLine();
 			in.close();
 			System.out.println("Reading successfull");
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			System.out.println("Reading failed");
 			e.printStackTrace();
 		}
@@ -46,52 +47,53 @@ public class ESBotMain {
 			input = keyboard.nextLine();
 			if(!botRunning){
 				switch(input){
-				case "readToken":
-					try{
-						Scanner in = new Scanner(new FileReader("token.txt"));
-						token = in.nextLine();
-						in.close();
-						System.out.println("Reading successfull");
-					}catch(Exception e){
-						System.out.println("Reading failed");
-						e.printStackTrace();
-					}
-					break;
-				case "inputToken":
-					token = keyboard.nextLine();
-					break;
-				case "displayToken":
-					System.out.println("Current Token: " + token);
-					break;
-				case "start":
-					botRunning = true;
-					esBot = new ESBot(token);
-					break;
-				case "stop":
-					System.out.println("ESBot not running!");
-					break;
-				case "exit":
-					System.out.println("Thanks for using ESBot!");
-					System.exit(0);
-					return;
-				default:
-					break;
+					case "readToken":
+						try{
+							Scanner in = new Scanner(new FileReader("token.txt"));
+							token = in.nextLine();
+							in.close();
+							System.out.println("Reading successfull");
+						}
+						catch(Exception e){
+							System.out.println("Reading failed");
+							e.printStackTrace();
+						}
+						break;
+					case "inputToken":
+						token = keyboard.nextLine();
+						break;
+					case "displayToken":
+						System.out.println("Current Token: " + token);
+						break;
+					case "start":
+						botRunning = true;
+						esBot = new ESBot(token);
+						break;
+					case "stop":
+						System.out.println("ESBot not running!");
+						break;
+					case "exit":
+						System.out.println("Thanks for using ESBot!");
+						System.exit(0);
+						return;
+					default:
+						break;
 				}
 			}else{
 				switch(input){
-				case "stop":
-					esBot.disconnect();
-					botRunning = false;
-					System.out.println("Stopped ESBot!");
-					break;
-				case "exit":
-					esBot.shutdown();
-					botRunning = false;
-					System.out.println("Thanks for using ESBot!");
-					System.exit(0);
-					return;
-				default:
-					break;
+					case "stop":
+						esBot.disconnect();
+						botRunning = false;
+						System.out.println("Stopped ESBot!");
+						break;
+					case "exit":
+						esBot.shutdown();
+						botRunning = false;
+						System.out.println("Thanks for using ESBot!");
+						System.exit(0);
+						return;
+					default:
+						break;
 				}
 			}
 		}

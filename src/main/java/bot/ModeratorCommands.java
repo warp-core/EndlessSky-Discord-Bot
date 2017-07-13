@@ -29,7 +29,8 @@ implements CommandExecutor{
 			int amount = 0;
 			try{
 				amount = Integer.valueOf(args[0]);
-			} catch (NumberFormatException e){
+			}
+			catch (NumberFormatException e){
 				//Silently fail
 			}
 			if(amount <= 100 && amount >= 2){

@@ -22,13 +22,17 @@ public class ESBot {
 			cmdHandler.registerCommand(new MemeCommands());
 			cmdHandler.registerCommand(new PlayerControl(this, jda));
 	        jda.addEventListener(new SpellCheckListener(this));
-		} catch (LoginException e) {
+		}
+		catch (LoginException e) {
 			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			e.printStackTrace();
-		} catch (RateLimitedException e) {
+		}
+		catch (RateLimitedException e) {
 			e.printStackTrace();
 		}
 	}

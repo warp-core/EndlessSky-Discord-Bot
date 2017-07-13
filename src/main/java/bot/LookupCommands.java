@@ -304,37 +304,50 @@ implements CommandExecutor{
 	public String checkLookup(String lookup, boolean helper){
 		if(data.contains("\nship \"" + lookup + "\"")){
 			return "\nship \"" + lookup + "\"";
-		}else if(data.contains("\noutfit \"" + lookup + "\"")){
+		}
+		else if(data.contains("\noutfit \"" + lookup + "\"")){
 			return "\noutfit \"" + lookup + "\"";
-		}else if(data.contains("\nmission \"" + lookup + "\"")){
+		}
+		else if(data.contains("\nmission \"" + lookup + "\"")){
 			return "\nmission \"" + lookup + "\"";
-		}else if(data.contains("\nsystem \"" + lookup + "\"")){
+		}
+		else if(data.contains("\nsystem \"" + lookup + "\"")){
 			return "\nsystem \"" + lookup + "\"";
-		}else if(data.contains("\neffect \"" + lookup + "\"")){
+		}
+		else if(data.contains("\neffect \"" + lookup + "\"")){
 			return "\neffect \"" + lookup + "\"";
-		}else if(data.contains("\nship " + lookup)){
+		}
+		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
-		}else if(data.contains("\noutfit " + lookup)){
+		}
+		else if(data.contains("\noutfit " + lookup)){
 			return "\noutfit " + lookup;
-		}else if(data.contains("\nmission " + lookup)){
+		}
+		else if(data.contains("\nmission " + lookup)){
 			return "\nmission " + lookup;
-		}else if(data.contains("\nsystem " + lookup)){
+		}
+		else if(data.contains("\nsystem " + lookup)){
 			return "\nsystem " + lookup;
-		}else if(data.contains("\neffect " + lookup)){
+		}
+		else if(data.contains("\neffect " + lookup)){
 			return "\neffect " + lookup;
-		}else if(data.contains("\n"+lookup)){
+		}
+		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
-		}else if(helper){
+		}
+		else if(helper){
 			lookup = Character.toUpperCase(lookup.charAt(0)) + lookup.toLowerCase().substring(1);
 			return checkLookup(lookup,false);
-		}else
-		return "";
+		}
+		else
+			return "";
 	}
 
 	public void OutputHelper(MessageChannel channel,String output){
 		if(output.length()<1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
-		}else{
+		}
+		else{
 			int cut = output.lastIndexOf('\n', 0+1992);
 			String o = output.substring(0, cut);			
 			channel.sendMessage(":\n```" + o + "```").queue(x -> {
@@ -347,7 +360,8 @@ implements CommandExecutor{
 		try{
 			URL u = new URL(url);
 			return ImageIO.read(u) != null;
-		}catch (Exception e){
+		}
+		catch (Exception e){
 			return false;
 		}
 	}

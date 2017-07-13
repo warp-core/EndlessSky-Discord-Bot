@@ -31,16 +31,19 @@ implements CommandExecutor{
 	public void onMemeCommand(MessageChannel channel, String[] args){
 		if(args.length == 0){	//random meme
 			channel.sendMessage(getRandomMeme()).queue();
-		}else if(args.length == 1){	//specified meme
+		}
+		else if(args.length == 1){	//specified meme
 			if(!isImgMeme(args[0])){
 				channel.sendMessage(getMeme(args[0])).queue();
-			}else{
+			}
+			else{
 				String path = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/data/memes/" +getImgMemePath(args[0]);
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setImage(path);
 				channel.sendMessage(eb.build()).queue();
 			}
-		}else{
+		}
+		else{
 			//silently fail
 		}
 	}
@@ -133,7 +136,8 @@ implements CommandExecutor{
 	public void OutputHelper(MessageChannel channel,String output){
 		if(output.length()<1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
-		}else{
+		}
+		else{
 			int cut = output.lastIndexOf('\n', 0+1992);
 			String o = output.substring(0, cut);			
 			channel.sendMessage(":\n```" + o + "```").queue(x -> {

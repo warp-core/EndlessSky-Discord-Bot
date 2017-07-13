@@ -79,7 +79,8 @@ implements CommandExecutor {
 	private String normalize(String[] args) {
 		if(args.length == 1){
 			return args[0];
-		}else{
+		}
+		else{
 			String output = "ytsearch:";
 			for(String s: args){
 				output += " " + s;
@@ -105,8 +106,7 @@ implements CommandExecutor {
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		AudioPlayer player = mng.player;
 		AudioTrack currentTrack = player.getPlayingTrack();
-		if (currentTrack != null)
-		{
+		if (currentTrack != null){
 			String title = currentTrack.getInfo().title;
 			String position = getTimestamp(currentTrack.getPosition());
 			String duration = getTimestamp(currentTrack.getDuration());
@@ -140,11 +140,9 @@ implements CommandExecutor {
 			long queueLength = 0;
 			StringBuilder sb = new StringBuilder();
 			sb.append("Current Queue: Entries: ").append(queue.size()).append("\n");
-			for (AudioTrack track : queue)
-			{
+			for (AudioTrack track : queue){
 				queueLength += track.getDuration();
-				if (trackCount < 10)
-				{
+				if (trackCount < 10){
 					sb.append("`[").append(getTimestamp(track.getDuration())).append("]` ");
 					sb.append(track.getInfo().title).append("\n");
 					trackCount++;
@@ -219,7 +217,8 @@ implements CommandExecutor {
 			skipTrack(channel);
 			guildVoters.clear();
 			skipvoters.remove(Long.parseLong(guild.getId()));
-		}else{
+		}
+		else{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -310,8 +309,7 @@ implements CommandExecutor {
 		if(args.length==1&&(!(guild.getAudioManager().isAttemptingToConnect()||guild.getAudioManager().isConnected())||(requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))&&(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner())){
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			AudioPlayer player = mng.player;
-			try
-			{
+			try{
 				int newVolume = Math.max(10, Math.min(100, Integer.parseInt(args[0])));
 				int oldVolume = player.getVolume();
 				player.setVolume(newVolume);
@@ -322,8 +320,7 @@ implements CommandExecutor {
 				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
 				channel.sendMessage(eb.build()).queue();
 			}
-			catch (NumberFormatException e)
-			{
+			catch (NumberFormatException e){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -331,7 +328,8 @@ implements CommandExecutor {
 				eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/volume.png");
 				channel.sendMessage(eb.build()).queue();
 			}
-		}else{
+		}
+		else{
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			AudioPlayer player = mng.player;
 			EmbedBuilder eb = new EmbedBuilder();
