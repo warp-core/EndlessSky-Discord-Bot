@@ -28,6 +28,6 @@ dependencies {
 
 
 
-run{
+run {
 	standardInput = System.in
 }
