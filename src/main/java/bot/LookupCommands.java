@@ -46,7 +46,8 @@ implements CommandExecutor{
 					data += sb.toString();
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		return data;
@@ -92,7 +93,8 @@ implements CommandExecutor{
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
 					end = output.indexOf('\n', start)-1;
-				}else if(output.contains("sprite")){
+				}
+				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start)-1;
 				}
@@ -104,7 +106,8 @@ implements CommandExecutor{
 						if(output.contains("description"))
 							OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 					});
-				}else{
+				}
+				else{
 					path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
 					if(isImage(path)){
 						EmbedBuilder eb = new EmbedBuilder();
@@ -113,7 +116,8 @@ implements CommandExecutor{
 							if(output.contains("description"))
 								OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 						});
-					}else{
+					}
+					else{
 						path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
 						if(isImage(path)){
 							EmbedBuilder eb = new EmbedBuilder();
@@ -122,7 +126,8 @@ implements CommandExecutor{
 								if(output.contains("description"))
 									OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 							});
-						}else{
+						}
+						else{
 							path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
 							if(isImage(path)){
 								EmbedBuilder eb = new EmbedBuilder();
@@ -131,7 +136,8 @@ implements CommandExecutor{
 									if(output.contains("description"))
 										OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 								});
-							}else{
+							}
+							else{
 								path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
 								if(isImage(path)){
 									EmbedBuilder eb = new EmbedBuilder();
@@ -145,7 +151,8 @@ implements CommandExecutor{
 						}
 					}
 				}
-			}else{
+			}
+			else{
 				if(output.contains("description"))
 					OutputHelper(channel, output.substring(output.indexOf("description")));
 			}
@@ -166,7 +173,8 @@ implements CommandExecutor{
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
 					end = output.indexOf('\n', start)-1;
-				}else if(output.contains("sprite")){
+				}
+				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start)-1;
 				}
@@ -177,7 +185,8 @@ implements CommandExecutor{
 					channel.sendMessage(eb.build()).queue(x -> {
 						OutputHelper(channel,output);
 					});
-				}else{
+				}
+				else{
 					path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
 					if(isImage(path)){
 						EmbedBuilder eb = new EmbedBuilder();
@@ -185,7 +194,8 @@ implements CommandExecutor{
 						channel.sendMessage(eb.build()).queue(x -> {
 							OutputHelper(channel,output);
 						});
-					}else{
+					}
+					else{
 						path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
 						if(isImage(path)){
 							EmbedBuilder eb = new EmbedBuilder();
@@ -193,7 +203,8 @@ implements CommandExecutor{
 							channel.sendMessage(eb.build()).queue(x -> {
 								OutputHelper(channel,output);
 							});
-						}else{
+						}
+						else{
 							path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
 							if(isImage(path)){
 								EmbedBuilder eb = new EmbedBuilder();
@@ -201,7 +212,8 @@ implements CommandExecutor{
 								channel.sendMessage(eb.build()).queue(x -> {
 									OutputHelper(channel,output);
 								});
-							}else{
+							}
+							else{
 								path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
 								if(isImage(path)){
 									EmbedBuilder eb = new EmbedBuilder();
@@ -214,7 +226,8 @@ implements CommandExecutor{
 						}
 					}
 				}
-			}else{
+			}
+			else{
 				OutputHelper(channel,output);
 			}
 		}
@@ -234,7 +247,8 @@ implements CommandExecutor{
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
 					end = output.indexOf('\n', start)-1;
-				}else if(output.contains("sprite")){
+				}
+				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start)-1;
 				}
@@ -243,25 +257,29 @@ implements CommandExecutor{
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setImage(path);
 					channel.sendMessage(eb.build()).queue();
-				}else{
+				}
+				else{
 					path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
 					if(isImage(path)){
 						EmbedBuilder eb = new EmbedBuilder();
 						eb.setImage(path);
 						channel.sendMessage(eb.build()).queue();
-					}else{
+					}
+					else{
 						path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
 						if(isImage(path)){
 							EmbedBuilder eb = new EmbedBuilder();
 							eb.setImage(path);
 							channel.sendMessage(eb.build()).queue();
-						}else{
+						}
+						else{
 							path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
 							if(isImage(path)){
 								EmbedBuilder eb = new EmbedBuilder();
 								eb.setImage(path);
 								channel.sendMessage(eb.build()).queue();
-							}else{
+							}
+							else{
 								path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
 								if(isImage(path)){
 									EmbedBuilder eb = new EmbedBuilder();

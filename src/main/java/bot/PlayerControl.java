@@ -251,7 +251,8 @@ implements CommandExecutor {
 					eb.setDescription(m.getEffectiveName() + " has been banned from requesting songs.");
 					eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/cross.png");
 					channel.sendMessage(eb.build()).queue();
-				}else{
+				}
+				else{
 					guild.getController().removeRolesFromMember(m, guild.getRolesByName("Anti-DJ", true)).queue();
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");

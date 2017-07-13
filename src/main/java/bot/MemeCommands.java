@@ -58,7 +58,8 @@ implements CommandExecutor{
 			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/meme.png");
 			if(user.hasPrivateChannel()){
 				user.getPrivateChannel().sendMessage(eb.build()).queue();
-			}else{
+			}
+			else{
 				user.openPrivateChannel().queue( c -> {
 					c.sendMessage(eb.build()).queue();
 				});
@@ -66,7 +67,8 @@ implements CommandExecutor{
 			if(channel instanceof TextChannel){
 				message.delete().queue();
 			}
-		}else{
+		}
+		else{
 			//silently fail
 		}
 	}	
