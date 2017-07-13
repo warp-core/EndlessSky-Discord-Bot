@@ -79,7 +79,8 @@ public class ESBotMain {
 					default:
 						break;
 				}
-			}else{
+			}
+			else{
 				switch(input){
 					case "stop":
 						esBot.disconnect();
