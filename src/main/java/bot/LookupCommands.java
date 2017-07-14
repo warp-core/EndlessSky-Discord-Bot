@@ -85,11 +85,11 @@ implements CommandExecutor{
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
-			if(output.contains("sprite")||output.contains("thumbnail")){
+			if(output.contains("sprite") || output.contains("thumbnail")){
 				int start = 0,end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
@@ -159,11 +159,11 @@ implements CommandExecutor{
 	public void onShowCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
-			if(output.contains("sprite")||output.contains("thumbnail")){
+			if(output.contains("sprite") || output.contains("thumbnail")){
 				int start = 0,end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
@@ -223,15 +223,15 @@ implements CommandExecutor{
 
 	}
 
-	@Command(aliases = {"-showimage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
+	@Command(aliases = {"-showimage","-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
-			if(output.contains("sprite")||output.contains("thumbnail")){
+			if(output.contains("sprite") || output.contains("thumbnail")){
 				int start = 0,end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
@@ -278,11 +278,11 @@ implements CommandExecutor{
 		}
 	}
 
-	@Command(aliases = {"-showdata"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
+	@Command(aliases = {"-showdata","-showData"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
 	public void onShowdataCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
