@@ -353,5 +353,23 @@ implements CommandExecutor{
 			return false;
 		}
 	}
+	
+	// Iterate the possible image blending modes to determine which is the
+	// appropriate file ending for the given file. Assumes all image files
+	// are .png. Returns nullstring "" if no ending works, otherwise returns
+	// the full ending (including the filetype).
+	public String GetImageEnding(String url){
+		String[] endings = {"", "-0", "+0", "~0", "=0"};
+		int index = 0;
+		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
+		
+		while(!hasEnding && index < endings.length){
+			hasEnding = isImage(url + endings[++index] + ".png?raw=true");
+		}
+		if(hasEnding)
+			return endings[index] + ".png?raw=true";
+		else
+			return "";
+	} 
 
 }
