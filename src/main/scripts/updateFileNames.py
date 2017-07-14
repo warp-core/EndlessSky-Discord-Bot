@@ -4,6 +4,9 @@
 # and then replace the dataFileNames.txt with the new list.
 # You may need to run `pip install requests` from your command line first.
 
+# Usage:
+#  ~$ python /path/to/script/updateFileNames.py
+
 import os
 import requests
 
