@@ -26,8 +26,10 @@ dependencies {
 	 runtime "ch.qos.logback:logback-core:$logbackVersion"
 }
 
+test {
 
+}
 
-run{
+run {
 	standardInput = System.in
 }

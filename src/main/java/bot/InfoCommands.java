@@ -46,7 +46,8 @@ implements CommandExecutor{
 					channel.sendMessage(eb.build()).queue();
 				}				
 			}
-		}else{
+		}
+		else{
 			StringBuilder builder = new StringBuilder();
 			for (CommandHandler.SimpleCommand simpleCommand : commandHandler.getCommands()){
 				if (!simpleCommand.getCommandAnnotation().showInHelpPage()) {
