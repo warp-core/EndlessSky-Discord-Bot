@@ -12,8 +12,8 @@ import requests
 
 key = ''
 url = 'https://api.github.com/repos/endless-sky/endless-sky/contents/data'
-dataFileRelPath = '../../../data/dataFileNames.txt'
-authRelPath = '../../../gitauth.txt'
+dataFileRelPath = '../data/dataFileNames.txt'
+authRelPath = '../gitauth.txt'
 useAuth = False
 gotData = False
 
