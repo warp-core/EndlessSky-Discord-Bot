@@ -42,7 +42,7 @@ implements CommandExecutor{
 					if (!description.equals("none")) {
 						eb.setDescription(description);
 					}					
-					eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/cmd.png");
+					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cmd.png");
 					channel.sendMessage(eb.build()).queue();
 				}				
 			}
@@ -64,10 +64,10 @@ implements CommandExecutor{
 				builder.append(usage);
 			}
 			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("EndlessSky-Discord-Bot", "https://github.com/MCOfficer/EndlessSky-Discord-Bot");
+			eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 			eb.setDescription("Available Commands");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/cmd.png");
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cmd.png");
 			eb.addField("To get information about a command, use \"-help command\", e.g. \"-help -help\"", builder.toString(), false);
 			channel.sendMessage(eb.build()).queue();
 		}
@@ -77,13 +77,13 @@ implements CommandExecutor{
 	@Command(aliases = {"-info"}, description = "Shows some information about the bot.", usage = "-info")
 	public void onInfoCommand(Guild guild, MessageChannel channel){
 		EmbedBuilder eb = new EmbedBuilder();
-		eb.setTitle("EndlessSky-Discord-Bot", "https://github.com/MCOfficer/EndlessSky-Discord-Bot");
+		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 		String description = "- **Author:** Maximilian Korber\n" +
 				"- **Language:** Java\n" +
 				"- **Utilized Libraries:** JDA3,lavaplayer & sdcf4j";
 		eb.setDescription(description);
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
-		eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/info.png");
+		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		channel.sendMessage(eb.build()).queue();
 
 	}
@@ -91,10 +91,10 @@ implements CommandExecutor{
 	@Command(aliases = {"-ping"}, description = "Time in milliseconds that discord took to respond to the last heartbeat.", usage = "-ping")
 	public void onPingCommand(Guild guild, MessageChannel channel){
 		EmbedBuilder eb = new EmbedBuilder();
-		eb.setTitle("EndlessSky-Discord-Bot", "https://github.com/MCOfficer/EndlessSky-Discord-Bot");
+		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 		eb.setDescription(bot.getPing() + "ms");
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
-		eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/info.png");
+		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		channel.sendMessage(eb.build()).queue();
 	}
 }
