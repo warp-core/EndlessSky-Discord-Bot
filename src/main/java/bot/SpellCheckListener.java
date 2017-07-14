@@ -38,10 +38,11 @@ public class SpellCheckListener extends ListenerAdapter
 	private Properties readSpellErrors() {
 		Properties spellErrors = new Properties();
 		try {
-			spellErrors.load(new URL("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/data/spellErrors.txt").openStream());
+			spellErrors.load(new URL(bot.HOST_RAW_URL + "/data/spellErrors.txt").openStream());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		return spellErrors;

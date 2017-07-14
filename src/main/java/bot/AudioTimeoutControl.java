@@ -53,7 +53,8 @@ public class AudioTimeoutControl {
 						synchronized(this){
 						idleValues.put(l, idleValues.get(l)+1);
 						}
-					}else{
+					}
+					else{
 						idleValues.put(l, 0);
 					}
 				}

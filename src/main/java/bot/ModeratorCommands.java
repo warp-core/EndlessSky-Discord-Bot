@@ -29,7 +29,8 @@ implements CommandExecutor{
 			int amount = 0;
 			try{
 				amount = Integer.valueOf(args[0]);
-			} catch (NumberFormatException e){
+			}
+			catch (NumberFormatException e){
 				//Silently fail
 			}
 			if(amount <= 100 && amount >= 2){
@@ -40,7 +41,7 @@ implements CommandExecutor{
 						eb.setTitle("Moderation:", null);
 						eb.setColor(guild.getMember(bot.getSelf()).getColor());
 						eb.setDescription("Successfully thrown " + Integer.valueOf(args[0]) + " messages out of the airlock!");
-						eb.setThumbnail("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/thumbnails/cross.png");
+						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
 					}));
 				});

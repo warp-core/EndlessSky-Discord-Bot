@@ -16,6 +16,8 @@ public class LookupCommands
 implements CommandExecutor{
 
 	private String data;
+	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
+	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
 
 	public LookupCommands() {
 		data = readData();
@@ -25,7 +27,7 @@ implements CommandExecutor{
 		String data = "";
 		try {
 			LinkedList<URL> dataFiles = new LinkedList<>();
-			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL("https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master/data/dataFileNames.txt").openStream()))) {
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL(HOST_RAW_URL + "/data/dataFileNames.txt").openStream()))) {
 				String line = br.readLine();
 
 				while (line != null) {
@@ -46,7 +48,8 @@ implements CommandExecutor{
 					data += sb.toString();
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 		return data;
@@ -83,20 +86,21 @@ implements CommandExecutor{
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
-			if(output.contains("sprite")||output.contains("thumbnail")){
+			if(output.contains("sprite") || output.contains("thumbnail")){
 				int start = 0,end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
 					end = output.indexOf('\n', start)-1;
-				}else if(output.contains("sprite")){
+				}
+				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start)-1;
 				}
-				String path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
+				String path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
 				if(isImage(path)){
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setImage(path);
@@ -105,7 +109,7 @@ implements CommandExecutor{
 							OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 					});
 				}else{
-					path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
+					path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
 					if(isImage(path)){
 						EmbedBuilder eb = new EmbedBuilder();
 						eb.setImage(path);
@@ -114,7 +118,7 @@ implements CommandExecutor{
 								OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 						});
 					}else{
-						path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
+						path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
 						if(isImage(path)){
 							EmbedBuilder eb = new EmbedBuilder();
 							eb.setImage(path);
@@ -123,7 +127,7 @@ implements CommandExecutor{
 									OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 							});
 						}else{
-							path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
+							path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
 							if(isImage(path)){
 								EmbedBuilder eb = new EmbedBuilder();
 								eb.setImage(path);
@@ -132,7 +136,7 @@ implements CommandExecutor{
 										OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 								});
 							}else{
-								path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
+								path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
 								if(isImage(path)){
 									EmbedBuilder eb = new EmbedBuilder();
 									eb.setImage(path);
@@ -145,7 +149,8 @@ implements CommandExecutor{
 						}
 					}
 				}
-			}else{
+			}
+			else{
 				if(output.contains("description"))
 					OutputHelper(channel, output.substring(output.indexOf("description")));
 			}
@@ -157,20 +162,21 @@ implements CommandExecutor{
 	public void onShowCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
-			if(output.contains("sprite")||output.contains("thumbnail")){
+			if(output.contains("sprite") || output.contains("thumbnail")){
 				int start = 0,end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
 					end = output.indexOf('\n', start)-1;
-				}else if(output.contains("sprite")){
+				}
+				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start)-1;
 				}
-				String path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
+				String path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
 				if(isImage(path)){
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setImage(path);
@@ -178,7 +184,7 @@ implements CommandExecutor{
 						OutputHelper(channel,output);
 					});
 				}else{
-					path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
+					path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
 					if(isImage(path)){
 						EmbedBuilder eb = new EmbedBuilder();
 						eb.setImage(path);
@@ -186,7 +192,7 @@ implements CommandExecutor{
 							OutputHelper(channel,output);
 						});
 					}else{
-						path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
+						path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
 						if(isImage(path)){
 							EmbedBuilder eb = new EmbedBuilder();
 							eb.setImage(path);
@@ -194,7 +200,7 @@ implements CommandExecutor{
 								OutputHelper(channel,output);
 							});
 						}else{
-							path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
+							path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
 							if(isImage(path)){
 								EmbedBuilder eb = new EmbedBuilder();
 								eb.setImage(path);
@@ -202,7 +208,7 @@ implements CommandExecutor{
 									OutputHelper(channel,output);
 								});
 							}else{
-								path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
+								path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
 								if(isImage(path)){
 									EmbedBuilder eb = new EmbedBuilder();
 									eb.setImage(path);
@@ -214,55 +220,58 @@ implements CommandExecutor{
 						}
 					}
 				}
-			}else{
+			}
+			else{
 				OutputHelper(channel,output);
 			}
 		}
 
 	}
 
-	@Command(aliases = {"-showimage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
+	@Command(aliases = {"-showimage","-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
-			if(output.contains("sprite")||output.contains("thumbnail")){
+			if(output.contains("sprite") || output.contains("thumbnail")){
 				int start = 0,end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
 					end = output.indexOf('\n', start)-1;
-				}else if(output.contains("sprite")){
+				}
+				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start)-1;
 				}
-				String path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
+				String path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
 				if(isImage(path)){
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setImage(path);
 					channel.sendMessage(eb.build()).queue();
+
 				}else{
-					path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
+					path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
 					if(isImage(path)){
 						EmbedBuilder eb = new EmbedBuilder();
 						eb.setImage(path);
 						channel.sendMessage(eb.build()).queue();
 					}else{
-						path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
+						path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
 						if(isImage(path)){
 							EmbedBuilder eb = new EmbedBuilder();
 							eb.setImage(path);
 							channel.sendMessage(eb.build()).queue();
 						}else{
-							path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
+							path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
 							if(isImage(path)){
 								EmbedBuilder eb = new EmbedBuilder();
 								eb.setImage(path);
 								channel.sendMessage(eb.build()).queue();
 							}else{
-								path = "https://github.com/endless-sky/endless-sky/raw/master/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
+								path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
 								if(isImage(path)){
 									EmbedBuilder eb = new EmbedBuilder();
 									eb.setImage(path);
@@ -276,11 +285,11 @@ implements CommandExecutor{
 		}
 	}
 
-	@Command(aliases = {"-showdata"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
+	@Command(aliases = {"-showdata","-showData"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
 	public void onShowdataCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
 			String request = args[0];
-			for( int i = 1; i< args.length;i++){
+			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
@@ -304,37 +313,50 @@ implements CommandExecutor{
 	public String checkLookup(String lookup, boolean helper){
 		if(data.contains("\nship \"" + lookup + "\"")){
 			return "\nship \"" + lookup + "\"";
-		}else if(data.contains("\noutfit \"" + lookup + "\"")){
+		}
+		else if(data.contains("\noutfit \"" + lookup + "\"")){
 			return "\noutfit \"" + lookup + "\"";
-		}else if(data.contains("\nmission \"" + lookup + "\"")){
+		}
+		else if(data.contains("\nmission \"" + lookup + "\"")){
 			return "\nmission \"" + lookup + "\"";
-		}else if(data.contains("\nsystem \"" + lookup + "\"")){
+		}
+		else if(data.contains("\nsystem \"" + lookup + "\"")){
 			return "\nsystem \"" + lookup + "\"";
-		}else if(data.contains("\neffect \"" + lookup + "\"")){
+		}
+		else if(data.contains("\neffect \"" + lookup + "\"")){
 			return "\neffect \"" + lookup + "\"";
-		}else if(data.contains("\nship " + lookup)){
+		}
+		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
-		}else if(data.contains("\noutfit " + lookup)){
+		}
+		else if(data.contains("\noutfit " + lookup)){
 			return "\noutfit " + lookup;
-		}else if(data.contains("\nmission " + lookup)){
+		}
+		else if(data.contains("\nmission " + lookup)){
 			return "\nmission " + lookup;
-		}else if(data.contains("\nsystem " + lookup)){
+		}
+		else if(data.contains("\nsystem " + lookup)){
 			return "\nsystem " + lookup;
-		}else if(data.contains("\neffect " + lookup)){
+		}
+		else if(data.contains("\neffect " + lookup)){
 			return "\neffect " + lookup;
-		}else if(data.contains("\n"+lookup)){
+		}
+		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
-		}else if(helper){
+		}
+		else if(helper){
 			lookup = Character.toUpperCase(lookup.charAt(0)) + lookup.toLowerCase().substring(1);
 			return checkLookup(lookup,false);
-		}else
-		return "";
+		}
+		else
+			return "";
 	}
 
 	public void OutputHelper(MessageChannel channel,String output){
 		if(output.length()<1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
-		}else{
+		}
+		else{
 			int cut = output.lastIndexOf('\n', 0+1992);
 			String o = output.substring(0, cut);			
 			channel.sendMessage(":\n```" + o + "```").queue(x -> {
@@ -347,9 +369,28 @@ implements CommandExecutor{
 		try{
 			URL u = new URL(url);
 			return ImageIO.read(u) != null;
-		}catch (Exception e){
+		}
+		catch (Exception e){
 			return false;
 		}
 	}
+	
+	// Iterate the possible image blending modes to determine which is the
+	// appropriate file ending for the given file. Assumes all image files
+	// are .png. Returns nullstring "" if no ending works, otherwise returns
+	// the full ending (including the filetype).
+	public String GetImageEnding(String url){
+		String[] endings = {"", "-0", "+0", "~0", "=0"};
+		int index = 0;
+		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
+		
+		while(!hasEnding && index < endings.length){
+			hasEnding = isImage(url + endings[++index] + ".png?raw=true");
+		}
+		if(hasEnding)
+			return endings[index] + ".png?raw=true";
+		else
+			return "";
+	} 
 
 }

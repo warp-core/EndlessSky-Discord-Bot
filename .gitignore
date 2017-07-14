@@ -1,4 +1,9 @@
 /build/
 /.gradle/
 /token.txt
+<<<<<<< HEAD
 james.sh
+=======
+/gitauth.txt
+*.old
+>>>>>>> 20740af64b6514f50807dde13c1e08f94d91c6e6
