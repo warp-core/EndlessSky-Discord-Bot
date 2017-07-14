@@ -10,6 +10,10 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 
 public class ESBot {
 	private JDA jda;
+	// Set global URL paths for use by commands.
+	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
+	public static final String HOST_PUBLIC_URL = "https://github.com/MCOfficer/EndlessSky-Discord-Bot";
+	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
 
 	public ESBot(String TOKEN){
 		try {
@@ -25,8 +29,8 @@ public class ESBot {
 		}
 		catch (LoginException e) {
 			e.printStackTrace();
-		}
-		catch (IllegalArgumentException e) {
+			jda.shutdown();
+		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		}
 		catch (InterruptedException e) {
