@@ -331,16 +331,16 @@ implements CommandExecutor{
 
 	// Returns the bare image name without quotes, or a nullstring if no image.
 	public static String GetImageName(String text){
-		int start = 0, end = 0;
-		if(text.contains("thumbnail")){
+		int start = 0;
+		if(text.contains("thumbnail"))
 			start = text.indexOf("thumbnail") + 10;
-			end = text.indexOf('\n', start) - 1;
-		}
-		else if(text.contains("sprite")){
+		else if(text.contains("sprite"))
 			start = text.indexOf("sprite") + 7;
-			end = text.indexOf('\n', start) - 1;
-		}
+		else
+			return "";
 
+		int end = text.indexOf('\n', start);
+		
 		return text.substring(start, end).replace("\"", "");
 	}
 }
