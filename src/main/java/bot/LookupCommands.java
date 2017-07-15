@@ -310,8 +310,8 @@ implements CommandExecutor{
 		int index = 0;
 		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
 
-		while(!hasEnding && index < endings.length){
-			hasEnding = isImage(url + endings[++index] + ".png?raw=true");
+		while(!hasEnding && ++index < endings.length){
+			hasEnding = isImage(url + endings[index] + ".png?raw=true");
 		}
 		if(hasEnding)
 			return endings[index] + ".png?raw=true";
