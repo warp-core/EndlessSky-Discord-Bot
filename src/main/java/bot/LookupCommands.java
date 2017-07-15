@@ -315,7 +315,7 @@ implements CommandExecutor{
 			}
 		}
 
-		return ic.toString();
+		return new String(ic);
 	}
 
 	// Count the number of the given character in the given string.
