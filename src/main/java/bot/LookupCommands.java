@@ -91,16 +91,8 @@ implements CommandExecutor{
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
-				int start = 0, end = 0;
-				if(output.contains("thumbnail")){
-					start = output.indexOf("thumbnail") + 10;
-					end = output.indexOf('\n', start) - 1;
-				}
-				else if(output.contains("sprite")){
-					start = output.indexOf("sprite")+7;
-					end = output.indexOf('\n', start) - 1;
-				}
-				String filepath = urlEncode(CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", ""));
+				String imageName = GetImageName(output);
+				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
 				String ending = GetImageEnding(filepath);
 				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
@@ -136,16 +128,8 @@ implements CommandExecutor{
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
-				int start = 0, end = 0;
-				if(output.contains("thumbnail")){
-					start = output.indexOf("thumbnail") + 10;
-					end = output.indexOf('\n', start) - 1;
-				}
-				else if(output.contains("sprite")){
-					start = output.indexOf("sprite") + 7;
-					end = output.indexOf('\n', start) - 1;
-				}
-				String filepath = urlEncode(CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", ""));
+				String imageName = GetImageName(output);
+				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
 				String ending = GetImageEnding(filepath);
 				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
@@ -175,16 +159,8 @@ implements CommandExecutor{
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
-				int start = 0, end = 0;
-				if(output.contains("thumbnail")){
-					start = output.indexOf("thumbnail") + 10;
-					end = output.indexOf('\n', start) - 1;
-				}
-				else if(output.contains("sprite")){
-					start = output.indexOf("sprite") + 7;
-					end = output.indexOf('\n', start) - 1;
-				}
-				String filepath = urlEncode(CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", ""));
+				String imageName = GetImageName(output);
+				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
 				String ending = GetImageEnding(filepath);
 				if(ending.length() > 1){
 					EmbedBuilder eb = new EmbedBuilder();
@@ -193,7 +169,7 @@ implements CommandExecutor{
 				}
 				else{
 					// Could not resolve image ending from the detected output.
-					returnMessage = "Could not find image for '" + output.substring(start, end).replace("\"", "") + "' from input '" + request + "'";
+					returnMessage = "Could not find image for '" + imageName + "' from input '" + request + "'";
 				}
 			}
 			else{
@@ -232,8 +208,8 @@ implements CommandExecutor{
 			while(data.charAt(end + 1) == '\t' || data.charAt(end + 1) == '\n' || data.charAt(end + 1) == '#');
 			return data.substring(start, end);
 		}
-		else
-			return "Nothing found!";
+
+		return "Nothing found!";
 	}
 
 	public String checkLookup(String lookup, boolean helper){
@@ -271,11 +247,12 @@ implements CommandExecutor{
 			return "\n"+lookup;
 		}
 		else if(helper){
-			lookup = Character.toUpperCase(lookup.charAt(0)) + lookup.toLowerCase().substring(1);
+			// Uppercase the first letter of words in the lookup string.
+			lookup = CapitalizeWords(lookup);
 			return checkLookup(lookup, false);
 		}
-		else
-			return "";
+
+		return "";
 	}
 
 	public void OutputHelper(MessageChannel channel, String output){
@@ -315,12 +292,55 @@ implements CommandExecutor{
 		}
 		if(hasEnding)
 			return endings[index] + ".png?raw=true";
-		else
-			return "";
+
+		return "";
 	}
 
-	public String urlEncode(String url){
+	public static String urlEncode(String url){
 		return url.replace(" ", "%20");
 	}
 
+	// Checks the string for a space character and if present, capitalizes the
+	// next letter. Returns the string with first letters of words capitalized.
+	private static String CapitalizeWords(String input){
+		int countWords = 1 + CountOf(input, ' ');
+		char[] ic = input.toCharArray();
+		ic[0] = Character.toUpperCase(ic[0]);
+		if(countWords > 1){
+			int index = input.indexOf(" ");
+			for(int i = 0; i < countWords; ++i){
+				++index;
+				ic[index] = Character.toUpperCase(ic[index]);
+				index = input.indexOf(" ", index);
+			}
+		}
+
+		return ic.toString();
+	}
+
+	// Count the number of the given character in the given string.
+	public static int CountOf(String input, char token){
+		int count = 0;
+		for(char c : input.toCharArray()){
+			if(c == token)
+				++count;
+		}
+
+		return count;
+	}
+
+	// Returns the bare image name without quotes, or a nullstring if no image.
+	public static String GetImageName(String text){
+		int start = 0, end = 0;
+		if(text.contains("thumbnail")){
+			start = text.indexOf("thumbnail") + 10;
+			end = text.indexOf('\n', start) - 1;
+		}
+		else if(text.contains("sprite")){
+			start = text.indexOf("sprite") + 7;
+			end = text.indexOf('\n', start) - 1;
+		}
+
+		return text.substring(start, end).replace("\"", "");
+	}
 }
