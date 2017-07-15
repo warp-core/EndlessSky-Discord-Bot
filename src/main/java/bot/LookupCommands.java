@@ -84,70 +84,38 @@ implements CommandExecutor{
 	
 	@Command(aliases = {"-lookup"}, description = "Shows image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
+		if(args.length >= 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
-				int start = 0,end = 0;
+				int start = 0, end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
-					end = output.indexOf('\n', start)-1;
+					end = output.indexOf('\n', start) - 1;
 				}
 				else if(output.contains("sprite")){
 					start = output.indexOf("sprite")+7;
-					end = output.indexOf('\n', start)-1;
+					end = output.indexOf('\n', start) - 1;
 				}
-				String path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
-				if(isImage(path)){
+				String filepath = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", "");
+				String ending = GetImageEnding(filepath);
+				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
-					eb.setImage(path);
+					eb.setImage(filepath + ending);
 					channel.sendMessage(eb.build()).queue(x -> {
 						if(output.contains("description"))
 							OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
 					});
-				}else{
-					path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
-					if(isImage(path)){
-						EmbedBuilder eb = new EmbedBuilder();
-						eb.setImage(path);
-						channel.sendMessage(eb.build()).queue(x -> {
-							if(output.contains("description"))
-								OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
-						});
-					}else{
-						path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
-						if(isImage(path)){
-							EmbedBuilder eb = new EmbedBuilder();
-							eb.setImage(path);
-							channel.sendMessage(eb.build()).queue(x -> {
-								if(output.contains("description"))
-									OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
-							});
-						}else{
-							path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
-							if(isImage(path)){
-								EmbedBuilder eb = new EmbedBuilder();
-								eb.setImage(path);
-								channel.sendMessage(eb.build()).queue(x -> {
-									if(output.contains("description"))
-										OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
-								});
-							}else{
-								path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
-								if(isImage(path)){
-									EmbedBuilder eb = new EmbedBuilder();
-									eb.setImage(path);
-									channel.sendMessage(eb.build()).queue(x -> {
-										if(output.contains("description"))
-											OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
-									});
-								}
-							}
-						}
-					}
+				}
+				else{
+					// Expected image but could not find one.
+					if(output.contains("description"))
+						OutputHelper(channel, output.substring(output.indexOf("description")));
+					else
+						OutputHelper(channel, "Did not find image or description associated with input '" + request + "'");
 				}
 			}
 			else{
@@ -160,152 +128,110 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-show"}, description = "Shows image and data of X.", usage = "-show X", privateMessages = true)
 	public void onShowCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
+		if(args.length >= 1){
+			String returnMessage = "";
 			String request = args[0];
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
-				int start = 0,end = 0;
+				int start = 0, end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
-					end = output.indexOf('\n', start)-1;
+					end = output.indexOf('\n', start) - 1;
 				}
 				else if(output.contains("sprite")){
-					start = output.indexOf("sprite")+7;
-					end = output.indexOf('\n', start)-1;
+					start = output.indexOf("sprite") + 7;
+					end = output.indexOf('\n', start) - 1;
 				}
-				String path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
-				if(isImage(path)){
+				String filepath = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", "");
+				String ending = GetImageEnding(filepath);
+				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
-					eb.setImage(path);
+					eb.setImage(filepath + ending);
 					channel.sendMessage(eb.build()).queue(x -> {
-						OutputHelper(channel,output);
+						OutputHelper(channel, output);
 					});
-				}else{
-					path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
-					if(isImage(path)){
-						EmbedBuilder eb = new EmbedBuilder();
-						eb.setImage(path);
-						channel.sendMessage(eb.build()).queue(x -> {
-							OutputHelper(channel,output);
-						});
-					}else{
-						path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
-						if(isImage(path)){
-							EmbedBuilder eb = new EmbedBuilder();
-							eb.setImage(path);
-							channel.sendMessage(eb.build()).queue(x -> {
-								OutputHelper(channel,output);
-							});
-						}else{
-							path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
-							if(isImage(path)){
-								EmbedBuilder eb = new EmbedBuilder();
-								eb.setImage(path);
-								channel.sendMessage(eb.build()).queue(x -> {
-									OutputHelper(channel,output);
-								});
-							}else{
-								path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
-								if(isImage(path)){
-									EmbedBuilder eb = new EmbedBuilder();
-									eb.setImage(path);
-									channel.sendMessage(eb.build()).queue(x -> {
-										OutputHelper(channel,output);
-									});
-								}
-							}
-						}
-					}
+				}
+				else{
+					returnMessage = "Expected image, but could not find image, with input '" + request + "'";
+					OutputHelper(channel, returnMessage + "\n\n" + output);
 				}
 			}
 			else{
-				OutputHelper(channel,output);
+				OutputHelper(channel, output);
 			}
 		}
-
 	}
 
-	@Command(aliases = {"-showimage","-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
+	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
+		String returnMessage = "";
+		if(args.length >= 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
-				int start = 0,end = 0;
+				int start = 0, end = 0;
 				if(output.contains("thumbnail")){
 					start = output.indexOf("thumbnail") + 10;
-					end = output.indexOf('\n', start)-1;
+					end = output.indexOf('\n', start) - 1;
 				}
 				else if(output.contains("sprite")){
-					start = output.indexOf("sprite")+7;
-					end = output.indexOf('\n', start)-1;
+					start = output.indexOf("sprite") + 7;
+					end = output.indexOf('\n', start) - 1;
 				}
-				String path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + ".png?raw=true";
-				if(isImage(path)){
+				String filepath = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", "");
+				String ending = GetImageEnding(filepath);
+				if(ending.length() > 1){
 					EmbedBuilder eb = new EmbedBuilder();
-					eb.setImage(path);
+					eb.setImage(filepath + ending);
 					channel.sendMessage(eb.build()).queue();
-
-				}else{
-					path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "-0.png?raw=true";
-					if(isImage(path)){
-						EmbedBuilder eb = new EmbedBuilder();
-						eb.setImage(path);
-						channel.sendMessage(eb.build()).queue();
-					}else{
-						path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "+0.png?raw=true";
-						if(isImage(path)){
-							EmbedBuilder eb = new EmbedBuilder();
-							eb.setImage(path);
-							channel.sendMessage(eb.build()).queue();
-						}else{
-							path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "~0.png?raw=true";
-							if(isImage(path)){
-								EmbedBuilder eb = new EmbedBuilder();
-								eb.setImage(path);
-								channel.sendMessage(eb.build()).queue();
-							}else{
-								path = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"","") + "=0.png?raw=true";
-								if(isImage(path)){
-									EmbedBuilder eb = new EmbedBuilder();
-									eb.setImage(path);
-									channel.sendMessage(eb.build()).queue();
-								}
-							}
-						}
-					}
+				}
+				else{
+					// Could not resolve image ending from the detected output.
+					returnMessage = "Could not find image for '" + output.substring(start, end).replace("\"", "") + "' from input '" + request + "'";
 				}
 			}
+			else{
+				// No image in lookup.
+				returnMessage = "Did not find an image for the input '" + request + "'";
+			}
+		}
+		if(returnMessage.length() > 0){
+			OutputHelper(channel, returnMessage);
 		}
 	}
 
-	@Command(aliases = {"-showdata","-showData"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
+	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
 	public void onShowdataCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
+		if(args.length >= 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
 			String output = lookupData(request);
+			if(output.length() < 1){
+				output = "Nothing found!";
+			}
 			OutputHelper(channel, output);
 		}
 	}
 	
 	public String lookupData(String lookup){
-		lookup = checkLookup(lookup,true);
-		if(lookup.length()>0){
+		lookup = checkLookup(lookup, true);
+		if(lookup.length() > 0){
 			int start = data.indexOf(lookup);
-			int end = start+lookup.length();
+			int end = start + lookup.length();
 			do{
-				end = data.indexOf('\n', end+1);
-			}while(data.charAt(end+1)=='\t' || data.charAt(end+1)=='\n'|| data.charAt(end+1)=='#');
-			return data.substring(start,end);}
+				end = data.indexOf('\n', end + 1);
+			}
+			while(data.charAt(end + 1) == '\t' || data.charAt(end + 1) == '\n' || data.charAt(end + 1) == '#');
+			return data.substring(start, end);
+		}
 		else
 			return "Nothing found!";
 	}
@@ -346,21 +272,21 @@ implements CommandExecutor{
 		}
 		else if(helper){
 			lookup = Character.toUpperCase(lookup.charAt(0)) + lookup.toLowerCase().substring(1);
-			return checkLookup(lookup,false);
+			return checkLookup(lookup, false);
 		}
 		else
 			return "";
 	}
 
-	public void OutputHelper(MessageChannel channel,String output){
-		if(output.length()<1993){
+	public void OutputHelper(MessageChannel channel, String output){
+		if(output.length() < 1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
 		}
 		else{
-			int cut = output.lastIndexOf('\n', 0+1992);
+			int cut = output.lastIndexOf('\n', 0 + 1992);
 			String o = output.substring(0, cut);			
 			channel.sendMessage(":\n```" + o + "```").queue(x -> {
-				OutputHelper(channel, output.substring(cut+1));
+				OutputHelper(channel, output.substring(cut + 1));
 			});
 		}
 	}
