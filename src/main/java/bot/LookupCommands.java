@@ -12,7 +12,7 @@ import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
-public class LookupCommands 
+public class LookupCommands
 implements CommandExecutor{
 
 	private String data;
@@ -34,7 +34,7 @@ implements CommandExecutor{
 					dataFiles.add(new URL("https://raw.githubusercontent.com/endless-sky/endless-sky/master/data/" + line + ".txt"));
 					line = br.readLine();
 				}
-			}			
+			}
 			for(URL url : dataFiles){
 				try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
 					StringBuilder sb = new StringBuilder();
@@ -54,7 +54,7 @@ implements CommandExecutor{
 		}
 		return data;
 	}
-	
+
 	@Command(aliases = {"-issue"}, description = "Provide link for \"X\" Endless Sky issue.", usage = "-issue X", privateMessages = true)
 	public void onIssueCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
@@ -63,7 +63,7 @@ implements CommandExecutor{
 			channel.sendMessage(path).queue();
 		}
 	}
-	
+
 	@Command(aliases = {"-pull"}, description = "Provide link for \"X\" Endless Sky pull request.", usage = "-pull X", privateMessages = true)
 	public void onPullCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
@@ -72,7 +72,7 @@ implements CommandExecutor{
 			channel.sendMessage(path).queue();
 		}
 	}
-	
+
 	@Command(aliases = {"-commit"}, description = "Provide link for \"X\" Endless Sky commit.", usage = "-commit X", privateMessages = true)
 	public void onCommitCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
@@ -81,7 +81,7 @@ implements CommandExecutor{
 			channel.sendMessage(path).queue();
 		}
 	}
-	
+
 	@Command(aliases = {"-lookup"}, description = "Shows image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length >= 1){
@@ -100,7 +100,7 @@ implements CommandExecutor{
 					start = output.indexOf("sprite")+7;
 					end = output.indexOf('\n', start) - 1;
 				}
-				String filepath = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", "");
+				String filepath = urlEncode(CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", ""));
 				String ending = GetImageEnding(filepath);
 				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
@@ -145,7 +145,7 @@ implements CommandExecutor{
 					start = output.indexOf("sprite") + 7;
 					end = output.indexOf('\n', start) - 1;
 				}
-				String filepath = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", "");
+				String filepath = urlEncode(CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", ""));
 				String ending = GetImageEnding(filepath);
 				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
@@ -184,7 +184,7 @@ implements CommandExecutor{
 					start = output.indexOf("sprite") + 7;
 					end = output.indexOf('\n', start) - 1;
 				}
-				String filepath = CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", "");
+				String filepath = urlEncode(CONTENT_URL + "/images/" + output.substring(start, end).replace("\"", ""));
 				String ending = GetImageEnding(filepath);
 				if(ending.length() > 1){
 					EmbedBuilder eb = new EmbedBuilder();
@@ -220,7 +220,7 @@ implements CommandExecutor{
 			OutputHelper(channel, output);
 		}
 	}
-	
+
 	public String lookupData(String lookup){
 		lookup = checkLookup(lookup, true);
 		if(lookup.length() > 0){
@@ -235,7 +235,7 @@ implements CommandExecutor{
 		else
 			return "Nothing found!";
 	}
-	
+
 	public String checkLookup(String lookup, boolean helper){
 		if(data.contains("\nship \"" + lookup + "\"")){
 			return "\nship \"" + lookup + "\"";
@@ -284,7 +284,7 @@ implements CommandExecutor{
 		}
 		else{
 			int cut = output.lastIndexOf('\n', 0 + 1992);
-			String o = output.substring(0, cut);			
+			String o = output.substring(0, cut);
 			channel.sendMessage(":\n```" + o + "```").queue(x -> {
 				OutputHelper(channel, output.substring(cut + 1));
 			});
@@ -300,7 +300,7 @@ implements CommandExecutor{
 			return false;
 		}
 	}
-	
+
 	// Iterate the possible image blending modes to determine which is the
 	// appropriate file ending for the given file. Assumes all image files
 	// are .png. Returns nullstring "" if no ending works, otherwise returns
@@ -309,7 +309,7 @@ implements CommandExecutor{
 		String[] endings = {"", "-0", "+0", "~0", "=0"};
 		int index = 0;
 		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
-		
+
 		while(!hasEnding && index < endings.length){
 			hasEnding = isImage(url + endings[++index] + ".png?raw=true");
 		}
@@ -317,6 +317,10 @@ implements CommandExecutor{
 			return endings[index] + ".png?raw=true";
 		else
 			return "";
-	} 
+	}
+
+	public String urlEncode(String url){
+		return url.replace(" ", "%20");
+	}
 
 }
