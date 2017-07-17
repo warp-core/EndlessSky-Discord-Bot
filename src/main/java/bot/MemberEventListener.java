@@ -23,9 +23,9 @@ public class MemberEventListener extends ListenerAdapter
   {
     User user = event.getMember().getUser();
     if (!user.isBot()){
-      String name = user.getAsMention();
-      TextChannel channel = event.getGuild().getTextChannelsByName(MAIN_CHANNEL, true).get(0);
-      channel.sendMessage("Hello " + name + "! Welcome to the Endless Sky Community Discord. Make sure to read the #rules and enjoy your stay! I'll be watching...").queue();
+      MessageChannel channel = event.getGuild().getTextChannelsByName(MAIN_CHANNEL, true).get(0);
+      TextChannel rules = event.getGuild().getTextChannelsByName("news", true).get(0);
+      channel.sendMessageFormat("Hello %s! Welcome to the Endless Sky Community Discord. Make sure to read the %s and enjoy your stay! I'll be watching...", user.getAsMention(), rules).queue();
     }
   }
 
