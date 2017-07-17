@@ -19,9 +19,13 @@ implements CommandExecutor{
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
 
+
+
 	public LookupCommands() {
 		data = readData();
 	}
+
+
 
 	public String readData(){
 		String data = "";
@@ -55,6 +59,8 @@ implements CommandExecutor{
 		return data;
 	}
 
+
+
 	@Command(aliases = {"-issue"}, description = "Provide link for \"X\" Endless Sky issue.", usage = "-issue X", privateMessages = true)
 	public void onIssueCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
@@ -63,6 +69,8 @@ implements CommandExecutor{
 			channel.sendMessage(path).queue();
 		}
 	}
+
+
 
 	@Command(aliases = {"-pull"}, description = "Provide link for \"X\" Endless Sky pull request.", usage = "-pull X", privateMessages = true)
 	public void onPullCommand(MessageChannel channel, String[] args){
@@ -73,6 +81,8 @@ implements CommandExecutor{
 		}
 	}
 
+
+
 	@Command(aliases = {"-commit"}, description = "Provide link for \"X\" Endless Sky commit.", usage = "-commit X", privateMessages = true)
 	public void onCommitCommand(MessageChannel channel, String[] args){
 		if(args.length>=1){
@@ -82,79 +92,63 @@ implements CommandExecutor{
 		}
 	}
 
+
+
 	@Command(aliases = {"-lookup"}, description = "Shows image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length >= 1){
+			String message = "";
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(output.contains("sprite") || output.contains("thumbnail")){
-				String imageName = GetImageName(output);
-				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
-				String ending = GetImageEnding(filepath);
-				if(ending.length() > 0){
-					EmbedBuilder eb = new EmbedBuilder();
-					eb.setImage(filepath + ending);
-					channel.sendMessage(eb.build()).queue(x -> {
-						if(output.contains("description"))
-							OutputHelper(channel, output.substring(output.indexOf("description")).replaceFirst("description", ""));
-						else
-							OutputHelper(channel, "(no description)");
-					});
+			if(HasImageToPrint(output)){
+				if(PrintImage(channel, output)){
+					message = output.contains("description") ? output.substring(output.indexOf("description")).replaceFirst("description", "") : "(no description)";
 				}
 				else{
-					// Expected image but could not find one.
 					if(output.contains("description"))
-						OutputHelper(channel, "I could not resolve the expected image for '" + imageName + "' from the input '" + request + "'. However, I did find this:\n\n" + output.substring(output.indexOf("description")).replaceFirst("description",""));
+						message = "I could not resolve an image for '" + request + "'. However, I did find this:\n\n" + output.substring(output.indexOf("description")).replaceFirst("description","");
 					else
-						OutputHelper(channel, "There is no image or description associated with '" + request + "'.");
+						message = "There is no image or description associated with '" + request + "'.";
 				}
 			}
-			else if(output.contains("description")){
-					OutputHelper(channel, output.substring(output.indexOf("description")));
-			}
-			else if(output.length() > 0)
-				OutputHelper(channel, "There is no image or description associated with '" + request + "'.");
+			else if(output.contains("description"))
+					message = "(no image)\n\n" + output.substring(output.indexOf("description")).replaceFirst("description","");
 			else
-				OutputHelper(channel, "I could not find anything related to '" + request + "'.");
+				message = (output.length() > 0 ? "There is no image or description associated with '" : "I could not find anything related to '") + request + "'.";
+			
+			if(message.length() > 0)
+				OutputHelper(channel, message);
 		}
-
 	}
+
+
 
 	@Command(aliases = {"-show"}, description = "Shows image and data of X.", usage = "-show X", privateMessages = true)
 	public void onShowCommand(MessageChannel channel, String[] args){
 		if(args.length >= 1){
-			String returnMessage = "";
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(output.contains("sprite") || output.contains("thumbnail")){
-				String imageName = GetImageName(output);
-				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
-				String ending = GetImageEnding(filepath);
-				if(ending.length() > 0){
-					EmbedBuilder eb = new EmbedBuilder();
-					eb.setImage(filepath + ending);
-					channel.sendMessage(eb.build()).queue(x -> {
-						OutputHelper(channel, output);
-					});
-				}
-				else{
-					returnMessage = "I could not resolve the expected image for '" + imageName + "' from the input '" + request + "'. However, I did find this:";
-					OutputHelper(channel, returnMessage + "\n\n" + output);
-				}
+			if(HasImageToPrint(output)){
+				if(PrintImage(channel, output))
+					OutputHelper(channel, output);
+				else
+					OutputHelper(channel, "I could not resolve an expected image from the input '" + request + "'. However, I did find this:\n\n" + output);
 			}
 			else{
 				OutputHelper(channel, output);
 			}
 		}
 	}
+
+
 
 	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
@@ -166,29 +160,19 @@ implements CommandExecutor{
 			}
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(output.contains("sprite") || output.contains("thumbnail")){
-				String imageName = GetImageName(output);
-				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
-				String ending = GetImageEnding(filepath);
-				if(ending.length() > 0){
-					EmbedBuilder eb = new EmbedBuilder();
-					eb.setImage(filepath + ending);
-					channel.sendMessage(eb.build()).queue();
-				}
-				else{
-					// Could not resolve image ending from the detected output.
-					returnMessage = "I could not resolve the expected image for '" + imageName + "' from the input '" + request + "'.";
-				}
+			if(HasImageToPrint(output)){
+				if(!PrintImage(channel, output))
+					returnMessage = "I could not print the image associated with '" + request + "'.";
 			}
-			else{
-				// No image in lookup.
-				returnMessage = "There is no image associated with '" + request + "'.";
-			}
+			else
+				returnMessage = "I could not find an image associated with '" + request + "'.";
 		}
 		if(returnMessage.length() > 0){
 			OutputHelper(channel, returnMessage);
 		}
 	}
+
+
 
 	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
 	public void onShowdataCommand(MessageChannel channel, String[] args){
@@ -205,6 +189,8 @@ implements CommandExecutor{
 			OutputHelper(channel, output);
 		}
 	}
+
+
 
 	// Convert the requested lookup parameter into the relevant data
 	// from the Endless Sky GitHub repository.
@@ -223,6 +209,8 @@ implements CommandExecutor{
 
 		return "";
 	}
+
+
 
 	// Queries the loaded datafiles for special Endless Sky keywords.
 	// If helper is 'true', will try both as-passed 'lookup', and with
@@ -270,6 +258,8 @@ implements CommandExecutor{
 		return "";
 	}
 
+
+
 	// Send the message 'output' to the desired channel, cutting into
 	// multiple messages as needed.
 	public void OutputHelper(MessageChannel channel, String output){
@@ -285,6 +275,8 @@ implements CommandExecutor{
 		}
 	}
 
+
+
 	// Verify the passed URL resolves to an image file.
 	public boolean isImage(String url){
 		try{
@@ -295,6 +287,8 @@ implements CommandExecutor{
 			return false;
 		}
 	}
+
+
 
 	// Iterate the possible image blending modes to determine which is the
 	// appropriate file ending for the given file. Assumes all image files
@@ -314,9 +308,41 @@ implements CommandExecutor{
 		return "";
 	}
 
+
+
 	public static String urlEncode(String url){
 		return url.replace(" ", "%20");
 	}
+
+
+
+	// Check the string for image indicators. Returns false if there is no image.
+	public static boolean HasImageToPrint(String input){
+		return input.contains("sprite") || input.contains("thumbnail");
+	}
+
+
+
+	// Check the string for image characteristics, and if found, print the image
+	// to the specified channel & return true. Returns false for no image or no
+	// valid image ending.
+	private boolean PrintImage(MessageChannel channel, String input){
+		if(HasImageToPrint(input)){
+			String imageName = GetImageName(input);
+			String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
+			String ending = GetImageEnding(filepath);
+			if(ending.length() > 0){
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setImage(filepath + ending);
+				channel.sendMessage(eb.build()).queue();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
 
 	// Check the string for a space character and if present, capitalize the
 	// next letter. Returns the string with first letters of words capitalized.
@@ -338,6 +364,33 @@ implements CommandExecutor{
 		return new String(ic);
 	}
 
+
+
+	// Check if the request is for a ship variant.
+	private boolean IsShipVariantRequest(String request){
+		// All Endless Sky ship variants have the name in parentheses by convention.
+		if(request.indexOf('(') < 0 || request.indexOf(')') < 0)
+			return false;
+
+		// A request may return valid data while having parentheses if it is either
+		// not a ship variant, or is already a ship variant with proper formatting.
+		// e.g. '"base name" "base name (variant)"', 'Thruster (Stellar Class)', or
+		// '"Thruster (Stellar Class)"'
+		String base = GetBaseModelName(request);
+		if(lookupData(request).length() > 0)
+			return request.indexOf(base) != request.lastIndexOf(base);
+
+		// The request is not something that matches existing data keywords (yet).
+		request = ParseVariants(request);
+		if(lookupData(request).length() > 0)
+			return true;
+
+		// This request doesn't return data at all.
+		return false;
+	}
+
+
+
 	// Check for improperly-formatted ship variants, which require speccing as
 	// "base model" "base model (variant)". If the request was not correctly
 	// formatted, returns the request in the proper ship variant format.
@@ -348,9 +401,11 @@ implements CommandExecutor{
 				input = "\"" + baseModel.replace("\"", "") + "\" \"" + input.replace("\"", "") + "\"";
 			}
 		}
-		
+
 		return input;
 	}
+
+
 
 	// Count the number of the given character in the given string.
 	public static int CountOf(String input, char token){
@@ -363,6 +418,8 @@ implements CommandExecutor{
 		return count;
 	}
 
+
+
 	// Returns the bare image name without quotes, or a nullstring if no image.
 	public static String GetImageName(String text){
 		int start = 0;
@@ -374,9 +431,11 @@ implements CommandExecutor{
 			return "";
 
 		int end = text.indexOf('\n', start);
-		
+
 		return text.substring(start, end).replace("\"", "");
 	}
+
+
 
 	// Called for ship variants in order to obtain the base model name. Returns
 	// an unquoted ship, e.g. "Falcon (Plasma)" -> Falcon, or "Marauder Falcon
