@@ -89,14 +89,7 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
-			// Check for improperly-formatted ship variants, which require speccing as
-			// "base model" "base model (variant)"
-			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
-				String baseModel = GetBaseModelName(request);
-				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
-				}
-			}
+			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
 				String imageName = GetImageName(output);
@@ -109,22 +102,24 @@ implements CommandExecutor{
 						if(output.contains("description"))
 							OutputHelper(channel, output.substring(output.indexOf("description")).replaceFirst("description", ""));
 						else
-							OutputHelper(channel, "No description.");
+							OutputHelper(channel, "(no description)");
 					});
 				}
 				else{
 					// Expected image but could not find one.
 					if(output.contains("description"))
-						OutputHelper(channel, "Did not find expected image for '" + request + "'\n" + output.substring(output.indexOf("description")));
+						OutputHelper(channel, "I could not resolve the expected image for '" + imageName + "' from the input '" + request + "'. However, I did find this:\n\n" + output.substring(output.indexOf("description")).replaceFirst("description",""));
 					else
-						OutputHelper(channel, "Did not find image or description associated with input '" + request + "'.");
+						OutputHelper(channel, "There is no image or description associated with '" + request + "'.");
 				}
 			}
 			else if(output.contains("description")){
 					OutputHelper(channel, output.substring(output.indexOf("description")));
 			}
+			else if(output.length() > 0)
+				OutputHelper(channel, "There is no image or description associated with '" + request + "'.");
 			else
-				OutputHelper(channel, "No image or description.");
+				OutputHelper(channel, "I could not find anything related to '" + request + "'.");
 		}
 
 	}
@@ -137,14 +132,7 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
-			// Check for improperly-formatted ship variants, which require speccing as
-			// "base model" "base model (variant)"
-			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
-				String baseModel = GetBaseModelName(request);
-				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
-				}
-			}
+			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
 				String imageName = GetImageName(output);
@@ -158,7 +146,7 @@ implements CommandExecutor{
 					});
 				}
 				else{
-					returnMessage = "Expected image, but could not find image, with input '" + request + "'.";
+					returnMessage = "I could not resolve the expected image for '" + imageName + "' from the input '" + request + "'. However, I did find this:";
 					OutputHelper(channel, returnMessage + "\n\n" + output);
 				}
 			}
@@ -176,32 +164,25 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
-			// Check for improperly-formatted ship variants, which require speccing as
-			// "base model" "base model (variant)"
-			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
-				String baseModel = GetBaseModelName(request);
-				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
-				}
-			}
+			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
 				String imageName = GetImageName(output);
 				String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
 				String ending = GetImageEnding(filepath);
-				if(ending.length() > 1){
+				if(ending.length() > 0){
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setImage(filepath + ending);
 					channel.sendMessage(eb.build()).queue();
 				}
 				else{
 					// Could not resolve image ending from the detected output.
-					returnMessage = "Could not resolve image for '" + imageName + "' from input '" + request + "'";
+					returnMessage = "I could not resolve the expected image for '" + imageName + "' from the input '" + request + "'.";
 				}
 			}
 			else{
 				// No image in lookup.
-				returnMessage = "Did not find an image for the input '" + request + "'";
+				returnMessage = "There is no image associated with '" + request + "'.";
 			}
 		}
 		if(returnMessage.length() > 0){
@@ -216,22 +197,18 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
-			// Check for improperly-formatted ship variants, which require speccing as
-			// "base model" "base model (variant)"
-			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
-				String baseModel = GetBaseModelName(request);
-				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
-				}
-			}
+			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(output.length() < 1){
-				output = "Nothing found with input '" + request + "'";
+				output = "I could not find any data associated with '" + request + "'.";
 			}
 			OutputHelper(channel, output);
 		}
 	}
 
+	// Convert the requested lookup parameter into the relevant data
+	// from the Endless Sky GitHub repository.
+	// Returns nullstring if no data could be found.
 	public String lookupData(String lookup){
 		lookup = checkLookup(lookup, true);
 		if(lookup.length() > 0){
@@ -247,6 +224,9 @@ implements CommandExecutor{
 		return "";
 	}
 
+	// Queries the loaded datafiles for special Endless Sky keywords.
+	// If helper is 'true', will try both as-passed 'lookup', and with
+	// enforced word capitalization.
 	public String checkLookup(String lookup, boolean helper){
 		if(data.contains("\nship \"" + lookup + "\"")){
 			return "\nship \"" + lookup + "\"";
@@ -290,6 +270,8 @@ implements CommandExecutor{
 		return "";
 	}
 
+	// Send the message 'output' to the desired channel, cutting into
+	// multiple messages as needed.
 	public void OutputHelper(MessageChannel channel, String output){
 		if(output.length() < 1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
@@ -303,6 +285,7 @@ implements CommandExecutor{
 		}
 	}
 
+	// Verify the passed URL resolves to an image file.
 	public boolean isImage(String url){
 		try{
 			URL u = new URL(url);
@@ -335,7 +318,7 @@ implements CommandExecutor{
 		return url.replace(" ", "%20");
 	}
 
-	// Checks the string for a space character and if present, capitalizes the
+	// Check the string for a space character and if present, capitalize the
 	// next letter. Returns the string with first letters of words capitalized.
 	private static String CapitalizeWords(String input){
 		int countWords = 1 + CountOf(input, ' ');
@@ -353,6 +336,20 @@ implements CommandExecutor{
 		}
 
 		return new String(ic);
+	}
+
+	// Check for improperly-formatted ship variants, which require speccing as
+	// "base model" "base model (variant)". If the request was not correctly
+	// formatted, returns the request in the proper ship variant format.
+	private String ParseVariants(String input){
+		if((input.indexOf('(') > 0 || input.indexOf(')') > 0) && lookupData(input).length() < 1){
+			String baseModel = GetBaseModelName(input);
+			if(input.indexOf(baseModel) == input.lastIndexOf(baseModel)){
+				input = "\"" + baseModel.replace("\"", "") + "\" \"" + input.replace("\"", "") + "\"";
+			}
+		}
+		
+		return input;
 	}
 
 	// Count the number of the given character in the given string.
@@ -381,7 +378,7 @@ implements CommandExecutor{
 		return text.substring(start, end).replace("\"", "");
 	}
 
-	// Called for ship variants in order to obtain the base model image. Returns
+	// Called for ship variants in order to obtain the base model name. Returns
 	// an unquoted ship, e.g. "Falcon (Plasma)" -> Falcon, or "Marauder Falcon
 	// (Engines)" -> Marauder Falcon. Will not work for variants which do not use
 	// the variant name convention of "Base Ship Name (varied text)"
