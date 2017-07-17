@@ -4,3 +4,6 @@
 james.sh
 /gitauth.txt
 *.old
+hs_err_pid*
+/.idea
+/src/main/main.iml
