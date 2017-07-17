@@ -45,7 +45,7 @@ implements CommandExecutor{
 						sb.append(System.lineSeparator());
 						line = br.readLine();
 					}
-					data += sb.toString();
+					data += sb.toString() + "\n~\n";
 				}
 			}
 		}
@@ -86,7 +86,7 @@ implements CommandExecutor{
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length >= 1){
 			String request = args[0];
-			for(int i = 1; i < args.length; i++){
+			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
 			// Check for improperly-formatted ship variants, which require speccing as
@@ -134,7 +134,7 @@ implements CommandExecutor{
 		if(args.length >= 1){
 			String returnMessage = "";
 			String request = args[0];
-			for(int i = 1; i < args.length; i++){
+			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
 			// Check for improperly-formatted ship variants, which require speccing as
@@ -173,7 +173,7 @@ implements CommandExecutor{
 		String returnMessage = "";
 		if(args.length >= 1){
 			String request = args[0];
-			for(int i = 1; i < args.length; i++){
+			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
 			// Check for improperly-formatted ship variants, which require speccing as
@@ -213,7 +213,7 @@ implements CommandExecutor{
 	public void onShowdataCommand(MessageChannel channel, String[] args){
 		if(args.length >= 1){
 			String request = args[0];
-			for(int i = 1; i < args.length; i++){
+			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
 			// Check for improperly-formatted ship variants, which require speccing as
