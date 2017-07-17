@@ -89,6 +89,14 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
+			// Check for improperly-formatted ship variants, which require speccing as
+			// "base model" "base model (variant)"
+			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
+				String baseModel = GetBaseModelName(request);
+				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
+				}
+			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
 				String imageName = GetImageName(output);
@@ -99,21 +107,24 @@ implements CommandExecutor{
 					eb.setImage(filepath + ending);
 					channel.sendMessage(eb.build()).queue(x -> {
 						if(output.contains("description"))
-							OutputHelper(channel, output.substring(output.indexOf("description")).replaceAll("description", ""));
+							OutputHelper(channel, output.substring(output.indexOf("description")).replaceFirst("description", ""));
+						else
+							OutputHelper(channel, "No description.");
 					});
 				}
 				else{
 					// Expected image but could not find one.
 					if(output.contains("description"))
-						OutputHelper(channel, output.substring(output.indexOf("description")));
+						OutputHelper(channel, "Did not find expected image for '" + request + "'\n" + output.substring(output.indexOf("description")));
 					else
-						OutputHelper(channel, "Did not find image or description associated with input '" + request + "'");
+						OutputHelper(channel, "Did not find image or description associated with input '" + request + "'.");
 				}
 			}
-			else{
-				if(output.contains("description"))
+			else if(output.contains("description")){
 					OutputHelper(channel, output.substring(output.indexOf("description")));
 			}
+			else
+				OutputHelper(channel, "No image or description.");
 		}
 
 	}
@@ -125,6 +136,14 @@ implements CommandExecutor{
 			String request = args[0];
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
+			}
+			// Check for improperly-formatted ship variants, which require speccing as
+			// "base model" "base model (variant)"
+			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
+				String baseModel = GetBaseModelName(request);
+				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
+				}
 			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
@@ -139,7 +158,7 @@ implements CommandExecutor{
 					});
 				}
 				else{
-					returnMessage = "Expected image, but could not find image, with input '" + request + "'";
+					returnMessage = "Expected image, but could not find image, with input '" + request + "'.";
 					OutputHelper(channel, returnMessage + "\n\n" + output);
 				}
 			}
@@ -157,6 +176,14 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
+			// Check for improperly-formatted ship variants, which require speccing as
+			// "base model" "base model (variant)"
+			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
+				String baseModel = GetBaseModelName(request);
+				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
+				}
+			}
 			String output = lookupData(request);
 			if(output.contains("sprite") || output.contains("thumbnail")){
 				String imageName = GetImageName(output);
@@ -169,7 +196,7 @@ implements CommandExecutor{
 				}
 				else{
 					// Could not resolve image ending from the detected output.
-					returnMessage = "Could not find image for '" + imageName + "' from input '" + request + "'";
+					returnMessage = "Could not resolve image for '" + imageName + "' from input '" + request + "'";
 				}
 			}
 			else{
@@ -189,9 +216,17 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; i++){
 				request += " " + args[i];
 			}
+			// Check for improperly-formatted ship variants, which require speccing as
+			// "base model" "base model (variant)"
+			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
+				String baseModel = GetBaseModelName(request);
+				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
+				}
+			}
 			String output = lookupData(request);
 			if(output.length() < 1){
-				output = "Nothing found!";
+				output = "Nothing found with input '" + request + "'";
 			}
 			OutputHelper(channel, output);
 		}
@@ -209,7 +244,7 @@ implements CommandExecutor{
 			return data.substring(start, end);
 		}
 
-		return "Nothing found!";
+		return "";
 	}
 
 	public String checkLookup(String lookup, boolean helper){
@@ -310,6 +345,8 @@ implements CommandExecutor{
 			int index = input.indexOf(" ");
 			for(int i = 0; i < countWords; ++i){
 				++index;
+				if(ic[index] == '(' || ic[index] == ')' || ic[index] == '"')
+					++index;
 				ic[index] = Character.toUpperCase(ic[index]);
 				index = input.indexOf(" ", index);
 			}
@@ -342,5 +379,18 @@ implements CommandExecutor{
 		int end = text.indexOf('\n', start);
 		
 		return text.substring(start, end).replace("\"", "");
+	}
+
+	// Called for ship variants in order to obtain the base model image. Returns
+	// an unquoted ship, e.g. "Falcon (Plasma)" -> Falcon, or "Marauder Falcon
+	// (Engines)" -> Marauder Falcon. Will not work for variants which do not use
+	// the variant name convention of "Base Ship Name (varied text)"
+	// Returns nullstring if no match.
+	public static String GetBaseModelName(String text){
+		int end = text.indexOf('(');
+		if(end < 0)
+			return "";
+
+		return text.substring(0, end-1).replace("\"", "");
 	}
 }
