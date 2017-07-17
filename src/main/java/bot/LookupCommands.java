@@ -97,33 +97,41 @@ implements CommandExecutor{
 	@Command(aliases = {"-lookup"}, description = "Shows image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
 		if(args.length >= 1){
-			String message = "";
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
+			String message = "";
+			boolean printedImage = false;
+			if(PrintImage(channel, lookupData(request))
+					|| PrintImage(channel, lookupData(ParseVariants(request)))
+					|| (IsShipVariantRequest(request)
+								&& PrintImage(channel, lookupData(GetBaseModelName(request))))){
+				printedImage = true;
+			}
+			else
+				message = "There is no image associated with '" + request + "'";
+			
 			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(GetDataType(output).equals("mission")){
 				OutputHelper(channel, "Use '-showdata' to print mission data. ");
 				return;
 			}
-			if(HasImageToPrint(output)){
-				if(PrintImage(channel, output)){
-					message = output.contains("description") ? output.substring(output.indexOf("description")).replaceFirst("description", "") : "(no description)";
-				}
-				else{
-					if(output.contains("description"))
-						message = "I could not resolve an image for '" + request + "'. However, I did find this:\n\n" + output.substring(output.indexOf("description")).replaceFirst("description","");
-					else
-						message = "There is no image or description associated with '" + request + "'.";
-				}
+			if(output.contains("description")){
+				if(!printedImage)
+					message += ", but I did find this:\n\n";
+
+				message += output.substring(output.indexOf("description")).replaceFirst("description", "");
 			}
-			else if(output.contains("description"))
-					message = "(no image)\n\n" + output.substring(output.indexOf("description")).replaceFirst("description","");
-			else
-				message = (output.length() > 0 ? "There is no image or description associated with '" : "I could not find anything related to '") + request + "'.";
-			
+			else if(!printedImage)
+				message += ", nor any description.";
+			else if(printedImage)
+				message = "There is no description of '" + request + "'.";
+
+			if(output.length() < 1)
+				message = "I could not find anything associated with '" + request + "'.";
+
 			if(message.length() > 0)
 				OutputHelper(channel, message);
 		}
@@ -138,17 +146,29 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
+			String message = "";
+			boolean printedImage = false;
+			if(PrintImage(channel, lookupData(request))
+					|| PrintImage(channel, lookupData(ParseVariants(request)))
+					|| (IsShipVariantRequest(request)
+								&& PrintImage(channel, lookupData(GetBaseModelName(request))))){
+				printedImage = true;
+			}
+			else
+				message = "I could not find an image associated with '" + request + "'";
+
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(HasImageToPrint(output)){
-				if(PrintImage(channel, output))
-					OutputHelper(channel, output);
+			if(output.length() < 1){
+				if(printedImage)
+					message = "I could not find any data associated with '" + request + "'.";
 				else
-					OutputHelper(channel, "I could not resolve an expected image from the input '" + request + "'. However, I did find this:\n\n" + output);
+					message += ", nor could I find any data.";
 			}
-			else{
-				OutputHelper(channel, output);
-			}
+			else if(!printedImage)
+				message += ", but I did find this:\n\n";
+
+			OutputHelper(channel, message + output);
 		}
 	}
 
@@ -156,23 +176,19 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
-		String returnMessage = "";
 		if(args.length >= 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
-			request = ParseVariants(request);
-			String output = lookupData(request);
-			if(HasImageToPrint(output)){
-				if(!PrintImage(channel, output))
-					returnMessage = "I could not print the image associated with '" + request + "'.";
+			if(PrintImage(channel, lookupData(request))
+					|| PrintImage(channel, lookupData(ParseVariants(request)))
+					|| (IsShipVariantRequest(request)
+								&& PrintImage(channel, lookupData(GetBaseModelName(request))))){
+				// This request was handled.
 			}
 			else
-				returnMessage = "I could not find an image associated with '" + request + "'.";
-		}
-		if(returnMessage.length() > 0){
-			OutputHelper(channel, returnMessage);
+				OutputHelper(channel, "I could not find an image associated with '" + request + "'.");
 		}
 	}
 
@@ -281,6 +297,27 @@ implements CommandExecutor{
 
 
 
+	// Check the string for image characteristics, and if found, print the image
+	// to the specified channel & return true. Returns false for no image or no
+	// valid image ending.
+	private boolean PrintImage(MessageChannel channel, String input){
+		if(HasImageToPrint(input)){
+			String imageName = GetImageName(input);
+			String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
+			String ending = GetImageEnding(filepath);
+			if(ending.length() > 0){
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setImage(filepath + ending);
+				channel.sendMessage(eb.build()).queue();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+
 	// Verify the passed URL resolves to an image file.
 	public boolean isImage(String url){
 		try{
@@ -323,27 +360,6 @@ implements CommandExecutor{
 	// Check the string for image indicators. Returns false if there is no image.
 	public static boolean HasImageToPrint(String input){
 		return input.contains("sprite") || input.contains("thumbnail");
-	}
-
-
-
-	// Check the string for image characteristics, and if found, print the image
-	// to the specified channel & return true. Returns false for no image or no
-	// valid image ending.
-	private boolean PrintImage(MessageChannel channel, String input){
-		if(HasImageToPrint(input)){
-			String imageName = GetImageName(input);
-			String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
-			String ending = GetImageEnding(filepath);
-			if(ending.length() > 0){
-				EmbedBuilder eb = new EmbedBuilder();
-				eb.setImage(filepath + ending);
-				channel.sendMessage(eb.build()).queue();
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 
@@ -401,7 +417,8 @@ implements CommandExecutor{
 	private String ParseVariants(String input){
 		if((input.indexOf('(') > 0 || input.indexOf(')') > 0) && lookupData(input).length() < 1){
 			String baseModel = GetBaseModelName(input);
-			if(input.indexOf(baseModel) == input.lastIndexOf(baseModel)){
+			if(baseModel.length() > 0
+					&& input.indexOf(baseModel) == input.lastIndexOf(baseModel)){
 				input = "\"" + baseModel.replace("\"", "") + "\" \"" + input.replace("\"", "") + "\"";
 			}
 		}
@@ -457,7 +474,10 @@ implements CommandExecutor{
 
 
 	// Returns the bit that comes before the searched request string.
+	// e.g. "mission", "ship", "fleet", "outfit"
 	public static String GetDataType(String output){
+		if(output.length() < 1 || output.indexOf(" ") < 1)
+			return "";
 		return output.substring(1, output.indexOf(" "));
 	}
 }
