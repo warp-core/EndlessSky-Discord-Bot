@@ -82,7 +82,7 @@ implements CommandExecutor {
 		}
 		else{
 			String output = "ytsearch:";
-			for(String s: args){
+			for(String s : args){
 				output += " " + s;
 			}
 			return output;
@@ -145,7 +145,7 @@ implements CommandExecutor {
 				if (trackCount < 10){
 					sb.append("`[").append(getTimestamp(track.getDuration())).append("]` ");
 					sb.append(track.getInfo().title).append("\n");
-					trackCount++;
+					++trackCount;
 				}
 			}
 			sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
@@ -207,7 +207,7 @@ implements CommandExecutor {
 			guildVoters.add(skipvoter);
 		}
 		LinkedList<Member> temp = new LinkedList<>();
-		for(Member m: guildVoters){
+		for(Member m : guildVoters){
 			if(guild.getAudioManager().getConnectedChannel() == m.getVoiceState().getChannel()){
 				temp.add(m);
 			}
@@ -241,7 +241,7 @@ implements CommandExecutor {
 					r.getManager().setName("Anti-DJ").queue();
 				});
 			}
-			for(User u:banned){
+			for(User u : banned){
 				Member m = guild.getMember(u);
 				if(!m.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true))){
 					guild.getController().addRolesToMember(m, guild.getRolesByName("Anti-DJ", true)).queue();
