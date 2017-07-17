@@ -104,6 +104,10 @@ implements CommandExecutor{
 			}
 			request = ParseVariants(request);
 			String output = lookupData(request);
+			if(GetDataType(output).equals("mission")){
+				OutputHelper(channel, "Use '-showdata' to print mission data. ");
+				return;
+			}
 			if(HasImageToPrint(output)){
 				if(PrintImage(channel, output)){
 					message = output.contains("description") ? output.substring(output.indexOf("description")).replaceFirst("description", "") : "(no description)";
@@ -448,5 +452,12 @@ implements CommandExecutor{
 			return "";
 
 		return text.substring(0, end-1).replace("\"", "");
+	}
+
+
+
+	// Returns the bit that comes before the searched request string.
+	public static String GetDataType(String output){
+		return output.substring(1, output.indexOf(" "));
 	}
 }
