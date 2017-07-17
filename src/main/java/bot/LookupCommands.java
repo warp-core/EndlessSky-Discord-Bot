@@ -94,7 +94,7 @@ implements CommandExecutor{
 			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
 				String baseModel = GetBaseModelName(request);
 				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "");
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
 				}
 			}
 			String output = lookupData(request);
@@ -142,7 +142,7 @@ implements CommandExecutor{
 			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
 				String baseModel = GetBaseModelName(request);
 				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "");
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
 				}
 			}
 			String output = lookupData(request);
@@ -181,7 +181,7 @@ implements CommandExecutor{
 			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
 				String baseModel = GetBaseModelName(request);
 				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "");
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
 				}
 			}
 			String output = lookupData(request);
@@ -196,7 +196,7 @@ implements CommandExecutor{
 				}
 				else{
 					// Could not resolve image ending from the detected output.
-					returnMessage = "Could not find image for '" + imageName + "' from input '" + request + "'";
+					returnMessage = "Could not resolve image for '" + imageName + "' from input '" + request + "'";
 				}
 			}
 			else{
@@ -221,12 +221,12 @@ implements CommandExecutor{
 			if((request.indexOf('(') > 0 || request.indexOf(')') > 0) && lookupData(request).length() < 1){
 				String baseModel = GetBaseModelName(request);
 				if(request.indexOf(baseModel) == request.lastIndexOf(baseModel)){
-					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "");
+					request = "\"" + baseModel.replace("\"", "") + "\" \"" + request.replace("\"", "") + "\"";
 				}
 			}
 			String output = lookupData(request);
 			if(output.length() < 1){
-				output = "Nothing found!";
+				output = "Nothing found with input '" + request + "'";
 			}
 			OutputHelper(channel, output);
 		}
@@ -345,7 +345,7 @@ implements CommandExecutor{
 			int index = input.indexOf(" ");
 			for(int i = 0; i < countWords; ++i){
 				++index;
-				if(ic[index] == '(' || ic[index] == ')')
+				if(ic[index] == '(' || ic[index] == ')' || ic[index] == '"')
 					++index;
 				ic[index] = Character.toUpperCase(ic[index]);
 				index = input.indexOf(" ", index);
