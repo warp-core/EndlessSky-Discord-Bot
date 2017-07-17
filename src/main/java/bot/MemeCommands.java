@@ -54,16 +54,9 @@ implements CommandExecutor{
 			eb.addField("Text-based Memes", getMemelist(), false);
 			eb.addField("Image-based Memes", getMemelistImgs(), false);
 			eb.setThumbnail(HOST_RAW_URL + "/thumbnails/meme.png");
-			if(user.hasPrivateChannel()){
-				user.openPrivateChannel().queue( c -> {
-					c.sendMessage(eb.build()).queue();
-				});
-			}
-			else{
-				user.openPrivateChannel().queue( c -> {
-					c.sendMessage(eb.build()).queue();
-				});
-			}
+			user.openPrivateChannel().queue( c -> {
+				c.sendMessage(eb.build()).queue();
+			});
 			if(channel instanceof TextChannel){
 				message.delete().queue();
 			}
