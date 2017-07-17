@@ -26,6 +26,7 @@ public class ESBot {
 			cmdHandler.registerCommand(new MemeCommands());
 			cmdHandler.registerCommand(new PlayerControl(this, jda));
 	        jda.addEventListener(new SpellCheckListener(this));
+					jda.addEventListener(new MemberEventListener(this));
 		}
 		catch (LoginException e) {
 			e.printStackTrace();
@@ -40,18 +41,18 @@ public class ESBot {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public long getPing(){
 		return jda.getPing();
 	}
-	
+
 	public void disconnect(){
 		jda.shutdown(false);
 	}
-	
+
 	public void shutdown(){
 		jda.shutdown();
-	}	
+	}
 
 	public User getSelf(){
 		return jda.getSelfUser();

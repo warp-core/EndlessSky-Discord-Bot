@@ -17,7 +17,7 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
-public class MemeCommands 
+public class MemeCommands
 implements CommandExecutor{
 
 	private Properties memes;
@@ -54,14 +54,9 @@ implements CommandExecutor{
 			eb.addField("Text-based Memes", getMemelist(), false);
 			eb.addField("Image-based Memes", getMemelistImgs(), false);
 			eb.setThumbnail(HOST_RAW_URL + "/thumbnails/meme.png");
-			if(user.hasPrivateChannel()){
-				user.getPrivateChannel().sendMessage(eb.build()).queue();
-			}
-			else{
-				user.openPrivateChannel().queue( c -> {
-					c.sendMessage(eb.build()).queue();
-				});
-			}
+			user.openPrivateChannel().queue( c -> {
+				c.sendMessage(eb.build()).queue();
+			});
 			if(channel instanceof TextChannel){
 				message.delete().queue();
 			}
@@ -91,12 +86,12 @@ implements CommandExecutor{
 			e.printStackTrace();
 		}
 		this.memeImgs = memes;
-	}	
-	
+	}
+
 	public boolean isImgMeme(String key){
 		return memeImgs.containsKey(key);
 	}
-	
+
 	public String getMeme(String meme){
 		return memes.getProperty(meme, "Please don't joke about that sort of thing.");
 	}
@@ -124,7 +119,7 @@ implements CommandExecutor{
 		String output = new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
 		return output.substring(output.indexOf('\n'));
 	}
-	
+
 	public String getMemelistImgs() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(baos);
@@ -140,7 +135,7 @@ implements CommandExecutor{
 		}
 		else{
 			int cut = output.lastIndexOf('\n', 0+1992);
-			String o = output.substring(0, cut);			
+			String o = output.substring(0, cut);
 			channel.sendMessage(":\n```" + o + "```").queue(x -> {
 				OutputHelper(channel, output.substring(cut+1));
 			});

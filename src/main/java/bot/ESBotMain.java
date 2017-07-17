@@ -16,7 +16,7 @@ public class ESBotMain {
 				+ "\n\tinputToken: reads next input as token"
 				+ "\n\tdisplayToken: displays the current token"
 				+ "\n\tstart: starts the bot with the given token"
-				+ "\n\tstart: stops the bot"
+				+ "\n\tstop: stops the bot"
 				+ "\n\texit: stops the bot and exits ESBot-Command Line Interface"
 				+ "\nwhile the bot is running, the token can not be changed");
 		
