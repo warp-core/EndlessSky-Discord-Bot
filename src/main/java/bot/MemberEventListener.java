@@ -47,11 +47,12 @@ public class MemberEventListener extends ListenerAdapter{
 	}
 
   @Override
-  public void GuildBanEvent(JDA api, long responseNumber, Guild guild, User user)
+  public void onGuildBan(GuildBanEvent event)
   {
+		User user = event.getUser();
     if (!user.isBot()){
-      MessageChannel channel = guild.getTextChannelsByName(MAIN_CHANNEL, true).get(0);
-      channel.sendMessageFomat("Bad Boy/Girl %s has just been banned from the server. Cya never!", user).queue();
+      MessageChannel channel = event.getGuild().getTextChannelsByName(MAIN_CHANNEL, true).get(0);
+      channel.sendMessageFormat("Bad Boy/Girl %s has just been banned from the server. Cya never!", user).queue();
     }
   }
 
