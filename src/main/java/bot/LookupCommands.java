@@ -265,11 +265,11 @@ implements CommandExecutor{
 		else if(data.contains("\nmission \"" + lookup + "\"")){
 			return "\nmission \"" + lookup + "\"";
 		}
-		else if(data.contains("\nplanet \"" + lookup + "\"")){
-			return "\nplanet \"" + lookup + "\"";
-		}
 		else if(data.contains("\nperson \"" + lookup + "\"")){
 			return "\nperson \"" + lookup + "\"";
+		}
+		else if(data.contains("\nplanet \"" + lookup + "\"")){
+			return "\nplanet \"" + lookup + "\"";
 		}
 		else if(data.contains("\nsystem \"" + lookup + "\"")){
 			return "\nsystem \"" + lookup + "\"";
@@ -277,6 +277,7 @@ implements CommandExecutor{
 		else if(data.contains("\neffect \"" + lookup + "\"")){
 			return "\neffect \"" + lookup + "\"";
 		}
+		// The items may not be quoted in their definition.
 		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
 		}
@@ -286,13 +287,13 @@ implements CommandExecutor{
 		else if(data.contains("\nmission " + lookup)){
 			return "\nmission " + lookup;
 		}
-		else if(data.contains("\nplanet " + lookup)){
-			return "\nplanet \"" + lookup + "\"";
-		}
 		else if(data.contains("\nperson " + lookup)){
-			return "\nperson \"" + lookup + "\"";
+			return "\nperson " + lookup;
 		}
-		else if(data.contains("\nsystem " + lookup)){
+		else if(data.contains("\nplanet " + lookup + "\n")){
+			return "\nplanet " + lookup;
+		}
+		else if(data.contains("\nsystem " + lookup + "\n")){
 			return "\nsystem " + lookup;
 		}
 		else if(data.contains("\neffect " + lookup)){
@@ -368,15 +369,22 @@ implements CommandExecutor{
 	// are .png. Returns nullstring "" if no ending works, otherwise returns
 	// the full ending (including the filetype).
 	public String GetImageEnding(String url){
-		String[] endings = {"", "-0", "+0", "~0", "=0"};
-		int index = 0;
-		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
+		String[] modes = {"", "-0", "+0", "~0", "=0"};
+		String[] filetypes = {".png", ".jpg"};
+		int m = 0;
+		int t = 0;
+		boolean hasEnding = isImage(url + modes[m] + filetypes[t] + "?raw=true");
 
-		while(!hasEnding && ++index < endings.length){
-			hasEnding = isImage(url + endings[index] + ".png?raw=true");
+		while(!hasEnding && t < filetypes.length){
+			m = t > 0 ? -1 : 0;
+			while(!hasEnding && ++m < modes.length){
+				hasEnding = isImage(url + modes[m] + filetypes[t] + "?raw=true");
+			}
+			if(!hasEnding)
+				++t;
 		}
 		if(hasEnding)
-			return endings[index] + ".png?raw=true";
+			return modes[m] + filetypes[t] + "?raw=true";
 
 		return "";
 	}
