@@ -27,7 +27,7 @@ implements CommandExecutor{
 
 
 
-	public String readData(){
+	private String readData(){
 		String data = "";
 		try{
 			LinkedList<URL> dataFiles = new LinkedList<>();
@@ -235,7 +235,7 @@ implements CommandExecutor{
 	// Convert the requested lookup parameter into the relevant data
 	// from the Endless Sky GitHub repository.
 	// Returns nullstring if no data could be found.
-	public String lookupData(String lookup){
+	private String lookupData(String lookup){
 		lookup = checkLookup(lookup, true);
 		if(lookup.length() > 0){
 			int start = data.indexOf(lookup);
@@ -255,7 +255,7 @@ implements CommandExecutor{
 	// Queries the loaded datafiles for special Endless Sky keywords.
 	// If helper is 'true', will try both as-passed 'lookup', and with
 	// enforced word capitalization.
-	public String checkLookup(String lookup, boolean helper){
+	private String checkLookup(String lookup, boolean helper){
 		if(data.contains("\nship \"" + lookup + "\"")){
 			return "\nship \"" + lookup + "\"";
 		}
@@ -302,7 +302,7 @@ implements CommandExecutor{
 
 	// Send the message 'output' to the desired channel, cutting into
 	// multiple messages as needed.
-	public void OutputHelper(MessageChannel channel, String output){
+	private void OutputHelper(MessageChannel channel, String output){
 		if(output.length() < 1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
 		}
@@ -355,7 +355,7 @@ implements CommandExecutor{
 	// appropriate file ending for the given file. Assumes all image files
 	// are .png. Returns nullstring "" if no ending works, otherwise returns
 	// the full ending (including the filetype).
-	public String GetImageEnding(String url){
+	private String GetImageEnding(String url){
 		String[] endings = {"", "-0", "+0", "~0", "=0"};
 		int index = 0;
 		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
