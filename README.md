@@ -5,9 +5,13 @@ Meet James, the Discord Bot made specifically for the Endless Sky Server.
 
 ## Credit
 Original Creator: @Wrzlprnft
+
 Original Maintainer/Hoster: @Nechochwen-D
+
 Current Maintainer/Hoster: @MCOfficer
+
 Main Contributer/PR Bot: @tehhowch
+
 24/7 Development Support: @MinnDevelopment and the JDA Discord Server
 
 ## Installation
