@@ -7,3 +7,8 @@ Bacceterian:Bactrian*
 Battican:Bactrian*
 Bacatercran:Bactrian*
 Hypderdrive:Hyperdrive*
+sayrd:Saryd*
+Sayrd:Saryd*
+Sadry:Saryd*
+Kimik:Kimek*
+Kimke:Kimek*

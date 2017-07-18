@@ -1,6 +1,7 @@
 package bot;
 
 import java.util.List;
+import java.util.Random;
 
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
@@ -16,12 +17,12 @@ public class ModeratorCommands
 implements CommandExecutor{
 	ESBot bot;
 
-	public ModeratorCommands(ESBot bot) {
+	public ModeratorCommands(ESBot bot){
 		super();
 		this.bot = bot;
 	}
 
-	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel. Minimum: 2 Maximum: 100.Requires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
+	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel.\nRange: 2 - 100.\n\nRequires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
 	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args){
 		Member author = msg.getGuild().getMember(msg.getAuthor());
 		List<Permission> perm = author.getPermissions(channel);
@@ -47,7 +48,43 @@ implements CommandExecutor{
 				});
 			}
 		}
+		else if(!(perm.contains(Permission.MESSAGE_MANAGE)
+				|| perm.contains(Permission.ADMINISTRATOR) || author.isOwner())){
+			channel.sendMessage(GetRandomDeniedMessage()).queue();
+		}
 	}
+
+
+
+	// Return a message indicating that the requestor was not authorized.
+	private static String GetRandomDeniedMessage(){
+		String[] messageList = {
+			"You can't order me around.",
+			"I don't listen to you.",
+			"You're not my boss.",
+			"Try harder.",
+			"You think you're a hotshot pirate?",
+			"Your attempt at using 'Pug Magic' has failed.",
+			"You're no Admiral Danforth.",
+			"As if.",
+			"That prison on Clink is looking rather empty...",
+			"Oh yeah?",
+			"Nice try.",
+			"I may be old, but I'm not dumb.",
+			"I'll pretend you didn't say that.",
+			"Not today.",
+			"Oh, to be young again...",
+			"*yawn*",
+			"I have the power. You don't.",
+			"Go play in a hyperspace lane.",
+			"How about I put *you* in the airlock?"
+		};
+		Random rGen = new Random();
+		int choice = rGen.nextInt(messageList.length);
+		return messageList[choice];
+	}
+
+
 
 	/*
 	@Command(aliases = {"-update"}, description = "Updates the data,memes and all other not-source-code changes.", usage = "-update", privateMessages = true)

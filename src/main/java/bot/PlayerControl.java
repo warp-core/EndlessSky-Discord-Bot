@@ -26,15 +26,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerControl 
-implements CommandExecutor {
+public class PlayerControl
+implements CommandExecutor{
 
 	private final AudioPlayerManager playerManager;
 	private final Map<Long, GuildMusicManager> musicManagers;
 	private Map<Long,LinkedList<Member>> skipvoters;
 	private ESBot bot;
-	
-	public PlayerControl(ESBot bot, JDA jda) {	
+
+
+
+	public PlayerControl(ESBot bot, JDA jda){
 		this.bot = bot;
 		this.musicManagers = new HashMap<>();
 		new AudioTimeoutControl(musicManagers,jda);
@@ -44,11 +46,13 @@ implements CommandExecutor {
 		AudioSourceManagers.registerLocalSource(playerManager);
 	}
 
-	private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild) {
+
+
+	private synchronized GuildMusicManager getGuildAudioPlayer(Guild guild){
 		long guildId = Long.parseLong(guild.getId());
 		GuildMusicManager musicManager = musicManagers.get(guildId);
 
-		if (musicManager == null) {
+		if(musicManager == null){
 			musicManager = new GuildMusicManager(playerManager);
 			musicManagers.put(guildId, musicManager);
 		}
@@ -56,27 +60,35 @@ implements CommandExecutor {
 		return musicManager;
 	}
 
-	private synchronized LinkedList<Member> getGuildSkipvoters(Guild guild) {
+
+
+	private synchronized LinkedList<Member> getGuildSkipvoters(Guild guild){
 		long guildId = Long.parseLong(guild.getId());
 		LinkedList<Member> sk = skipvoters.get(guildId);
 
-		if (sk == null) {
+		if(sk == null){
 			sk = new LinkedList<>();
 			skipvoters.put(guildId, sk);
 		}
 		return sk;
 	}
 
+
+
 	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words.", usage = "-play URL", privateMessages = false)
 	public void onPlayCommand(Guild guild,TextChannel channel, String[] args,User author){
 		Member requester = guild.getMember(author);
-		if (guild != null && args.length > 0 && requester.getVoiceState().getChannel() != null && !(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))) {		
+		if(guild != null && args.length > 0
+				&& requester.getVoiceState().getChannel() != null
+				&& !(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))) {
 			checkVoiceChannel(guild.getAudioManager(), guild.getMember(author));
 			loadAndPlay(channel, normalize(args));
-		} 
+		}
 	}
 
-	private String normalize(String[] args) {
+
+
+	private String normalize(String[] args){
 		if(args.length == 1){
 			return args[0];
 		}
@@ -89,24 +101,33 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-skip"}, description = "Skip current song to start the next one. Requires the \"DJ\" role.", usage = "-skip", privateMessages = false)
+
+
+	@Command(aliases = {"-skip"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role.", usage = "-skip", privateMessages = false)
 	public void onSkipCommand(Guild guild,TextChannel channel, User author){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if((!(guild.getAudioManager().isAttemptingToConnect()||guild.getAudioManager().isConnected())||(requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))&&(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner())){
+		if((!(guild.getAudioManager().isAttemptingToConnect()
+						|| guild.getAudioManager().isConnected())
+					|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
+				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
+					|| perm.contains(Permission.ADMINISTRATOR)
+					|| requester.isOwner())){
 			if (guild != null) {
 				skipTrack(channel);
 				skipvoters.clear();
 			} 
 		}
 	}
-	
+
+
+
 	@Command(aliases = {"-current"}, description = "Displays the current autiotrack.", usage = "-current", privateMessages = false)
 	public void onCurrentCommand(Guild guild, TextChannel channel){
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		AudioPlayer player = mng.player;
 		AudioTrack currentTrack = player.getPlayingTrack();
-		if (currentTrack != null){
+		if(currentTrack != null){
 			String title = currentTrack.getInfo().title;
 			String position = getTimestamp(currentTrack.getPosition());
 			String duration = getTimestamp(currentTrack.getDuration());
@@ -130,6 +151,8 @@ implements CommandExecutor {
 		}
 	}
 
+
+
 	@Command(aliases = {"-playlist"}, description = "Displays the current playlist.", usage = "-playlist", privateMessages = false)
 	public void onplaylistCommand(Guild guild,TextChannel channel){
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
@@ -140,9 +163,9 @@ implements CommandExecutor {
 			long queueLength = 0;
 			StringBuilder sb = new StringBuilder();
 			sb.append("Current Queue: Entries: ").append(queue.size()).append("\n");
-			for (AudioTrack track : queue){
+			for(AudioTrack track : queue){
 				queueLength += track.getDuration();
-				if (trackCount < 10){
+				if(trackCount < 10){
 					sb.append("`[").append(getTimestamp(track.getDuration())).append("]` ");
 					sb.append(track.getInfo().title).append("\n");
 					++trackCount;
@@ -158,11 +181,17 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-shuffle"}, description = "Shuffle the playlist. Requires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
+
+
+	@Command(aliases = {"-shuffle"}, description = "Shuffle the playlist.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
 	public void onShuffleCommand(Guild guild,TextChannel channel, User author){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if(!(guild.getAudioManager().isAttemptingToConnect()||guild.getAudioManager().isConnected())||(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner())){
+		if(!(guild.getAudioManager().isAttemptingToConnect()
+					|| guild.getAudioManager().isConnected())
+				||(requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
+					|| perm.contains(Permission.ADMINISTRATOR)
+					|| requester.isOwner())){
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			TrackScheduler scheduler = mng.scheduler;
 			if(!scheduler.getQueue().isEmpty()){
@@ -177,11 +206,15 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-stop"}, description = "Stop the music, clean playlist and disconnect the bot from the channel. Requires the \"DJ\" role.", usage = "-stop", privateMessages = false)
+
+
+	@Command(aliases = {"-stop"}, description = "Stop the music, clear the playlist, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role.", usage = "-stop", privateMessages = false)
 	public void onStopCommand(Guild guild,TextChannel channel,User author){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if(requester.getRoles().containsAll(guild.getRolesByName("DJ",true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner()){
+		if(requester.getRoles().containsAll(guild.getRolesByName("DJ",true))
+				|| perm.contains(Permission.ADMINISTRATOR)
+				|| requester.isOwner()){
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			AudioPlayer player = mng.player;
 			TrackScheduler scheduler = mng.scheduler;
@@ -199,7 +232,9 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-voteskip"}, description = "Start a vote/Vote to skip the current song. Needs 50% in the voicechannel to do the same to skip it.", usage = "-voteskip", privateMessages = false)
+
+
+	@Command(aliases = {"-voteskip"}, description = "Start a vote/Vote to skip the current song. Needs 50% response rate from others in the voicechannel in order to succeed.", usage = "-voteskip", privateMessages = false)
 	public synchronized void onVoteskipCommand(Guild guild,TextChannel channel, User author){
 		Member skipvoter = guild.getMember(author);
 		LinkedList<Member> guildVoters = getGuildSkipvoters(guild);
@@ -213,7 +248,7 @@ implements CommandExecutor {
 			}
 		}
 		guildVoters = temp;		
-		if((int)((guild.getAudioManager().getConnectedChannel().getMembers().size()-1)/2+0.5) <= guildVoters.size()){
+		if((int)((guild.getAudioManager().getConnectedChannel().getMembers().size() - 1) / 2 + 0.5) <= guildVoters.size()){
 			skipTrack(channel);
 			guildVoters.clear();
 			skipvoters.remove(Long.parseLong(guild.getId()));
@@ -230,11 +265,15 @@ implements CommandExecutor {
 
 	}
 
-	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via -play. Requires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
+
+
+	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via '-play'.\n\nRequires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
 	public synchronized void onPlaybanCommand(Guild guild,TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner()){
+		if(requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
+				|| perm.contains(Permission.ADMINISTRATOR)
+				|| requester.isOwner()){
 			List<User> banned = msg.getMentionedUsers();
 			if(guild.getRolesByName("Anti-DJ", true).size() == 0){
 				guild.getController().createRole().queue( r -> {
@@ -265,14 +304,21 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-pause"}, description = "Pauses the player. Requires the \"DJ\" role.", usage = "-pause", privateMessages = false)
+
+
+	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
 	public void onPauseCommand(Guild guild,TextChannel channel, User author){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if((!(guild.getAudioManager().isAttemptingToConnect()||guild.getAudioManager().isConnected())||(requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))&&(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner())){
+		if((!(guild.getAudioManager().isAttemptingToConnect()
+						|| guild.getAudioManager().isConnected())
+					|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
+				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
+					|| perm.contains(Permission.ADMINISTRATOR)
+					|| requester.isOwner())){
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			AudioPlayer player = mng.player;
-			if (!(player.getPlayingTrack() == null)){
+			if(!(player.getPlayingTrack() == null)){
 				player.setPaused(true);
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -284,14 +330,21 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-resume"}, description = "Un-pauses the player. Requires the \"DJ\" role.", usage = "-resume", privateMessages = false)
+
+
+	@Command(aliases = {"-resume"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume", privateMessages = false)
 	public void onResumeCommand(Guild guild,TextChannel channel, User author){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if((!(guild.getAudioManager().isAttemptingToConnect()||guild.getAudioManager().isConnected())||(requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))&&(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner())){
+		if((!(guild.getAudioManager().isAttemptingToConnect()
+						|| guild.getAudioManager().isConnected())
+					|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
+				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
+					|| perm.contains(Permission.ADMINISTRATOR)
+					|| requester.isOwner())){
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			AudioPlayer player = mng.player;
-			if (!(player.getPlayingTrack() == null)){
+			if(!(player.getPlayingTrack() == null)){
 				player.setPaused(false);
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -303,11 +356,18 @@ implements CommandExecutor {
 		}
 	}
 
-	@Command(aliases = {"-volume"}, description = "Displays the current volume or sets it to X (10-100). To change it the \"DJ\" role is required.", usage = "-volume [X]", privateMessages = false)
+
+
+	@Command(aliases = {"-volume"}, description = "Displays the current volume or sets it to X (10-100). To change, the \"DJ\" role is required.", usage = "-volume [X]", privateMessages = false)
 	public void onVolumeCommand(Guild guild,TextChannel channel, User author,String[] args){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
-		if(args.length==1&&(!(guild.getAudioManager().isAttemptingToConnect()||guild.getAudioManager().isConnected())||(requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))&&(requester.getRoles().containsAll(guild.getRolesByName("DJ", true)) || perm.contains(Permission.ADMINISTRATOR) || requester.isOwner())){
+		if(args.length == 1
+				&& (!(guild.getAudioManager().isAttemptingToConnect() || guild.getAudioManager().isConnected())
+					|| (requester.getVoiceState().getChannel() ==  guild.getAudioManager().getConnectedChannel()))
+				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
+					|| perm.contains(Permission.ADMINISTRATOR)
+					|| requester.isOwner())){
 			GuildMusicManager mng = getGuildAudioPlayer(guild);
 			AudioPlayer player = mng.player;
 			try{
@@ -321,7 +381,7 @@ implements CommandExecutor {
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/volume.png");
 				channel.sendMessage(eb.build()).queue();
 			}
-			catch (NumberFormatException e){
+			catch(NumberFormatException e){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -342,23 +402,25 @@ implements CommandExecutor {
 		}
 	}
 
-	private void loadAndPlay(final TextChannel channel, final String trackUrl) {
+
+
+	private void loadAndPlay(final TextChannel channel, final String trackUrl){
 		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 
-		playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
-			
+		playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler(){
+
 			@Override
-			public void trackLoaded(AudioTrack track) {
+			public void trackLoaded(AudioTrack track){
 				channel.sendMessage("Adding to queue " + track.getInfo().title).queue();
 
 				play(channel.getGuild(), musicManager, track);
 			}
 
 			@Override
-			public void playlistLoaded(AudioPlaylist playlist) {
+			public void playlistLoaded(AudioPlaylist playlist){
 				AudioTrack firstTrack = playlist.getSelectedTrack();
 
-				if (firstTrack == null) {
+				if(firstTrack == null){
 					firstTrack = playlist.getTracks().get(0);
 				}
 				EmbedBuilder eb = new EmbedBuilder();
@@ -371,7 +433,7 @@ implements CommandExecutor {
 			}
 
 			@Override
-			public void noMatches() {
+			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Nothing found by " + trackUrl);
@@ -380,7 +442,7 @@ implements CommandExecutor {
 			}
 
 			@Override
-			public void loadFailed(FriendlyException exception) {
+			public void loadFailed(FriendlyException exception){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Could not play: " + exception.getMessage());
@@ -390,11 +452,15 @@ implements CommandExecutor {
 		});
 	}
 
-	private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track) {
+
+
+	private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track){
 		musicManager.scheduler.queue(track);
 	}
 
-	private void skipTrack(TextChannel channel) {
+
+
+	private void skipTrack(TextChannel channel){
 		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
 		musicManager.scheduler.nextTrack();
 		EmbedBuilder eb = new EmbedBuilder();
@@ -404,20 +470,23 @@ implements CommandExecutor {
 		channel.sendMessage(eb.build()).queue();
 	}
 
-	private static String getTimestamp(long milliseconds)
-	{
+
+
+	private static String getTimestamp(long milliseconds){
 		int seconds = (int) (milliseconds / 1000) % 60 ;
 		int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
 		int hours   = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
 
-		if (hours > 0)
+		if(hours > 0)
 			return String.format("%02d:%02d:%02d", hours, minutes, seconds);
 		else
 			return String.format("%02d:%02d", minutes, seconds);
 	}
 
-	private static void checkVoiceChannel(AudioManager audioManager, Member request) {
-		if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect() && request.getVoiceState().getChannel()!=null ) {	
+
+
+	private static void checkVoiceChannel(AudioManager audioManager, Member request){
+		if(!audioManager.isConnected() && !audioManager.isAttemptingToConnect() && request.getVoiceState().getChannel()!=null ){
 			audioManager.openAudioConnection(request.getVoiceState().getChannel());
 		}
 	}

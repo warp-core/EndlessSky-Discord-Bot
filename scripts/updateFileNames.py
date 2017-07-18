@@ -49,7 +49,7 @@ filenames = ''
 if gotData:
     numFiles = len(r.json())
     for fileblob in r.json():
-        filenames += fileblob['name'].replace(' ','%20') + '\n'
+        filenames += fileblob['name'].replace(' ','%20').replace('.txt','') + '\n'
 
 # Write the new names to the datafile.
 if len(filenames) > 0:

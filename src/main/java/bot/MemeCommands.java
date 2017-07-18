@@ -24,11 +24,11 @@ implements CommandExecutor{
 	private Properties memeImgs;
 	private static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 
-	public MemeCommands() {
+	public MemeCommands(){
 		readMemes();
 	}
 
-	@Command(aliases = {"-meme"}, description = "Posts meme X or a random one when no X given (Only Endless Sky related).", usage = "-meme [X]", privateMessages = true)
+	@Command(aliases = {"-meme"}, description = "Posts meme X, or a random Endless Sky meme if no X is given.", usage = "-meme [X]", privateMessages = true)
 	public void onMemeCommand(MessageChannel channel, String[] args){
 		if(args.length == 0){
 			channel.sendMessage(getRandomMeme()).queue();
@@ -46,7 +46,7 @@ implements CommandExecutor{
 		}
 	}
 
-	@Command(aliases = {"-memelist", "-memes", "-memeList"}, description = "Posts the current list of memes in private chat.", usage = "-memelist", privateMessages = true)
+	@Command(aliases = {"-memelist", "-memes", "-memeList"}, description = "PMs you the current list of memes.", usage = "-memelist", privateMessages = true)
 	public void onListmemesCommand(User user, MessageChannel channel, Message message, String[] args){
 		if(args.length == 0){
 			EmbedBuilder eb = new EmbedBuilder();
@@ -54,7 +54,7 @@ implements CommandExecutor{
 			eb.addField("Text-based Memes", getMemelist(), false);
 			eb.addField("Image-based Memes", getMemelistImgs(), false);
 			eb.setThumbnail(HOST_RAW_URL + "/thumbnails/meme.png");
-			user.openPrivateChannel().queue( c -> {
+			user.openPrivateChannel().queue(c -> {
 				c.sendMessage(eb.build()).queue();
 			});
 			if(channel instanceof TextChannel){
@@ -63,26 +63,26 @@ implements CommandExecutor{
 		}
 	}
 
-	private void readMemes() {
+	private void readMemes(){
 		Properties memes = new Properties();
-		try {
+		try{
 			memes.load(new URL(HOST_RAW_URL + "/data/memes.txt").openStream());
 		}
-		catch (FileNotFoundException e) {
+		catch(FileNotFoundException e){
 			e.printStackTrace();
 		}
-		catch (IOException e) {
+		catch(IOException e){
 			e.printStackTrace();
 		}
 		this.memes = memes;
 		memes = new Properties();
-		try {
+		try{
 			memes.load(new URL(HOST_RAW_URL + "/data/memeImgs.txt").openStream());
 		}
-		catch (FileNotFoundException e) {
+		catch (FileNotFoundException e){
 			e.printStackTrace();
 		}
-		catch (IOException e) {
+		catch (IOException e){
 			e.printStackTrace();
 		}
 		this.memeImgs = memes;
@@ -96,7 +96,7 @@ implements CommandExecutor{
 		return memes.getProperty(meme, "Please don't joke about that sort of thing.");
 	}
 
-	public String getRandomMeme() {
+	public String getRandomMeme(){
 		Enumeration<?> keys = memes.propertyNames();
 		Random rGen = new Random();
 		int random = rGen.nextInt(memes.size());
@@ -107,11 +107,11 @@ implements CommandExecutor{
 		return memes.getProperty(key);
 	}
 
-	public String getImgMemePath(String string) {
+	public String getImgMemePath(String string){
 		return memeImgs.getProperty(string);
 	}
 
-	public String getMemelist() {
+	public String getMemelist(){
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(baos);
 		memes.list(ps);
@@ -120,7 +120,7 @@ implements CommandExecutor{
 		return output.substring(output.indexOf('\n'));
 	}
 
-	public String getMemelistImgs() {
+	public String getMemelistImgs(){
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(baos);
 		memeImgs.list(ps);
@@ -130,7 +130,7 @@ implements CommandExecutor{
 	}
 
 	public void OutputHelper(MessageChannel channel,String output){
-		if(output.length()<1993){
+		if(output.length() < 1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
 		}
 		else{

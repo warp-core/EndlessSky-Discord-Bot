@@ -21,7 +21,7 @@ implements CommandExecutor{
 
 
 
-	public LookupCommands() {
+	public LookupCommands(){
 		data = readData();
 	}
 
@@ -29,22 +29,22 @@ implements CommandExecutor{
 
 	public String readData(){
 		String data = "";
-		try {
+		try{
 			LinkedList<URL> dataFiles = new LinkedList<>();
-			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL(HOST_RAW_URL + "/data/dataFileNames.txt").openStream()))) {
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL(HOST_RAW_URL + "/data/dataFileNames.txt").openStream()))){
 				String line = br.readLine();
 
-				while (line != null) {
+				while (line != null){
 					dataFiles.add(new URL("https://raw.githubusercontent.com/endless-sky/endless-sky/master/data/" + line + ".txt"));
 					line = br.readLine();
 				}
 			}
 			for(URL url : dataFiles){
-				try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
+				try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))){
 					StringBuilder sb = new StringBuilder();
 					String line = br.readLine();
 
-					while (line != null) {
+					while(line != null){
 						sb.append(line);
 						sb.append(System.lineSeparator());
 						line = br.readLine();
@@ -53,7 +53,7 @@ implements CommandExecutor{
 				}
 			}
 		}
-		catch (Exception e) {
+		catch(Exception e){
 			e.printStackTrace();
 		}
 		return data;
@@ -61,42 +61,62 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-issue"}, description = "Provide link for \"X\" Endless Sky issue.", usage = "-issue X", privateMessages = true)
+	@Command(aliases = {"-issue"}, description = "Link to Endless Sky issue #X. If no issue number is given, links the issues page.", usage = "-issue X", privateMessages = true)
 	public void onIssueCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
-			String request = args[0];
-			String path = "https://github.com/endless-sky/endless-sky/issues/" + request;
-			channel.sendMessage(path).queue();
+		StringBuilder path = new StringBuilder("https://github.com/endless-sky/endless-sky/issues");
+		if(args.length > 1){
+			path.append("/");
+			for(String str : args)
+				path.append(str);
 		}
+		else if(args.length > 0)
+			path.append("/" + args[0]);
+
+		channel.sendMessage(path.toString().replace(" ", "")).queue();
 	}
 
 
 
-	@Command(aliases = {"-pull"}, description = "Provide link for \"X\" Endless Sky pull request.", usage = "-pull X", privateMessages = true)
+	@Command(aliases = {"-pull"}, description = "Link to Endless Sky pull request (PR) #X. If no pull number is given, links the PR page.", usage = "-pull X", privateMessages = true)
 	public void onPullCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
-			String request = args[0];
-			String path = "https://github.com/endless-sky/endless-sky/pull/" + request;
-			channel.sendMessage(path).queue();
-		}
+		StringBuilder request = new StringBuilder("/");
+		if(args.length > 1)
+			for(String str : args)
+				request.append(str);
+		else if(args.length > 0)
+			request.append(args[0]);
+		else
+			request = new StringBuilder("s");
+
+		String path = "https://github.com/endless-sky/endless-sky/pull" + request.toString().replace(" ", "");
+
+		channel.sendMessage(path).queue();
 	}
 
 
 
-	@Command(aliases = {"-commit"}, description = "Provide link for \"X\" Endless Sky commit.", usage = "-commit X", privateMessages = true)
+	@Command(aliases = {"-commit"}, description = "Link to Endless Sky commit hash \"X\". Only the first 7 letters are necessary.\nLeave blank for the most recent commit.", usage = "-commit X", privateMessages = true)
 	public void onCommitCommand(MessageChannel channel, String[] args){
-		if(args.length>=1){
-			String request = args[0];
-			String path = "https://github.com/endless-sky/endless-sky/commit/" + request;
+		StringBuilder request = new StringBuilder("");
+		if(args.length > 1)
+			for(String str : args)
+				request.append(str);
+		else if(args.length > 0)
+			request.append(args[0]);
+
+		if(request.length() > 6){
+			String path = "https://github.com/endless-sky/endless-sky/commit/" + request.toString().replace(" ","");
 			channel.sendMessage(path).queue();
 		}
+		else
+			channel.sendMessage("At least 7 characters are required.").queue();
 	}
 
 
 
-	@Command(aliases = {"-lookup"}, description = "Shows image and description of X.", usage = "-lookup X", privateMessages = true)
+	@Command(aliases = {"-lookup"}, description = "Shows the image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
-		if(args.length >= 1){
+		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -139,9 +159,9 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-show"}, description = "Shows image and data of X.", usage = "-show X", privateMessages = true)
+	@Command(aliases = {"-show"}, description = "Shows both image and all data associated with X.", usage = "-show X", privateMessages = true)
 	public void onShowCommand(MessageChannel channel, String[] args){
-		if(args.length >= 1){
+		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -174,9 +194,9 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X.", usage = "-showimage X", privateMessages = true)
+	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X. Does not print data.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
-		if(args.length >= 1){
+		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -194,9 +214,9 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X.", usage = "-showdata X", privateMessages = true)
+	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X. Does not print images.", usage = "-showdata X", privateMessages = true)
 	public void onShowdataCommand(MessageChannel channel, String[] args){
-		if(args.length >= 1){
+		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];

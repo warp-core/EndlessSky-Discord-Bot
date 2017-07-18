@@ -5,10 +5,10 @@ import java.util.Scanner;
 
 public class ESBotMain {
 
-	public static void main(String[] args) {
+	public static void main(String[] args){
 		new ESBotMain();
 	}
-	
+
 	public ESBotMain(){
 		System.out.println("Welcome to ESBot-Command Line Interface"
 				+ "\nAvailable Commands:"
@@ -19,16 +19,16 @@ public class ESBotMain {
 				+ "\n\tstop: stops the bot"
 				+ "\n\texit: stops the bot and exits ESBot-Command Line Interface"
 				+ "\nwhile the bot is running, the token can not be changed");
-		
+
 		boolean running = true;
 		boolean botRunning = false;
-		
+
 		ESBot esBot = null;
 		String token = "no token given";
-		
+
 		Scanner keyboard = new Scanner(System.in);
 		String input = "";
-		
+
 		// Start bot on launch.
 		try{
 			Scanner in = new Scanner(new FileReader("token.txt"));
@@ -42,7 +42,7 @@ public class ESBotMain {
 		}
 		botRunning = true;
 		esBot = new ESBot(token);
-		
+
 		while(running){
 			input = keyboard.nextLine();
 			if(!botRunning){
