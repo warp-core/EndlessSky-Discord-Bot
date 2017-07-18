@@ -5,6 +5,9 @@ import java.util.Properties;
 
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent;
+import net.dv8tion.jda.core.events.guild.GuildBanEvent;
+import net.dv8tion.jda.core.JDA;
+
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -42,5 +45,14 @@ public class MemberEventListener extends ListenerAdapter{
 			channel.sendMessageFormat("%s has just left the server. Goodbye!", user).queue();
 		}
 	}
+
+  @Override
+  public void GuildBanEvent(JDA api, long responseNumber, Guild guild, User user)
+  {
+    if (!user.isBot()){
+      MessageChannel channel = guild.getTextChannelsByName(MAIN_CHANNEL, true).get(0);
+      channel.sendMessageFomat("Bad Boy/Girl %s has just been banned from the server. Cya never!", user).queue();
+    }
+  }
 
 }
