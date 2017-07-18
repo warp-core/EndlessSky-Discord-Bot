@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 
 public class ESBot {
 	private JDA jda;
+	public VersionInfo version = new VersionInfo();
 
 	// Set global URL paths for use by commands.
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";

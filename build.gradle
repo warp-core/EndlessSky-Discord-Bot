@@ -9,21 +9,38 @@ targetCompatibility = 1.8
 ext.logbackVersion = '1.1.8'
 
 repositories {
-    jcenter()
-	maven{
+	jcenter()
+	maven {
 		url "http://repo.bastian-oppermann.de"
 	}
 }
 
 dependencies {
 	compile group: 'org.kohsuke', name: 'github-api', version: '1.85'
-     compile 'com.sedmelluq:lavaplayer:1.2.34'
-	 compile 'net.dv8tion:JDA:3.2.0_227'
-	 compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.4'
-	 compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.4'
-	 compile 'junit:junit:4.12'
-	 runtime "ch.qos.logback:logback-classic:$logbackVersion"
-	 runtime "ch.qos.logback:logback-core:$logbackVersion"
+	compile 'com.sedmelluq:lavaplayer:1.2.34'
+	compile 'net.dv8tion:JDA:3.2.0_227'
+	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.4'
+	compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.4'
+	compile 'junit:junit:4.12'
+	runtime "ch.qos.logback:logback-classic:$logbackVersion"
+	runtime "ch.qos.logback:logback-core:$logbackVersion"
+}
+
+task writeVersion(type: Exec) {
+	executable "bash"
+	args "./scripts/version_logger.sh"
+}
+task writeBranch(type: Exec) {
+	executable "bash"
+	args "./scripts/branch_writer.sh"
+}
+task updateData(type: Exec) {
+	executable "python"
+	args "./scripts/updateFileNames.py"
+}
+
+run.dependsOn {
+	tasks.withType(Exec)
 }
 
 test {

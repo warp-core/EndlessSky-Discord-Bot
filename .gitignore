@@ -7,3 +7,5 @@ james.sh
 hs_err_pid*
 /.idea
 /src/main/main.iml
+*_version.txt
+branch_name.txt
