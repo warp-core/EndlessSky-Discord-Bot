@@ -134,15 +134,15 @@ implements CommandExecutor{
 			
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(GetDataType(output).equals("mission")){
-				OutputHelper(channel, "Use '-showdata' to print mission data. ");
+			if(!ShouldPrintThis(GetDataType(output))){
+				OutputHelper(channel, "Try '-showdata' for that information.");
 				return;
 			}
-			if(output.contains("description")){
+			if(output.contains("\tdescription")){
 				if(!printedImage)
 					message += ", but I did find this:\n\n";
 
-				message += output.substring(output.indexOf("description")).replaceFirst("description", "");
+				message += output.substring(output.indexOf("\tdescription")).replaceAll("\tdescription", "");
 			}
 			else if(!printedImage)
 				message += ", nor any description.";
@@ -265,12 +265,28 @@ implements CommandExecutor{
 		else if(data.contains("\nmission \"" + lookup + "\"")){
 			return "\nmission \"" + lookup + "\"";
 		}
+		else if(data.contains("\nperson \"" + lookup + "\"")){
+			return "\nperson \"" + lookup + "\"";
+		}
+		else if(data.contains("\nplanet \"" + lookup + "\"")){
+			return "\nplanet \"" + lookup + "\"";
+		}
 		else if(data.contains("\nsystem \"" + lookup + "\"")){
 			return "\nsystem \"" + lookup + "\"";
 		}
 		else if(data.contains("\neffect \"" + lookup + "\"")){
 			return "\neffect \"" + lookup + "\"";
 		}
+		else if(data.contains("\tscene \"" + lookup + "\"")){
+			return "\tscene \"" + lookup + "\"";
+		}
+		else if(data.contains("\nfleet \"" + lookup + "\"")){
+			return "\nfleet \"" + lookup + "\"";
+		}
+		else if(data.contains("\nevent \"" + lookup + "\"")){
+			return "\nevent \"" + lookup + "\"";
+		}
+		// The items may not be quoted in their definition.
 		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
 		}
@@ -280,11 +296,26 @@ implements CommandExecutor{
 		else if(data.contains("\nmission " + lookup)){
 			return "\nmission " + lookup;
 		}
-		else if(data.contains("\nsystem " + lookup)){
+		else if(data.contains("\nperson " + lookup)){
+			return "\nperson " + lookup;
+		}
+		else if(data.contains("\nplanet " + lookup + "\n")){
+			return "\nplanet " + lookup;
+		}
+		else if(data.contains("\nsystem " + lookup + "\n")){
 			return "\nsystem " + lookup;
 		}
 		else if(data.contains("\neffect " + lookup)){
 			return "\neffect " + lookup;
+		}
+		else if(data.contains("\tscene " + lookup)){
+			return "\tscene " + lookup;
+		}
+		else if(data.contains("\nfleet " + lookup)){
+			return "\nfleet " + lookup;
+		}
+		else if(data.contains("\nevent " + lookup)){
+			return "\nevent " + lookup;
 		}
 		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
@@ -356,15 +387,22 @@ implements CommandExecutor{
 	// are .png. Returns nullstring "" if no ending works, otherwise returns
 	// the full ending (including the filetype).
 	public String GetImageEnding(String url){
-		String[] endings = {"", "-0", "+0", "~0", "=0"};
-		int index = 0;
-		boolean hasEnding = isImage(url + endings[index] + ".png?raw=true");
+		String[] modes = {"", "-0", "+0", "~0", "=0"};
+		String[] filetypes = {".png", ".jpg"};
+		int m = 0;
+		int t = 0;
+		boolean hasEnding = isImage(url + modes[m] + filetypes[t] + "?raw=true");
 
-		while(!hasEnding && ++index < endings.length){
-			hasEnding = isImage(url + endings[index] + ".png?raw=true");
+		while(!hasEnding && t < filetypes.length){
+			m = t > 0 ? -1 : 0;
+			while(!hasEnding && ++m < modes.length){
+				hasEnding = isImage(url + modes[m] + filetypes[t] + "?raw=true");
+			}
+			if(!hasEnding)
+				++t;
 		}
 		if(hasEnding)
-			return endings[index] + ".png?raw=true";
+			return modes[m] + filetypes[t] + "?raw=true";
 
 		return "";
 	}
@@ -379,7 +417,8 @@ implements CommandExecutor{
 
 	// Check the string for image indicators. Returns false if there is no image.
 	public static boolean HasImageToPrint(String input){
-		return input.contains("sprite") || input.contains("thumbnail");
+		return input.contains("\tsprite ") || input.contains("\tthumbnail ")
+				|| input.contains("\tlandscape ") || input.contains("\tscene ");
 	}
 
 
@@ -464,10 +503,14 @@ implements CommandExecutor{
 	// Returns the bare image name without quotes, or a nullstring if no image.
 	public static String GetImageName(String text){
 		int start = 0;
-		if(text.contains("thumbnail"))
+		if(text.contains("\tthumbnail"))
 			start = text.indexOf("thumbnail") + 10;
-		else if(text.contains("sprite"))
+		else if(text.contains("\tsprite"))
 			start = text.indexOf("sprite") + 7;
+		else if(text.contains("\tlandscape"))
+			start = text.indexOf("landscape") + 10;
+		else if(text.contains("\tscene"))
+			start = text.indexOf("scene") + 6;
 		else
 			return "";
 
@@ -499,5 +542,25 @@ implements CommandExecutor{
 		if(output.length() < 1 || output.indexOf(" ") < 1)
 			return "";
 		return output.substring(1, output.indexOf(" "));
+	}
+
+
+
+	// Things that don't generally have images or descriptions probably shouldn't
+	// get printed from -lookup.
+	private static boolean ShouldPrintThis(String lookupType){
+		if(lookupType.length() < 1)
+			return false;
+
+		switch(lookupType.toLowerCase()){
+			case "mission":
+				return false;
+			case "event":
+				return false;
+			case "fleet":
+				return false;
+			default:
+				return true;
+		}
 	}
 }
