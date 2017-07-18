@@ -16,22 +16,26 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
 	/**
 	 * @param audioPlayer Audio player to wrap.
 	 */
-	public AudioPlayerSendHandler(AudioPlayer audioPlayer) {
+	public AudioPlayerSendHandler(AudioPlayer audioPlayer){
 		this.audioPlayer = audioPlayer;
 	}
 
+
+
 	@Override
-	public boolean canProvide() {
-		if (lastFrame == null) {
+	public boolean canProvide(){
+		if(lastFrame == null){
 			lastFrame = audioPlayer.provide();
 		}
 
 		return lastFrame != null;
 	}
 
+
+
 	@Override
-	public byte[] provide20MsAudio() {
-		if (lastFrame == null) {
+	public byte[] provide20MsAudio(){
+		if(lastFrame == null){
 			lastFrame = audioPlayer.provide();
 		}
 
@@ -41,8 +45,10 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
 		return data;
 	}
 
+
+
 	@Override
-	public boolean isOpus() {
+	public boolean isOpus(){
 		return true;
 	}
 }

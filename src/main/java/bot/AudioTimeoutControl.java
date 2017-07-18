@@ -10,13 +10,16 @@ import static java.util.concurrent.TimeUnit.*;
 import java.util.HashMap;
 
 public class AudioTimeoutControl {
+
 	private final Map<Long, GuildMusicManager> musicManagers;
 	private final Map<Long, Integer> idleValues;
 	private final ScheduledExecutorService scheduler =
 			Executors.newScheduledThreadPool(1);
 	private JDA jda;
 
-	public AudioTimeoutControl(Map<Long, GuildMusicManager> musicManagers,JDA jda) {
+
+
+	public AudioTimeoutControl(Map<Long, GuildMusicManager> musicManagers, JDA jda){
 		this.jda = jda;
 		this.musicManagers = musicManagers;
 		idleValues = new HashMap<>();
@@ -24,15 +27,21 @@ public class AudioTimeoutControl {
 		closeIdle();
 	}
 
+
+
 	public void checkIdle(){
-		final IdleChecker checker = new IdleChecker(musicManagers,idleValues);
-		scheduler.scheduleAtFixedRate(checker, 5,5, SECONDS);
+		final IdleChecker checker = new IdleChecker(musicManagers, idleValues);
+		scheduler.scheduleAtFixedRate(checker, 5, 5, SECONDS);
 	}
 
+
+
 	public void closeIdle(){
-		final IdleCloser checker = new IdleCloser(jda,idleValues);
-		scheduler.scheduleAtFixedRate(checker, 10,10, SECONDS);
+		final IdleCloser checker = new IdleCloser(jda, idleValues);
+		scheduler.scheduleAtFixedRate(checker, 10, 10, SECONDS);
 	}
+
+
 
 	private class IdleChecker
 	implements Runnable{
@@ -46,12 +55,12 @@ public class AudioTimeoutControl {
 
 
 		@Override
-		public void run() {
+		public void run(){
 			musicManagers.forEach( (l,mM) -> {
 				if(mM.player.getPlayingTrack() == null || jda.getGuildById(l.toString()).getAudioManager().getConnectedChannel().getMembers().size() == 1){
 					if(idleValues.get(l) != null){
 						synchronized(this){
-						idleValues.put(l, idleValues.get(l)+1);
+						idleValues.put(l, idleValues.get(l) + 1);
 						}
 					}
 					else{
@@ -62,6 +71,8 @@ public class AudioTimeoutControl {
 		}
 
 	}
+
+
 
 	private class IdleCloser
 	implements Runnable{
@@ -75,7 +86,7 @@ public class AudioTimeoutControl {
 
 
 		@Override
-		public void run() {
+		public void run(){
 			idleValues.forEach( (l,i) -> {
 				if(i>12){
 					synchronized(this){
@@ -87,4 +98,5 @@ public class AudioTimeoutControl {
 		}
 
 	}
+
 }

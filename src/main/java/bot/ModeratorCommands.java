@@ -17,12 +17,12 @@ public class ModeratorCommands
 implements CommandExecutor{
 	ESBot bot;
 
-	public ModeratorCommands(ESBot bot) {
+	public ModeratorCommands(ESBot bot){
 		super();
 		this.bot = bot;
 	}
 
-	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel. Minimum: 2 Maximum: 100.Requires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
+	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel.\nRange: 2 - 100.\n\nRequires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
 	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args){
 		Member author = msg.getGuild().getMember(msg.getAuthor());
 		List<Permission> perm = author.getPermissions(channel);
