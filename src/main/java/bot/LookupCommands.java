@@ -277,6 +277,9 @@ implements CommandExecutor{
 		else if(data.contains("\neffect \"" + lookup + "\"")){
 			return "\neffect \"" + lookup + "\"";
 		}
+		else if(data.contains("\tscene \"" + lookup + "\"")){
+			return "\tscene \"" + lookup + "\"";
+		}
 		// The items may not be quoted in their definition.
 		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
@@ -298,6 +301,9 @@ implements CommandExecutor{
 		}
 		else if(data.contains("\neffect " + lookup)){
 			return "\neffect " + lookup;
+		}
+		else if(data.contains("\tscene " + lookup)){
+			return "\tscene " + lookup;
 		}
 		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
@@ -400,7 +406,7 @@ implements CommandExecutor{
 	// Check the string for image indicators. Returns false if there is no image.
 	public static boolean HasImageToPrint(String input){
 		return input.contains("\tsprite ") || input.contains("\tthumbnail ")
-				|| input.contains("\tlandscape ");
+				|| input.contains("\tlandscape ") || input.contains("\tscene ");
 	}
 
 
@@ -485,12 +491,14 @@ implements CommandExecutor{
 	// Returns the bare image name without quotes, or a nullstring if no image.
 	public static String GetImageName(String text){
 		int start = 0;
-		if(text.contains("thumbnail"))
+		if(text.contains("\tthumbnail"))
 			start = text.indexOf("thumbnail") + 10;
-		else if(text.contains("sprite"))
+		else if(text.contains("\tsprite"))
 			start = text.indexOf("sprite") + 7;
-		else if(text.contains("landscape"))
+		else if(text.contains("\tlandscape"))
 			start = text.indexOf("landscape") + 10;
+		else if(text.contains("\tscene"))
+			start = text.indexOf("scene") + 6;
 		else
 			return "";
 
