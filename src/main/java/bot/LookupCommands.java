@@ -134,8 +134,8 @@ implements CommandExecutor{
 			
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(GetDataType(output).equals("mission") || GetDataType(output).equals("fleet")){
-				OutputHelper(channel, "Use '-showdata' for that information.");
+			if(!ShouldPrintThis(GetDataType(output))){
+				OutputHelper(channel, "Try '-showdata' for that information.");
 				return;
 			}
 			if(output.contains("\tdescription")){
@@ -283,6 +283,9 @@ implements CommandExecutor{
 		else if(data.contains("\nfleet \"" + lookup + "\"")){
 			return "\nfleet \"" + lookup + "\"";
 		}
+		else if(data.contains("\nevent \"" + lookup + "\"")){
+			return "\nevent \"" + lookup + "\"";
+		}
 		// The items may not be quoted in their definition.
 		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
@@ -310,6 +313,9 @@ implements CommandExecutor{
 		}
 		else if(data.contains("\nfleet " + lookup)){
 			return "\nfleet " + lookup;
+		}
+		else if(data.contains("\nevent " + lookup)){
+			return "\nevent " + lookup;
 		}
 		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
@@ -536,5 +542,25 @@ implements CommandExecutor{
 		if(output.length() < 1 || output.indexOf(" ") < 1)
 			return "";
 		return output.substring(1, output.indexOf(" "));
+	}
+
+
+
+	// Things that don't generally have images or descriptions probably shouldn't
+	// get printed from -lookup.
+	private static boolean ShouldPrintThis(String lookupType){
+		if(lookupType.length() < 1)
+			return false;
+
+		switch(lookupType.toLowerCase()){
+			case "mission":
+				return false;
+			case "event":
+				return false;
+			case "fleet":
+				return false;
+			default:
+				return true;
+		}
 	}
 }
