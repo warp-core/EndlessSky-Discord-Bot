@@ -18,7 +18,7 @@ public class MemberEventListener extends ListenerAdapter{
 
 	public static final String MAIN_CHANNEL = "endless-sky-talk";
 	public static final String RULES_CHANNEL = "rules";
-	public static final String MAIN_CHANNEL = "Merchant";
+	public static final String MAIN_ROLE = "Merchant";
 	private ESBot bot;
 
 
