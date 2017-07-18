@@ -134,8 +134,8 @@ implements CommandExecutor{
 			
 			request = ParseVariants(request);
 			String output = lookupData(request);
-			if(GetDataType(output).equals("mission")){
-				OutputHelper(channel, "Use '-showdata' to print mission data. ");
+			if(GetDataType(output).equals("mission") || GetDataType(output).equals("fleet")){
+				OutputHelper(channel, "Use '-showdata' for that information.");
 				return;
 			}
 			if(output.contains("\tdescription")){
@@ -280,6 +280,9 @@ implements CommandExecutor{
 		else if(data.contains("\tscene \"" + lookup + "\"")){
 			return "\tscene \"" + lookup + "\"";
 		}
+		else if(data.contains("\nfleet \"" + lookup + "\"")){
+			return "\nfleet \"" + lookup + "\"";
+		}
 		// The items may not be quoted in their definition.
 		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
@@ -304,6 +307,9 @@ implements CommandExecutor{
 		}
 		else if(data.contains("\tscene " + lookup)){
 			return "\tscene " + lookup;
+		}
+		else if(data.contains("\nfleet " + lookup)){
+			return "\nfleet " + lookup;
 		}
 		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
