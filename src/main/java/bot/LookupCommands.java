@@ -138,11 +138,11 @@ implements CommandExecutor{
 				OutputHelper(channel, "Use '-showdata' to print mission data. ");
 				return;
 			}
-			if(output.contains("description")){
+			if(output.contains("\tdescription")){
 				if(!printedImage)
 					message += ", but I did find this:\n\n";
 
-				message += output.substring(output.indexOf("description")).replaceFirst("description", "");
+				message += output.substring(output.indexOf("\tdescription")).replaceAll("\tdescription", "");
 			}
 			else if(!printedImage)
 				message += ", nor any description.";
@@ -265,6 +265,12 @@ implements CommandExecutor{
 		else if(data.contains("\nmission \"" + lookup + "\"")){
 			return "\nmission \"" + lookup + "\"";
 		}
+		else if(data.contains("\nplanet \"" + lookup + "\"")){
+			return "\nplanet \"" + lookup + "\"";
+		}
+		else if(data.contains("\nperson \"" + lookup + "\"")){
+			return "\nperson \"" + lookup + "\"";
+		}
 		else if(data.contains("\nsystem \"" + lookup + "\"")){
 			return "\nsystem \"" + lookup + "\"";
 		}
@@ -279,6 +285,12 @@ implements CommandExecutor{
 		}
 		else if(data.contains("\nmission " + lookup)){
 			return "\nmission " + lookup;
+		}
+		else if(data.contains("\nplanet " + lookup)){
+			return "\nplanet \"" + lookup + "\"";
+		}
+		else if(data.contains("\nperson " + lookup)){
+			return "\nperson \"" + lookup + "\"";
 		}
 		else if(data.contains("\nsystem " + lookup)){
 			return "\nsystem " + lookup;
@@ -379,7 +391,8 @@ implements CommandExecutor{
 
 	// Check the string for image indicators. Returns false if there is no image.
 	public static boolean HasImageToPrint(String input){
-		return input.contains("sprite") || input.contains("thumbnail");
+		return input.contains("\tsprite ") || input.contains("\tthumbnail ")
+				|| input.contains("\tlandscape ");
 	}
 
 
@@ -468,6 +481,8 @@ implements CommandExecutor{
 			start = text.indexOf("thumbnail") + 10;
 		else if(text.contains("sprite"))
 			start = text.indexOf("sprite") + 7;
+		else if(text.contains("landscape"))
+			start = text.indexOf("landscape") + 10;
 		else
 			return "";
 
