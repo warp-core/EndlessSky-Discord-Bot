@@ -29,6 +29,7 @@ public class ESBot {
 			cmdHandler.registerCommand(new LookupCommands());
 			cmdHandler.registerCommand(new MemeCommands());
 			cmdHandler.registerCommand(new PlayerControl(this, jda));
+			cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
 	        jda.addEventListener(new SpellCheckListener(this));
 					jda.addEventListener(new MemberEventListener(this));
 		}
