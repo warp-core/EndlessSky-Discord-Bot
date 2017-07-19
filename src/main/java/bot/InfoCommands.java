@@ -79,11 +79,25 @@ implements CommandExecutor{
 	@Command(aliases = {"-info"}, description = "Shows some information about the bot.", usage = "-info")
 	public void onInfoCommand(Guild guild, MessageChannel channel){
 		EmbedBuilder eb = new EmbedBuilder();
-		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
+		eb.setTitle("**EndlessSky-Discord-Bot**", bot.HOST_PUBLIC_URL);
+		String issues = bot.HOST_PUBLIC_URL + "/issues";
 		String description =
 				"- **Author:** Maximilian Korber\n" +
 				"- **Language:** Java\n" +
-				"- **Utilized Libraries:** JDA3,lavaplayer & sdcf4j";
+				"- **Utilized Libraries:** JDA3, lavaplayer, & sdcf4j\n" +
+				"- **Maintainers:** M\\*C\\*O, tehhowch\n\n" +
+				"**Version Information:**\n";
+		if(bot.version.hasCommitInfo()){
+			description += "- **Branch:** " + bot.version.getBranch() +
+						" @[" + bot.version.getCommitHash() + "](" +
+						bot.HOST_PUBLIC_URL + "/commit/" +
+						bot.version.getCommitHash() + ")\n" +
+				"- **Commit:** " + bot.version.getCommitMessage() + "\n\n";
+		}
+		else{
+			description += "- **Branch:** " + bot.version.getBranch() + "\n\n";
+		}
+		description += "[View known issues and feature requests](" + issues + ")";
 		eb.setDescription(description);
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");

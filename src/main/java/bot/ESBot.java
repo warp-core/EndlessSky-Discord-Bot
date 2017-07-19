@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 
 public class ESBot {
 	private JDA jda;
+	public VersionInfo version = new VersionInfo();
 
 	// Set global URL paths for use by commands.
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
@@ -28,6 +29,7 @@ public class ESBot {
 			cmdHandler.registerCommand(new LookupCommands());
 			cmdHandler.registerCommand(new MemeCommands());
 			cmdHandler.registerCommand(new PlayerControl(this, jda));
+			cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
 	        jda.addEventListener(new SpellCheckListener(this));
 //					jda.addEventListener(new MemberEventListener(this));
 		}
