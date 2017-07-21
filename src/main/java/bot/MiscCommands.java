@@ -39,8 +39,10 @@ implements CommandExecutor{
 				else
 					channel.sendMessage("Sorry, I only have templates for 'outfit', 'ship' and 'plugin'.").queue();
 				
-				if(name.length() > 0)
-					channel.sendFile(new File("data/templates/" + name), new MessageBuilder().append(" ").build()).queue();
+				if(name.length() > 0){
+					String url = bot.HOST_RAW_URL + "data/templates/" + name;
+					channel.sendMessage("Here's your " + str + " template:\n[" + str + "](" + url + ")").queue();
+				}
 			}
 	}
 
