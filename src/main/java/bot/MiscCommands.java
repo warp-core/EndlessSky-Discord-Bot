@@ -22,14 +22,14 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-template"}, description = "Sends the template for X. Possible args: outfit, ship, plugin.", usage = "-template X")
+	@Command(aliases = {"-template"}, description = "Sends the template for X. Possible args: outfit, ship, or plugin.", usage = "-template X")
 	public void onTemplatesCommand(MessageChannel channel, String[] args)
 	{
-		String name = "undefined";
 		if(args.length == 0)
-			channel.sendMessage("Which template do you want? I'm offering three flavours: 'outfit', 'ship' and 'plugin'.").queue();
+			channel.sendMessage("Which template would you like? I have three flavours available: 'outfit', 'ship' and 'plugin'.").queue();
 		else
-			for(String str : args)
+			for(String str : args){
+				String name = "";
 				if(str.equals("plugin"))
 					name = "exampleplugin.zip";
 				else if(str.equals("outfit"))
@@ -37,9 +37,11 @@ implements CommandExecutor{
 				else if(str.equals("ship"))
 					name = "shiptemplate.blend";
 				else
-					channel.sendMessage("Sorry, i only have templates for 'outfit', 'ship' and 'plugin'.").queue();
-				if(!name.equals("undefined"))
+					channel.sendMessage("Sorry, I only have templates for 'outfit', 'ship' and 'plugin'.").queue();
+				
+				if(name.length() > 0)
 					channel.sendFile(new File("data/templates/" + name), new MessageBuilder().append(" ").build()).queue();
+			}
 	}
 
 }
