@@ -131,7 +131,7 @@ implements CommandExecutor{
 			}
 			else
 				message = "There is no image associated with '" + request + "'";
-			
+
 			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(!ShouldPrintThis(GetDataType(output))){
@@ -286,6 +286,9 @@ implements CommandExecutor{
 		else if(data.contains("\nevent \"" + lookup + "\"")){
 			return "\nevent \"" + lookup + "\"";
 		}
+		else if(data.contains("\ngovernment \"" + lookup + "\"")){
+			return "\ngovernment \"" + lookup + "\"";
+		}
 		// The items may not be quoted in their definition.
 		else if(data.contains("\nship " + lookup)){
 			return"\nship " + lookup;
@@ -316,6 +319,9 @@ implements CommandExecutor{
 		}
 		else if(data.contains("\nevent " + lookup)){
 			return "\nevent " + lookup;
+		}
+		else if(data.contains("\ngovernment " + lookup)){
+			return "\ngovernment " + lookup;
 		}
 		else if(data.contains("\n"+lookup)){
 			return "\n"+lookup;
