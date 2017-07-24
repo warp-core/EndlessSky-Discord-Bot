@@ -52,12 +52,23 @@ implements CommandExecutor{
 					name = "shiptemplate.blend";
 				else
 					channel.sendMessage("Sorry, I only have templates for 'outfit', 'ship' and 'plugin'.").queue();
-				
+
 				if(name.length() > 0){
 					String url = bot.HOST_RAW_URL + "data/templates/" + name;
 					channel.sendMessage("Here's your " + str + " template:\n[" + str + "](" + url + ")").queue();
 				}
 			}
+	}
+
+//	@Command(aliases = {"-quote"}, description = "quotes a person X.", usage = "-quote X")
+	public void onQuoteCommand(MessageChannel channel, String args)
+	{
+		if(args == null)
+			channel.sendMessage("A person! Give me a person!").queue();
+		else{
+			String quote = LookupCommands.generateQuote(args);
+			channel.sendMessage("```" + quote + "```").queue();
+		}
 	}
 
 	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")

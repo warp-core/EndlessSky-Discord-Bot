@@ -569,4 +569,9 @@ implements CommandExecutor{
 				return true;
 		}
 	}
+
+	public static String generateQuote(String person){
+		return "TD";
+	}
+
 }
