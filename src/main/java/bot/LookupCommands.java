@@ -3,6 +3,7 @@ package bot;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
@@ -569,9 +570,39 @@ implements CommandExecutor{
 				return true;
 		}
 	}
-
+	
+	
+	
+	// Generate a quote from the named person, using their built-in phrases.
 	public static String generateQuote(String person){
+		String[] phraseKeys = {"phrase\n\t", "\tword\n\t"};
 		return "TD";
 	}
-
+	
+	
+	// Call this for each word in a phrase, giving it the bits
+	// between 'word', 'phrase', or the next data entry.
+	private static String[] MakeChoices(String wordlist){
+		final int MAXPOS = 10000000;
+		int start = wordlist.indexOf("\tword\n");
+		ArrayList<String> choices = new ArrayList<String>();
+		boolean reachedEnd = false;
+		while(!reachedEnd){
+			int startQuote = wordlist.indexOf("\t\"", start);
+			int startTick = wordlist.indexOf("\t`", start);
+			int startWord = Integer.min(startQuote > -1 ? startQuote : MAXPOS, startTick > -1 ? startTick : MAXPOS);
+			if(startWord == MAXPOS){
+				reachedEnd = true;
+				break;
+			}
+			boolean findTick = startQuote == -1 || (startTick > -1 && startTick < startQuote);
+			int endWord = wordlist.indexOf(findTick ? "`\n" : "\"\n", findTick ? ++startTick : ++startQuote);
+			choices.add(wordlist.substring(findTick ? startTick : startQuote, ++endWord));
+			start = endWord;
+		}
+		if(!choices.isEmpty())
+			return choices.toArray(new String[choices.size()]);
+		else
+			return new String[0];
+	}
 }
