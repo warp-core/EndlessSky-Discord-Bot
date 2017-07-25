@@ -554,13 +554,46 @@ implements CommandExecutor{
 	
 	
 	// Generate a quote from the named person, using their built-in phrases.
+	// Phrases can be nested!! TODO: Move choice instantiation into readData.
 	public String generateQuote(String person){
 		String personData = lookupData(person);
 		boolean hasPhrase = personData.indexOf("phrase\n") > -1 || personData.indexOf("phrase ") > -1;
 		if(!hasPhrase)
 			return "";
 		int tabDepth = GetIndentLevel(personData, "phrase");
-		String[] phraseKeys = {"phrase\n\t", "\tword\n\t"};
+		ArrayList<String> strKeys = new ArrayList<String>();
+		
+		// Outermost 'phrase'
+		StringBuilder key = new StringBuilder();
+		for(int i = 0; i < tabDepth; ++i)
+			key.append("\t");
+		key.append("phrase");
+		if(++tabDepth == 1)
+			key.append(" ");
+		else
+			key.append("\n");
+		strKeys.add(key.toString());
+		
+		// 'word' demarcator.
+		key = new StringBuilder();
+		for(int i = 0; i < tabDepth; ++i)
+			key.append("\t");
+		key.append("word");
+		key.append("\n");
+		strKeys.add(key.toString());
+		
+		// Nested phrase reference.
+		++tabDepth;
+		key = new StringBuilder();
+		for(int i = 0; i < tabDepth; ++i)
+			key.append("\t");
+		key.append("phrase");
+		key.append("\n");
+		strKeys.add(key.toString());
+		
+		// iterate personData using the strKeys with indexOf
+		// and then passing the substring to MakeChoices
+		
 		return Integer.toString(tabDepth);
 	}
 	
