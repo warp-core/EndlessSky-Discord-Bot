@@ -60,16 +60,7 @@ implements CommandExecutor{
 			}
 	}
 
-//	@Command(aliases = {"-quote"}, description = "quotes a person X.", usage = "-quote X")
-	public void onQuoteCommand(MessageChannel channel, String args)
-	{
-		if(args == null)
-			channel.sendMessage("A person! Give me a person!").queue();
-		else{
-			String quote = LookupCommands.generateQuote(args);
-			channel.sendMessage("```" + quote + "```").queue();
-		}
-	}
+
 
 	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")
 	public void onApodCommand(MessageChannel channel)

@@ -117,7 +117,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-lookup"}, description = "Shows the image and description of X.", usage = "-lookup X", privateMessages = true)
 	public void onLookupCommand(MessageChannel channel, String[] args){
-		if(args.length > 0){
+		if(args.length > 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -162,7 +162,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-show"}, description = "Shows both image and all data associated with X.", usage = "-show X", privateMessages = true)
 	public void onShowCommand(MessageChannel channel, String[] args){
-		if(args.length > 0){
+		if(args.length > 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -197,7 +197,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X. Does not print data.", usage = "-showimage X", privateMessages = true)
 	public void onShowimageCommand(MessageChannel channel, String[] args){
-		if(args.length > 0){
+		if(args.length > 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -217,7 +217,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X. Does not print images.", usage = "-showdata X", privateMessages = true)
 	public void onShowdataCommand(MessageChannel channel, String[] args){
-		if(args.length > 0){
+		if(args.length > 1){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
@@ -228,6 +228,21 @@ implements CommandExecutor{
 				output = "I could not find any data associated with '" + request + "'.";
 			}
 			OutputHelper(channel, output);
+		}
+	}
+
+
+
+	@Command(aliases = {"-quote"}, description = "Quote person X.", usage = "-quote X", privateMessages = true)
+	public void onQuoteCommand(MessageChannel channel, String[] args){
+		if(args.length < 1)
+			channel.sendMessage("A person! Give me a person!").queue();
+		else{
+			String request = args[0];
+			for(int i = 1; i < args.length; ++i)
+				request += " " + args[i];
+			String quote = generateQuote(request);
+			channel.sendMessage("```\n``" + quote + "``\n\n" + "\t-- " + request + "```").queue();
 		}
 	}
 
@@ -244,6 +259,8 @@ implements CommandExecutor{
 			do{
 				end = data.indexOf('\n', end + 1);
 			}
+			// A line that starts with a tab, newline, or comment is considered to be
+			// a part of this current lookup. Advance to the next newline.
 			while(data.charAt(end + 1) == '\t' || data.charAt(end + 1) == '\n' || data.charAt(end + 1) == '#');
 			return data.substring(start, end);
 		}
@@ -574,10 +591,16 @@ implements CommandExecutor{
 	
 	
 	// Generate a quote from the named person, using their built-in phrases.
-	public static String generateQuote(String person){
+	public String generateQuote(String person){
+		String personData = lookupData(person);
+		boolean hasPhrase = personData.indexOf("\tphrase") > -1;
+		if(!hasPhrase)
+			return "";
+		int tabDepth = GetIndentLevel(personData, "phrase");
 		String[] phraseKeys = {"phrase\n\t", "\tword\n\t"};
-		return "TD";
+		return Integer.toString(tabDepth);
 	}
+	
 	
 	
 	// Call this for each word in a phrase, giving it the bits
@@ -604,5 +627,26 @@ implements CommandExecutor{
 			return choices.toArray(new String[choices.size()]);
 		else
 			return new String[0];
+	}
+	
+	
+	
+	// Return the number of tabs that preceed the specified indented word in the
+	// datastring. Phrases are generally 0 or 1 level, while word demarcations
+	// are generally 1 or 2 indent levels.
+	private static int GetIndentLevel(String data, String word){
+		int level = -1;
+		int start = data.indexOf(word);
+		if(start < 0)
+			return level;
+		
+		int lineStart = data.lastIndexOf("\n", start);
+		// If the data string starts with this word, return 0, even if there is no
+		// newline preceeding it.
+		if(lineStart < 0 || start == 0)
+			return 0;
+		
+		String line = data.substring(lineStart, start + word.length() + 1);
+		return CountOf(line,'\t');
 	}
 }
