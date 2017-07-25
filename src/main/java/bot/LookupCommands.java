@@ -245,7 +245,10 @@ implements CommandExecutor{
 			for(int i = 1; i < args.length; ++i)
 				request += " " + args[i];
 			String quote = generateQuote(request);
-			channel.sendMessage("```\n``" + quote + "``\n\n" + "\t-- " + request + "```").queue();
+			if(quote.length() > 0)
+				channel.sendMessage("```\n``" + quote + "``\n\n" + "\t-- " + request + "```").queue();
+			else
+				channel.sendMessage("'" + request + "' hasn't said anything interesting.").queue();
 		}
 	}
 
@@ -291,6 +294,11 @@ implements CommandExecutor{
 			"government",
 			"phrase"
 		};
+		// The lookup may be exact:
+		if(data.contains("\n" + lookup)){
+			return "\n" + lookup;
+		}
+		// The lookup may be only the value, and not the keyword:
 		for(String str : dataTypes){
 			if(data.contains("\n" + str + " \"" + lookup + "\"")){
 				return "\n" + str + " \"" + lookup + "\"";
@@ -299,12 +307,8 @@ implements CommandExecutor{
 				return "\n" + str + " " + lookup;
 			}
 		}
-		// The lookup may be exact:
-		if(data.contains("\n" + lookup)){
-			return "\n" + lookup;
-		}
-		// or maybe just not capitalized correctly.
-		else if(helper){
+		// Or perhaps not capitalized correctly.
+		if(helper){
 			lookup = CapitalizeWords(lookup);
 			return checkLookup(lookup, false);
 		}
@@ -552,7 +556,7 @@ implements CommandExecutor{
 	// Generate a quote from the named person, using their built-in phrases.
 	public String generateQuote(String person){
 		String personData = lookupData(person);
-		boolean hasPhrase = personData.indexOf("\tphrase") > -1;
+		boolean hasPhrase = personData.indexOf("phrase\n") > -1 || personData.indexOf("phrase ") > -1;
 		if(!hasPhrase)
 			return "";
 		int tabDepth = GetIndentLevel(personData, "phrase");
