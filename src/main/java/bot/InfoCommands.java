@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
-public class InfoCommands 
+public class InfoCommands
 implements CommandExecutor{
 
 	private final CommandHandler commandHandler;
