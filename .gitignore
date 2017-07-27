@@ -1,6 +1,6 @@
 /build/
 /.gradle/
-/token.txt
+/token*.txt
 james.sh
 /gitauth.txt
 *.old

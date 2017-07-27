@@ -3,6 +3,7 @@ package bot;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
@@ -108,8 +109,11 @@ implements CommandExecutor{
 			String path = "https://github.com/endless-sky/endless-sky/commit/" + request.toString().replace(" ","");
 			channel.sendMessage(path).queue();
 		}
-		else
+		else if(request.length() > 0){
 			channel.sendMessage("At least 7 characters are required.").queue();
+		}
+		else
+			channel.sendMessage("https://github.com/endless-sky/endless-sky/commit/").queue();
 	}
 
 
@@ -131,7 +135,7 @@ implements CommandExecutor{
 			}
 			else
 				message = "There is no image associated with '" + request + "'";
-			
+
 			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(!ShouldPrintThis(GetDataType(output))){
@@ -232,6 +236,24 @@ implements CommandExecutor{
 
 
 
+	@Command(aliases = {"-quote"}, description = "Quote person X.", usage = "-quote X", privateMessages = true)
+	public void onQuoteCommand(MessageChannel channel, String[] args){
+		if(args.length < 1)
+			channel.sendMessage("A person! Give me a person!").queue();
+		else{
+			String request = args[0];
+			for(int i = 1; i < args.length; ++i)
+				request += " " + args[i];
+			String quote = generateQuote(request);
+			if(quote.length() > 0)
+				channel.sendMessage("```\n``" + quote + "``\n\n" + "\t-- " + request + "```").queue();
+			else
+				channel.sendMessage("'" + request + "' hasn't said anything interesting.").queue();
+		}
+	}
+
+
+
 	// Convert the requested lookup parameter into the relevant data
 	// from the Endless Sky GitHub repository.
 	// Returns nullstring if no data could be found.
@@ -243,6 +265,8 @@ implements CommandExecutor{
 			do{
 				end = data.indexOf('\n', end + 1);
 			}
+			// A line that starts with a tab, newline, or comment is considered to be
+			// a part of this current lookup. Advance to the next newline.
 			while(data.charAt(end + 1) == '\t' || data.charAt(end + 1) == '\n' || data.charAt(end + 1) == '#');
 			return data.substring(start, end);
 		}
@@ -256,72 +280,35 @@ implements CommandExecutor{
 	// If helper is 'true', will try both as-passed 'lookup', and with
 	// enforced word capitalization.
 	private String checkLookup(String lookup, boolean helper){
-		if(data.contains("\nship \"" + lookup + "\"")){
-			return "\nship \"" + lookup + "\"";
+		final String[] dataTypes = {
+			"ship",
+			"outfit",
+			"mission",
+			"person",
+			"planet",
+			"system",
+			"effect",
+			"scene",
+			"fleet",
+			"event",
+			"government",
+			"phrase"
+		};
+		// The lookup may be exact:
+		if(data.contains("\n" + lookup)){
+			return "\n" + lookup;
 		}
-		else if(data.contains("\noutfit \"" + lookup + "\"")){
-			return "\noutfit \"" + lookup + "\"";
+		// The lookup may be only the value, and not the keyword:
+		for(String str : dataTypes){
+			if(data.contains("\n" + str + " \"" + lookup + "\"")){
+				return "\n" + str + " \"" + lookup + "\"";
+			}
+			else if(data.contains("\n" + str + " " + lookup)){
+				return "\n" + str + " " + lookup;
+			}
 		}
-		else if(data.contains("\nmission \"" + lookup + "\"")){
-			return "\nmission \"" + lookup + "\"";
-		}
-		else if(data.contains("\nperson \"" + lookup + "\"")){
-			return "\nperson \"" + lookup + "\"";
-		}
-		else if(data.contains("\nplanet \"" + lookup + "\"")){
-			return "\nplanet \"" + lookup + "\"";
-		}
-		else if(data.contains("\nsystem \"" + lookup + "\"")){
-			return "\nsystem \"" + lookup + "\"";
-		}
-		else if(data.contains("\neffect \"" + lookup + "\"")){
-			return "\neffect \"" + lookup + "\"";
-		}
-		else if(data.contains("\tscene \"" + lookup + "\"")){
-			return "\tscene \"" + lookup + "\"";
-		}
-		else if(data.contains("\nfleet \"" + lookup + "\"")){
-			return "\nfleet \"" + lookup + "\"";
-		}
-		else if(data.contains("\nevent \"" + lookup + "\"")){
-			return "\nevent \"" + lookup + "\"";
-		}
-		// The items may not be quoted in their definition.
-		else if(data.contains("\nship " + lookup)){
-			return"\nship " + lookup;
-		}
-		else if(data.contains("\noutfit " + lookup)){
-			return "\noutfit " + lookup;
-		}
-		else if(data.contains("\nmission " + lookup)){
-			return "\nmission " + lookup;
-		}
-		else if(data.contains("\nperson " + lookup)){
-			return "\nperson " + lookup;
-		}
-		else if(data.contains("\nplanet " + lookup + "\n")){
-			return "\nplanet " + lookup;
-		}
-		else if(data.contains("\nsystem " + lookup + "\n")){
-			return "\nsystem " + lookup;
-		}
-		else if(data.contains("\neffect " + lookup)){
-			return "\neffect " + lookup;
-		}
-		else if(data.contains("\tscene " + lookup)){
-			return "\tscene " + lookup;
-		}
-		else if(data.contains("\nfleet " + lookup)){
-			return "\nfleet " + lookup;
-		}
-		else if(data.contains("\nevent " + lookup)){
-			return "\nevent " + lookup;
-		}
-		else if(data.contains("\n"+lookup)){
-			return "\n"+lookup;
-		}
-		else if(helper){
-			// Uppercase the first letter of words in the lookup string.
+		// Or perhaps not capitalized correctly.
+		if(helper){
 			lookup = CapitalizeWords(lookup);
 			return checkLookup(lookup, false);
 		}
@@ -562,5 +549,100 @@ implements CommandExecutor{
 			default:
 				return true;
 		}
+	}
+	
+	
+	
+	// Generate a quote from the named person, using their built-in phrases.
+	// Phrases can be nested!! TODO: Move choice instantiation into readData.
+	public String generateQuote(String person){
+		String personData = lookupData(person);
+		boolean hasPhrase = personData.indexOf("phrase\n") > -1 || personData.indexOf("phrase ") > -1;
+		if(!hasPhrase)
+			return "";
+		int tabDepth = GetIndentLevel(personData, "phrase");
+		ArrayList<String> strKeys = new ArrayList<String>();
+		
+		// Outermost 'phrase'
+		StringBuilder key = new StringBuilder();
+		for(int i = 0; i < tabDepth; ++i)
+			key.append("\t");
+		key.append("phrase");
+		if(++tabDepth == 1)
+			key.append(" ");
+		else
+			key.append("\n");
+		strKeys.add(key.toString());
+		
+		// 'word' demarcator.
+		key = new StringBuilder();
+		for(int i = 0; i < tabDepth; ++i)
+			key.append("\t");
+		key.append("word");
+		key.append("\n");
+		strKeys.add(key.toString());
+		
+		// Nested phrase reference.
+		++tabDepth;
+		key = new StringBuilder();
+		for(int i = 0; i < tabDepth; ++i)
+			key.append("\t");
+		key.append("phrase");
+		key.append("\n");
+		strKeys.add(key.toString());
+		
+		// iterate personData using the strKeys with indexOf
+		// and then passing the substring to MakeChoices
+		
+		return Integer.toString(tabDepth);
+	}
+	
+	
+	
+	// Call this for each word in a phrase, giving it the bits
+	// between 'word', 'phrase', or the next data entry.
+	private static String[] MakeChoices(String wordlist){
+		final int MAXPOS = 10000000;
+		int start = wordlist.indexOf("\tword\n");
+		ArrayList<String> choices = new ArrayList<String>();
+		boolean reachedEnd = false;
+		while(!reachedEnd){
+			int startQuote = wordlist.indexOf("\t\"", start);
+			int startTick = wordlist.indexOf("\t`", start);
+			int startWord = Integer.min(startQuote > -1 ? startQuote : MAXPOS, startTick > -1 ? startTick : MAXPOS);
+			if(startWord == MAXPOS){
+				reachedEnd = true;
+				break;
+			}
+			boolean findTick = startQuote == -1 || (startTick > -1 && startTick < startQuote);
+			int endWord = wordlist.indexOf(findTick ? "`\n" : "\"\n", findTick ? ++startTick : ++startQuote);
+			choices.add(wordlist.substring(findTick ? startTick : startQuote, ++endWord));
+			start = endWord;
+		}
+		if(!choices.isEmpty())
+			return choices.toArray(new String[choices.size()]);
+		else
+			return new String[0];
+	}
+	
+	
+	
+	// Return the number of tabs that preceed the specified indented word in the
+	// datastring. Phrases are generally 0 or 1 level, while word demarcations
+	// are generally 1 or 2 indent levels.
+	private static int GetIndentLevel(String data, String word){
+		int level = -1;
+		int start = data.indexOf(word);
+		if(start < 0)
+			return level;
+		
+		int lineStart = data.lastIndexOf("\n", start);
+		// If the data string starts with this word, return 0, even if there is no
+		// newline preceeding it.
+		if(lineStart < 0 || start == 0)
+			return 0;
+		
+		String line = data.substring(lineStart, start + word.length() + 1);
+		return CountOf(line,'\t');
 	}
 }

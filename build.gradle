@@ -17,10 +17,10 @@ repositories {
 
 dependencies {
 	compile group: 'org.kohsuke', name: 'github-api', version: '1.85'
-	compile 'com.sedmelluq:lavaplayer:1.2.34'
+	compile 'com.sedmelluq:lavaplayer:1.2.42'
 	compile 'net.dv8tion:JDA:3.2.0_227'
-	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.4'
-	compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.4'
+	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.5'
+	compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.5'
 	compile 'junit:junit:4.12'
 	runtime "ch.qos.logback:logback-classic:$logbackVersion"
 	runtime "ch.qos.logback:logback-core:$logbackVersion"

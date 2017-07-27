@@ -63,6 +63,8 @@ implements CommandExecutor{
 			}
 	}
 
+
+
 	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")
 	public void onApodCommand(MessageChannel channel)
 	{
