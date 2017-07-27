@@ -156,7 +156,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-playlist", "-queue"}, description = "Displays the current playlist.", usage = "-playlist", privateMessages = false)
+	@Command(aliases = {"-playlist"}, description = "Displays the current playlist.", usage = "-playlist", privateMessages = false)
 	public void onplaylistCommand(Guild guild, TextChannel channel, Message msg){
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		TrackScheduler scheduler = mng.scheduler;
