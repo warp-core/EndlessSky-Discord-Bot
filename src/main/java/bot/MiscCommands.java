@@ -64,6 +64,31 @@ implements CommandExecutor{
 	}
 
 
+	@Command(aliases = {"-cat"}, description = "Posts a random cat picture from random.cat", usage = "-cat")
+	public void onCatCommand(MessageChannel channel)
+	{
+		try{
+			URL url = new URL("https://random.cat/meow");
+			channel.sendMessage(getJson(url).getString("file")).queue();
+		}
+		catch (IOException e){
+			e.printStackTrace(System.out);
+		}
+	}
+
+
+	@Command(aliases = {"-dog"}, description = "Posts a random dog picture from random.dog", usage = "-dog")
+	public void onDogCommand(MessageChannel channel)
+	{
+		try{
+			URL url = new URL("https://random.dog/woof.json");
+			channel.sendMessage(getJson(url).getString("url")).queue();
+		}
+		catch (IOException e){
+			e.printStackTrace(System.out);
+		}
+	}
+
 
 	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")
 	public void onApodCommand(MessageChannel channel)

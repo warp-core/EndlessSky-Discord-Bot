@@ -427,7 +427,7 @@ implements CommandExecutor{
 
 			@Override
 			public void trackLoaded(AudioTrack track){
-				channel.sendMessage("Adding to queue " + track.getInfo().title + requestedby).queue();
+				channel.sendMessage("Adding to queue `" + track.getInfo().title + "`" + requestedby).queue();
 
 				play(channel.getGuild(), musicManager, track);
 			}
@@ -441,7 +441,7 @@ implements CommandExecutor{
 				}
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Adding to queue " + firstTrack.getInfo().title + " (first track of playlist " + playlist.getName() + ")" + requestedby);
+				eb.setDescription("Adding to queue " + firstTrack.getInfo().title + " (first track of playlist `" + playlist.getName() + "`)" + requestedby);
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				channel.sendMessage(eb.build()).queue();
 
@@ -452,7 +452,7 @@ implements CommandExecutor{
 			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Nothing found by " + trackUrl + requestedby);
+				eb.setDescription("Nothing found by `" + trackUrl + "`" + requestedby);
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();
 			}
@@ -461,7 +461,7 @@ implements CommandExecutor{
 			public void loadFailed(FriendlyException exception){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Could not play: " + exception.getMessage() + requestedby);
+				eb.setDescription("Could not play: `" + exception.getMessage() + "`" + requestedby);
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 				channel.sendMessage(eb.build()).queue();
 			}
