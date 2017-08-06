@@ -53,23 +53,35 @@ implements CommandExecutor{
 		}
 		else{
 			StringBuilder builder = new StringBuilder();
+			String playerControl = "";
+			String lookupCommands = "";
+			String otherCommands = "";
 			for(CommandHandler.SimpleCommand simpleCommand : commandHandler.getCommands()){
 				Command cmd = simpleCommand.getCommandAnnotation();
 				if(!cmd.showInHelpPage()){
 					continue;
 				}
-				builder.append("\n");
 				if(!cmd.requiresMention()){
 					// The default prefix only works if the command does not require a mention.
-					builder.append(commandHandler.getDefaultPrefix());
+					if(simpleCommand.getMethod().getDeclaringClass().getName().equals("bot.PlayerControl")){
+							playerControl = playerControl + "\n" + commandHandler.getDefaultPrefix() + (cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage());
+					}
+					else if(simpleCommand.getMethod().getDeclaringClass().getName().equals("bot.LookupCommands")){
+						lookupCommands = lookupCommands + "\n" + commandHandler.getDefaultPrefix() + (cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage());
+					}
+					else{
+						otherCommands = otherCommands + "\n" + commandHandler.getDefaultPrefix() + (cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage());
+					}
 				}
-				builder.append(cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage());
 			}
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 			eb.setDescription("Available Commands");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cmd.png");
+			eb.addField("Player Control", playerControl, true);
+			eb.addField("Lookup Commands", lookupCommands, true);
+			eb.addField("Other Commands", otherCommands, true);
 			eb.addField("To get information about 'command', use \"-help 'command'\", e.g. \"-help -help\"", builder.toString(), false);
 			channel.sendMessage(eb.build()).queue();
 		}
