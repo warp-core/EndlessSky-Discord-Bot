@@ -156,8 +156,8 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-playlist"}, description = "Displays the current playlist.", usage = "-playlist", privateMessages = false)
-	public void onplaylistCommand(Guild guild, TextChannel channel, Message msg){
+	@Command(aliases = {"-queue"}, description = "Displays the current queue.", usage = "-queue", privateMessages = false)
+	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		TrackScheduler scheduler = mng.scheduler;
 		LinkedList<AudioTrack> queue = scheduler.getQueue();
@@ -187,7 +187,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-shuffle"}, description = "Shuffle the playlist.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
+	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
 	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
