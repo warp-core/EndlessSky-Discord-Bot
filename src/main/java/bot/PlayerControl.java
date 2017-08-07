@@ -156,8 +156,8 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-playlist"}, description = "Displays the current playlist.", usage = "-playlist", privateMessages = false)
-	public void onplaylistCommand(Guild guild, TextChannel channel, Message msg){
+	@Command(aliases = {"-queue"}, description = "Displays the current queue.", usage = "-queue", privateMessages = false)
+	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		TrackScheduler scheduler = mng.scheduler;
 		LinkedList<AudioTrack> queue = scheduler.getQueue();
@@ -187,7 +187,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-shuffle"}, description = "Shuffle the playlist.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
+	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
 	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		List<Permission> perm = requester.getPermissions(channel);
@@ -213,7 +213,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-stop"}, description = "Stop the music, clear the playlist, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role.", usage = "-stop", privateMessages = false)
+	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role.", usage = "-stop", privateMessages = false)
 	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		String commandby = "\n(command by `" + requester.getEffectiveName() + "`)";
@@ -369,7 +369,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-volume"}, description = "Displays the current volume or sets it to X (10-100). To change, the \"DJ\" role is required.", usage = "-volume [X]", privateMessages = false)
+	@Command(aliases = {"-volume"}, description = "Displays the current volume or sets it to X (10-100). To change, the \"DJ\" role is required.", usage = "-volume X", privateMessages = false)
 	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg){
 		Member requester = guild.getMember(author);
 		String by = " by `" + requester.getEffectiveName() + "`.";
