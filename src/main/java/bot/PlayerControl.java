@@ -213,7 +213,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-stop"}, description = "Stop the music, clear the playlist, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role.", usage = "-stop", privateMessages = false)
+	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role.", usage = "-stop", privateMessages = false)
 	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		String commandby = "\n(command by `" + requester.getEffectiveName() + "`)";
