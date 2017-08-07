@@ -23,11 +23,11 @@ public class SpellCheckListener extends ListenerAdapter{
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event){
 		if(event.getAuthor() != bot.getSelf()){
-			String msg = event.getMessage().getContent();
+			String msg = event.getMessage().getContent().toLowerCase();
 			Enumeration<?> keys = getSpellErrors();
 			while(keys.hasMoreElements()){
 				String key = (String) keys.nextElement();
-				if(msg.contains(key) || msg.contains(key.toLowerCase())){
+				if(msg.contains(key.toLowerCase())){
 					event.getChannel().sendMessage(getCorrection(key)).queue();
 					break;
 				}
@@ -49,7 +49,7 @@ public class SpellCheckListener extends ListenerAdapter{
 			e.printStackTrace();
 		}
 		return spellErrors;
-	}	
+	}
 
 
 
