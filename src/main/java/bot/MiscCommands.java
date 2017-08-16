@@ -53,10 +53,13 @@ implements CommandExecutor{
 				else
 					channel.sendMessage("Sorry, I only have templates for 'outfit', 'ship' and 'plugin'.").queue();
 
-				if(name.length() > 0){
-					String url = bot.HOST_RAW_URL + "data/templates/" + name;
-					channel.sendMessage("Here's your " + str + " template:\n[" + str + "](" + url + ")").queue();
-				}
+					if(name.length() > 0){
+						String url = bot.HOST_RAW_URL + "/data/templates/" + name;
+						EmbedBuilder eb = new EmbedBuilder();
+						eb.setTitle(name, url);
+						eb.setDescription("Here's your " + str + " template, served hot and crunchy :)");
+						channel.sendMessage(eb.build()).queue();
+					}
 			}
 	}
 
