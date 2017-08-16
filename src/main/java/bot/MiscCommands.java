@@ -142,7 +142,6 @@ implements CommandExecutor{
 			// Send POST to start up the conversion
 			MediaType mediaType = MediaType.parse("application/json");
 			String payload = "{\"input\":[{\"type\":\"remote\",\"source\":\"" + url + "\", \"filename\": \"" + filename + "\"}],\"conversion\":[{\"category\":\"audio\",\"target\":\"wav\", \"options\":{\"frequency\": 44100,\"channels\": \"mono\",\"normalize\": false,\"pcm_format\": \"pcm_s16le\"}}]}";
-			System.out.println(payload);
 			RequestBody body = RequestBody.create(mediaType, payload);
 			Request request = new Request.Builder()
 			.url("http://api2.online-convert.com/jobs")
@@ -154,7 +153,6 @@ implements CommandExecutor{
 			// get Job Data
 			Response response = client.newCall(request).execute();
 			JSONObject json = new JSONObject(response.body().string());
-			System.out.print(json.toString(3));
 			String conversion_id = json.getJSONArray("conversion").getJSONObject(0).getString("id");
 			String input_id = json.getJSONArray("input").getJSONObject(0).getString("id");
 			String token = json.getString("token");
@@ -186,9 +184,7 @@ implements CommandExecutor{
 				JSONArray jsonarray = new JSONArray(response.body().string());
 				for (Object object : jsonarray){
 					json = (JSONObject)object;
-					System.out.println(json.toString(3));
 					if (json.getString("status").equals("completed")) {
-					System.out.println(json.getString("status"));
 						done = true;
 						failed = false;
 					}
