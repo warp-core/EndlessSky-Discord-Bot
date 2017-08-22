@@ -1,5 +1,6 @@
 # EndlessSky-Discord-Bot
 [![Build Status](https://travis-ci.org/MCOfficer/EndlessSky-Discord-Bot.svg?branch=master)](https://travis-ci.org/MCOfficer/EndlessSky-Discord-Bot)
+[![license](https://img.shields.io/aur/license/yaourt.svg)](https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/master/LICENSE)
 
 Meet James, the Discord Bot made specifically for the Endless Sky Server.
 
