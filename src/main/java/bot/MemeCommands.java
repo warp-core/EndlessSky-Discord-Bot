@@ -12,6 +12,7 @@ import java.util.Random;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -24,12 +25,15 @@ implements CommandExecutor{
 	private Properties memeImgs;
 	private static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 
+	private ESBot bot;
+
 	public MemeCommands(){
+		this.bot = bot;
 		readMemes();
 	}
 
 	@Command(aliases = {"-meme"}, description = "Posts meme X, or a random Endless Sky meme if no X is given.", usage = "-meme [X]", privateMessages = true)
-	public void onMemeCommand(MessageChannel channel, String[] args){
+	public void onMemeCommand(Guild guild, MessageChannel channel, String[] args){
 		if(args.length == 0){
 			channel.sendMessage(getRandomMeme()).queue();
 		}
@@ -40,6 +44,7 @@ implements CommandExecutor{
 			else{
 				String path = HOST_RAW_URL + "/data/memes/" + getImgMemePath(args[0]);
 				EmbedBuilder eb = new EmbedBuilder();
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setImage(path);
 				channel.sendMessage(eb.build()).queue();
 			}
@@ -47,13 +52,14 @@ implements CommandExecutor{
 	}
 
 	@Command(aliases = {"-memelist", "-memes", "-memeList"}, description = "PMs you the current list of memes.", usage = "-memelist", privateMessages = true)
-	public void onListmemesCommand(User user, MessageChannel channel, Message message, String[] args){
+	public void onListmemesCommand(Guild guild, User user, MessageChannel channel, Message message, String[] args){
 		if(args.length == 0){
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Available Memes:", "https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/data");
 			eb.addField("Text-based Memes", getMemelist(), false);
 			eb.addField("Image-based Memes", getMemelistImgs(), false);
 			eb.setThumbnail(HOST_RAW_URL + "/thumbnails/meme.png");
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			user.openPrivateChannel().queue(c -> {
 				c.sendMessage(eb.build()).queue();
 			});

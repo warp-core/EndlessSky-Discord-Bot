@@ -27,6 +27,7 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import de.btobastian.sdcf4j.CommandHandler;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.Message.Attachment;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -49,7 +50,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-template"}, description = "Sends the template for X. Possible args: outfit, ship, or plugin.", usage = "-template X")
-	public void onTemplatesCommand(MessageChannel channel, String[] args)
+	public void onTemplatesCommand(Guild guild, MessageChannel channel, String[] args)
 	{
 		if(args.length == 0)
 			channel.sendMessage("Which template would you like? I have three flavours available: 'outfit', 'ship' and 'plugin'.").queue();
@@ -69,6 +70,7 @@ implements CommandExecutor{
 						String url = bot.HOST_RAW_URL + "/data/templates/" + name;
 						EmbedBuilder eb = new EmbedBuilder();
 						eb.setTitle(name, url);
+						eb.setColor(guild.getMember(bot.getSelf()).getColor());
 						eb.setDescription("Here's your " + str + " template, served hot and crunchy :)");
 						channel.sendMessage(eb.build()).queue();
 					}
@@ -103,7 +105,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")
-	public void onApodCommand(MessageChannel channel)
+	public void onApodCommand(Guild guild, MessageChannel channel)
 	{
 		JSONObject json = null;
 		try{
@@ -122,6 +124,7 @@ implements CommandExecutor{
 			eb.setImage(json.getString("hdurl"));
 			eb.setTitle(json.getString("title"));
 			eb.setDescription(json.getString("explanation"));
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			channel.sendMessage(eb.build()).queue();
 		}else if (json.getString("media_type").equals("video")){
 			channel.sendMessage(json.getString("url").replace("embed/", "watch?v=")).queue();
@@ -131,7 +134,7 @@ implements CommandExecutor{
 	}
 
 	@Command(aliases = {"-wav"}, description = "Converts an Audio file to a wav file suitable for ES.", usage = "-wav [attached file]")
-	public void onWavCommand(MessageChannel channel, Message message)
+	public void onWavCommand(Guild guild, MessageChannel channel, Message message)
 	{
 		channel.sendMessage("Conversion queued, this may take up to some minutes...").queue();
 	try{
@@ -223,6 +226,7 @@ implements CommandExecutor{
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle(filename.split("\\.(?=[^\\.]+$)")[0] + ".wav", download);
 				eb.setDescription("Here's your converted file, thank the guys at online-convert.com :)");
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				channel.sendMessage(eb.build()).queue();
 			}
 			else{
