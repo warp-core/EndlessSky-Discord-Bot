@@ -413,20 +413,36 @@ implements CommandExecutor{
 
 
 
-	// Check the string for a space character and if present, capitalize the
-	// next letter. Returns the string with first letters of words capitalized.
+	// Check the string for a space or dash character and if present,
+	// capitalize the next letter. Returns the string with captialized words.
 	private static String CapitalizeWords(String input){
-		int countWords = 1 + CountOf(input, ' ');
+		int countWords = 1 + CountOf(input, ' ') + CountOf(input, '-');
 		char[] ic = input.toCharArray();
 		ic[0] = Character.toUpperCase(ic[0]);
-		if(countWords > 1){
+		boolean hasDash = input.indexOf("-") > -1;
+		boolean hasSpace = input.indexOf(" ") > -1;
+		if(--countWords > 0){
 			int index = input.indexOf(" ");
+			if(hasDash)
+				index = Math.min(index, input.indexOf("-"));
 			for(int i = 0; i < countWords; ++i){
 				++index;
-				if(ic[index] == '(' || ic[index] == ')' || ic[index] == '"')
+				if(ic[index] == '(' || ic[index] == ')' || ic[index] == '"' || ic[index] == '-')
 					++index;
 				ic[index] = Character.toUpperCase(ic[index]);
-				index = input.indexOf(" ", index);
+				// Find next word break.
+				int s = input.indexOf(" ", index);
+				int d = input.indexOf("-", index);
+				hasDash &= d > -1;
+				hasSpace &= s > -1;
+				if(hasDash && hasSpace)
+					index = (s < d) ? s : d;
+				else if(hasDash)
+					index = d;
+				else if(hasSpace)
+					index = s;
+				else
+					break;
 			}
 		}
 
