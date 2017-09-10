@@ -18,11 +18,14 @@ Meet James, the Discord Bot made specifically for the Endless Sky Server.
 ## Features
 - Displays portions of the Endless Sky data files (Ships & their variants, Outfits, Sprites/Thumbnails, Missions)
 - Links to PRs, commits and issues of the Endless Sky repository
+- Links to the wiki at endless-sky.wikia.com
 - Plays music using [lavaplayer](https://github.com/sedmelluq/lavaplayer)
 - Performs text corrections based on the contents of '/data/spellErrors.txt'
 - Posts both text- and image-based memes (limited to those defined in /data/)
 - Basic Moderation Commands (currently only message purging, but more to come)
-- Reacts when Members join/leave/get banned and gives them the merchant role, if necessary (not in stable yet)
+- Reacts when Members join/leave/get banned and gives them the merchant role, if necessary (disabled for now)
+- Converts audio files to ES-compatible .wav files
+- Some fun commands (random dogs and cats, NASA pictures, etc.)
 
 ## Credit
 Original Creator: @Wrzlprnft
