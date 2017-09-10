@@ -243,7 +243,7 @@ implements CommandExecutor{
 	@Command(aliases = {"-wikia"}, description = "Displays a wikia article or search results for X.", usage = "-wikia [search] X")
 	public void onWikiaCommand(Guild guild, MessageChannel channel, String[] args)
 	{
-		String baseUrl = "http://endlesssky.wikia.com/api/v1/";
+		String baseUrl = "http://endless-sky.wikia.com/api/v1/";
 		boolean search = false;
 		if (args[0].toLowerCase().equals("search"))
 			search = true;
