@@ -16,6 +16,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -237,6 +238,60 @@ implements CommandExecutor{
 			e.printStackTrace(System.out);
 		}
 	}
+
+
+	@Command(aliases = {"-wikia"}, description = "Displays a wikia article or search results for X.", usage = "-wikia [search] X")
+	public void onWikiaCommand(Guild guild, MessageChannel channel, String[] args)
+	{
+		String baseUrl = "http://endlesssky.wikia.com/api/v1/";
+		boolean search = false;
+		if (args[0].toLowerCase().equals("search"))
+			search = true;
+
+		StringBuilder builder = new StringBuilder();
+		if (search){
+			for(int i = 1; i < args.length; ++i){
+			    builder.append(" " + args[i]);
+			}
+		}
+		else{
+			for(String s : args){
+				builder.append(" " + s);
+			}
+		}
+		String query = "";
+		try{
+			query = java.net.URLEncoder.encode(builder.toString().trim(), "UTF-8");
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+
+		try{
+			JSONObject json = getJson(new URL(baseUrl + "Search/List?query=" + query));
+
+			if (search){
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setTitle("Results");
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
+				eb.setDescription("Found the following results for '" + query + "':\n");
+				for (Object o : json.getJSONArray("items")){
+					JSONObject r = (JSONObject) o;
+					eb.appendDescription("\n\n" + r.getString("title") + ":\n" + r.getString("url"));
+				}
+				channel.sendMessage(eb.build()).queue();
+			}
+			else{
+				channel.sendMessage(json.getJSONArray("items").getJSONObject(0).getString("url")).queue();
+			}
+		}
+		catch (IOException e){
+			if (e instanceof FileNotFoundException)
+				channel.sendMessage("Nothing found.").queue();
+			else
+				e.printStackTrace(System.out);
+		}
+	}
+
 
 	private static JSONObject getJson(URL url) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
