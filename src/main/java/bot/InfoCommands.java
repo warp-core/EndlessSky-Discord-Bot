@@ -3,9 +3,14 @@ package bot;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import de.btobastian.sdcf4j.CommandHandler;
+import de.btobastian.sdcf4j.CommandHandler.SimpleCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
 
 public class InfoCommands
 implements CommandExecutor{
@@ -52,11 +57,16 @@ implements CommandExecutor{
 			}
 		}
 		else{
+			List<SimpleCommand> commandList = new ArrayList<>();
+			for (SimpleCommand cmd : commandHandler.getCommands()) {
+				commandList.add(cmd);
+			}
+			Collections.sort(commandList, new Sorter(commandHandler));
 			StringBuilder builder = new StringBuilder();
 			String playerControl = "";
 			String lookupCommands = "";
 			String otherCommands = "";
-			for(CommandHandler.SimpleCommand simpleCommand : commandHandler.getCommands()){
+			for(CommandHandler.SimpleCommand simpleCommand : commandList){
 				Command cmd = simpleCommand.getCommandAnnotation();
 				if(!cmd.showInHelpPage()){
 					continue;
@@ -125,5 +135,20 @@ implements CommandExecutor{
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		channel.sendMessage(eb.build()).queue();
+	}
+
+
+	private class Sorter implements Comparator<SimpleCommand>
+	{
+		private final CommandHandler commandHandler;
+		public Sorter(CommandHandler commandHandler) {
+			this.commandHandler = commandHandler;
+		}
+		@Override
+		public int compare(CommandHandler.SimpleCommand simpleCommand1, CommandHandler.SimpleCommand simpleCommand2) {
+			Command cmd1 = simpleCommand1.getCommandAnnotation();
+			Command cmd2 = simpleCommand2.getCommandAnnotation();
+			return cmd1.aliases()[0].compareToIgnoreCase(cmd2.aliases()[0]);
+		}
 	}
 }

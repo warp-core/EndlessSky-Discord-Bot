@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
 public class LookupCommands
@@ -20,9 +21,10 @@ implements CommandExecutor{
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
 
-
+	private ESBot bot;
 
 	public LookupCommands(){
+		this.bot = bot;
 		data = readData();
 	}
 
@@ -119,7 +121,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-lookup"}, description = "Shows the image and description of X.", usage = "-lookup X", privateMessages = true)
-	public void onLookupCommand(MessageChannel channel, String[] args){
+	public void onLookupCommand(Guild guild, MessageChannel channel, String[] args){
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
@@ -127,10 +129,10 @@ implements CommandExecutor{
 			}
 			String message = "";
 			boolean printedImage = false;
-			if(PrintImage(channel, lookupData(request))
-					|| PrintImage(channel, lookupData(ParseVariants(request)))
+			if(PrintImage(guild, channel, lookupData(request))
+					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
 					|| (IsShipVariantRequest(request)
-								&& PrintImage(channel, lookupData(GetBaseModelName(request))))){
+								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				printedImage = true;
 			}
 			else
@@ -164,7 +166,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-show"}, description = "Shows both image and all data associated with X.", usage = "-show X", privateMessages = true)
-	public void onShowCommand(MessageChannel channel, String[] args){
+	public void onShowCommand(Guild guild, MessageChannel channel, String[] args){
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
@@ -172,10 +174,10 @@ implements CommandExecutor{
 			}
 			String message = "";
 			boolean printedImage = false;
-			if(PrintImage(channel, lookupData(request))
-					|| PrintImage(channel, lookupData(ParseVariants(request)))
+			if(PrintImage(guild, channel, lookupData(request))
+					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
 					|| (IsShipVariantRequest(request)
-								&& PrintImage(channel, lookupData(GetBaseModelName(request))))){
+								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				printedImage = true;
 			}
 			else
@@ -199,16 +201,16 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X. Does not print data.", usage = "-showimage X", privateMessages = true)
-	public void onShowimageCommand(MessageChannel channel, String[] args){
+	public void onShowimageCommand(Guild guild, MessageChannel channel, String[] args){
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
 				request += " " + args[i];
 			}
-			if(PrintImage(channel, lookupData(request))
-					|| PrintImage(channel, lookupData(ParseVariants(request)))
+			if(PrintImage(guild, channel, lookupData(request))
+					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
 					|| (IsShipVariantRequest(request)
-								&& PrintImage(channel, lookupData(GetBaseModelName(request))))){
+								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				// This request was handled.
 			}
 			else
@@ -338,7 +340,7 @@ implements CommandExecutor{
 	// Check the string for image characteristics, and if found, print the image
 	// to the specified channel & return true. Returns false for no image or no
 	// valid image ending.
-	private boolean PrintImage(MessageChannel channel, String input){
+	private boolean PrintImage(Guild guild, MessageChannel channel, String input){
 		if(HasImageToPrint(input)){
 			String imageName = GetImageName(input);
 			String filepath = urlEncode(CONTENT_URL + "/images/" + imageName);
@@ -346,6 +348,7 @@ implements CommandExecutor{
 			if(ending.length() > 0){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setImage(filepath + ending);
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				channel.sendMessage(eb.build()).queue();
 				return true;
 			}
@@ -410,20 +413,36 @@ implements CommandExecutor{
 
 
 
-	// Check the string for a space character and if present, capitalize the
-	// next letter. Returns the string with first letters of words capitalized.
+	// Check the string for a space or dash character and if present,
+	// capitalize the next letter. Returns the string with captialized words.
 	private static String CapitalizeWords(String input){
-		int countWords = 1 + CountOf(input, ' ');
+		int countWords = 1 + CountOf(input, ' ') + CountOf(input, '-');
 		char[] ic = input.toCharArray();
 		ic[0] = Character.toUpperCase(ic[0]);
-		if(countWords > 1){
+		boolean hasDash = input.indexOf("-") > -1;
+		boolean hasSpace = input.indexOf(" ") > -1;
+		if(--countWords > 0){
 			int index = input.indexOf(" ");
+			if(hasDash)
+				index = Math.min(index, input.indexOf("-"));
 			for(int i = 0; i < countWords; ++i){
 				++index;
-				if(ic[index] == '(' || ic[index] == ')' || ic[index] == '"')
+				if(ic[index] == '(' || ic[index] == ')' || ic[index] == '"' || ic[index] == '-')
 					++index;
 				ic[index] = Character.toUpperCase(ic[index]);
-				index = input.indexOf(" ", index);
+				// Find next word break.
+				int s = input.indexOf(" ", index);
+				int d = input.indexOf("-", index);
+				hasDash &= d > -1;
+				hasSpace &= s > -1;
+				if(hasDash && hasSpace)
+					index = (s < d) ? s : d;
+				else if(hasDash)
+					index = d;
+				else if(hasSpace)
+					index = s;
+				else
+					break;
 			}
 		}
 
@@ -550,9 +569,9 @@ implements CommandExecutor{
 				return true;
 		}
 	}
-	
-	
-	
+
+
+
 	// Generate a quote from the named person, using their built-in phrases.
 	// Phrases can be nested!! TODO: Move choice instantiation into readData.
 	public String generateQuote(String person){
@@ -562,7 +581,7 @@ implements CommandExecutor{
 			return "";
 		int tabDepth = GetIndentLevel(personData, "phrase");
 		ArrayList<String> strKeys = new ArrayList<String>();
-		
+
 		// Outermost 'phrase'
 		StringBuilder key = new StringBuilder();
 		for(int i = 0; i < tabDepth; ++i)
@@ -573,7 +592,7 @@ implements CommandExecutor{
 		else
 			key.append("\n");
 		strKeys.add(key.toString());
-		
+
 		// 'word' demarcator.
 		key = new StringBuilder();
 		for(int i = 0; i < tabDepth; ++i)
@@ -581,7 +600,7 @@ implements CommandExecutor{
 		key.append("word");
 		key.append("\n");
 		strKeys.add(key.toString());
-		
+
 		// Nested phrase reference.
 		++tabDepth;
 		key = new StringBuilder();
@@ -590,15 +609,15 @@ implements CommandExecutor{
 		key.append("phrase");
 		key.append("\n");
 		strKeys.add(key.toString());
-		
+
 		// iterate personData using the strKeys with indexOf
 		// and then passing the substring to MakeChoices
-		
+
 		return Integer.toString(tabDepth);
 	}
-	
-	
-	
+
+
+
 	// Call this for each word in a phrase, giving it the bits
 	// between 'word', 'phrase', or the next data entry.
 	private static String[] MakeChoices(String wordlist){
@@ -624,9 +643,9 @@ implements CommandExecutor{
 		else
 			return new String[0];
 	}
-	
-	
-	
+
+
+
 	// Return the number of tabs that preceed the specified indented word in the
 	// datastring. Phrases are generally 0 or 1 level, while word demarcations
 	// are generally 1 or 2 indent levels.
@@ -635,13 +654,13 @@ implements CommandExecutor{
 		int start = data.indexOf(word);
 		if(start < 0)
 			return level;
-		
+
 		int lineStart = data.lastIndexOf("\n", start);
 		// If the data string starts with this word, return 0, even if there is no
 		// newline preceeding it.
 		if(lineStart < 0 || start == 0)
 			return 0;
-		
+
 		String line = data.substring(lineStart, start + word.length() + 1);
 		return CountOf(line,'\t');
 	}
