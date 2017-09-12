@@ -82,22 +82,42 @@ implements CommandExecutor{
 				&& requester.getVoiceState().getChannel() != null
 				&& !(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))) {
 			checkVoiceChannel(guild.getAudioManager(), guild.getMember(author));
-			loadAndPlay(channel, normalize(args), requester);
+			for (String query : normalize(args))
+				loadAndPlay(channel, query, requester);
 			msg.delete().queue();
 		}
 	}
 
 
 
-	private String normalize(String[] args){
+	private String[] normalize(String[] args){
 		if(args.length == 1){
-			return args[0];
+			return args;
 		}
 		else{
-			String output = "ytsearch:";
+			int counter = 0;
+			for(String s : args) {
+				if(s.endsWith(",")) {
+					counter++; } }
+			String[] output = new String[counter + 1];
+
+			int i = 0;
 			for(String s : args){
-				output += " " + s;
+				boolean newQuery = false;
+				if (s.endsWith(",")){
+					newQuery = true;
+					s = s.substring(0,s.length() - 1);
+				}
+				if (output[i] == null)
+					output[i] = "ytsearch: " + s;
+				else
+					output[i] += " " + s;
+
+				if (newQuery)
+					i++;
 			}
+			for (String s : output)
+				System.out.println(s);
 			return output;
 		}
 	}
