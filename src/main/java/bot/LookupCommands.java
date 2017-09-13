@@ -23,7 +23,7 @@ implements CommandExecutor{
 
 	private ESBot bot;
 
-	public LookupCommands(){
+	public LookupCommands(ESBot bot){
 		this.bot = bot;
 		data = readData();
 	}

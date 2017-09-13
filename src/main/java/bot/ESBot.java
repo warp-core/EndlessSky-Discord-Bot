@@ -26,8 +26,8 @@ public class ESBot {
 			CommandHandler cmdHandler = new JDA3Handler(jda);
 			cmdHandler.registerCommand(new InfoCommands(cmdHandler,this));
 			cmdHandler.registerCommand(new ModeratorCommands(this));
-			cmdHandler.registerCommand(new LookupCommands());
-			cmdHandler.registerCommand(new MemeCommands());
+			cmdHandler.registerCommand(new LookupCommands(this));
+			cmdHandler.registerCommand(new MemeCommands(this));
 			cmdHandler.registerCommand(new PlayerControl(this, jda));
 			cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
 	        jda.addEventListener(new SpellCheckListener(this));

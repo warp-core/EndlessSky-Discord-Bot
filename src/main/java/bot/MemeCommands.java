@@ -27,7 +27,7 @@ implements CommandExecutor{
 
 	private ESBot bot;
 
-	public MemeCommands(){
+	public MemeCommands(ESBot bot){
 		this.bot = bot;
 		readMemes();
 	}
