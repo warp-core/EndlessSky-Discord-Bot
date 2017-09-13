@@ -20,3 +20,4 @@ wormhole:The wormhole says nothing, but silently beckons you to explore its myst
 wormhole:You can't talk to wormholes. Maybe you should try landing on it instead.
 wormhole:Your words cannot travel through wormholes, but maybe your starship can.
 wormhole:Unable to send hail: this unfathomable void is not inhabited.
+dreamland:A computer that can run a mesuket battle at 60 fps
