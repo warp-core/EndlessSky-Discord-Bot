@@ -39,9 +39,6 @@ implements CommandExecutor{
 
 	private final CommandHandler commandHandler;
 	private ESBot bot;
-	// Please don't use these keys for any other purpose than this bot, thank you.
-	public static final String ONLINECONVERT_APIKEY = "25eea0ad93bf9160043acf83b21f8056";
-	public static final String NASA_APIKEY = "Lk7O2c43wwYEUWZXHESdlARCbnSVs5gT0qgWGJKL";
 
 	public MiscCommands(CommandHandler commandHandler, ESBot bot) {
 		this.commandHandler = commandHandler;
@@ -79,6 +76,7 @@ implements CommandExecutor{
 	}
 
 
+
 	@Command(aliases = {"-cat"}, description = "Posts a random cat picture from random.cat", usage = "-cat")
 	public void onCatCommand(MessageChannel channel)
 	{
@@ -90,6 +88,7 @@ implements CommandExecutor{
 			e.printStackTrace(System.out);
 		}
 	}
+
 
 
 	@Command(aliases = {"-dog"}, description = "Posts a random dog picture from random.dog", usage = "-dog")
@@ -105,6 +104,7 @@ implements CommandExecutor{
 	}
 
 
+
 	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")
 	public void onApodCommand(Guild guild, MessageChannel channel)
 	{
@@ -114,7 +114,7 @@ implements CommandExecutor{
 			ScriptObjectMirror result = (ScriptObjectMirror)engine.eval(new java.io.FileReader("scripts/random_apod.js"));
 			String sresult = result.values().toString();
 			sresult = sresult.substring(sresult.indexOf("[")+1, sresult.indexOf("]"));
-			URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=" + NASA_APIKEY+ "&date=" + sresult);
+			URL url = new URL("https://api.nasa.gov/planetary/apod?api_key=" + bot.getKey("NASA")+ "&date=" + sresult);
 			json = getJson(url);
 		}
 		catch (ScriptException|IOException e){
@@ -134,6 +134,8 @@ implements CommandExecutor{
 		}
 	}
 
+
+
 	@Command(aliases = {"-wav"}, description = "Converts an Audio file to a wav file suitable for ES.", usage = "-wav [attached file]")
 	public void onWavCommand(Guild guild, MessageChannel channel, Message message)
 	{
@@ -150,7 +152,7 @@ implements CommandExecutor{
 			Request request = new Request.Builder()
 			.url("http://api2.online-convert.com/jobs")
 			.post(body)
-			.addHeader("x-oc-api-key", ONLINECONVERT_APIKEY)
+			.addHeader("x-oc-api-key", bot.getKey("ONLINECONVERT"))
 			.addHeader("cache-control", "no-cache")
 			.build();
 
@@ -166,7 +168,7 @@ implements CommandExecutor{
 			request = new Request.Builder()
 			.url("https://api2.online-convert.com/jobs/" + job_id + "/history")
 			.get()
-			.addHeader("x-oc-api-key", ONLINECONVERT_APIKEY)
+			.addHeader("x-oc-api-key", bot.getKey("ONLINECONVERT"))
 			.addHeader("x-oc-token", token)
 			.addHeader("cache-control", "no-cache")
 			.build();
@@ -204,7 +206,7 @@ implements CommandExecutor{
 				request = new Request.Builder()
 				.url("https://api2.online-convert.com/jobs/" + job_id)
 				.get()
-				.addHeader("x-oc-api-key", ONLINECONVERT_APIKEY)
+				.addHeader("x-oc-api-key", bot.getKey("ONLINECONVERT"))
 				.addHeader("x-oc-token", token)
 				.addHeader("cache-control", "no-cache")
 				.build();
@@ -216,7 +218,7 @@ implements CommandExecutor{
 				request = new Request.Builder()
 				.url("https://api2.online-convert.com/jobs/" + job_id + "/output/" + file_id)
 				.get()
-				.addHeader("x-oc-api-key", ONLINECONVERT_APIKEY)
+				.addHeader("x-oc-api-key", bot.getKey("ONLINECONVERT"))
 				.addHeader("x-oc-token", token)
 				.addHeader("cache-control", "no-cache")
 				.build();
@@ -238,6 +240,7 @@ implements CommandExecutor{
 			e.printStackTrace(System.out);
 		}
 	}
+
 
 
 	@Command(aliases = {"-wikia"}, description = "Displays a wikia article or search results for X.", usage = "-wikia [search] X")
