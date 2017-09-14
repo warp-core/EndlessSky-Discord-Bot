@@ -3,9 +3,9 @@
 # respective services will fail without these.
 
 # This is the NASA demo key. Please don't overuse it,
-NASA: DEMO_KEY
 # getting your own key merely takes a minute. visit
 # https://api.nasa.gov/index.html#apply-for-an-api-key for more.
+NASA: DEMO_KEY
 
 # you can get a free key for online-convert.com here:
 # https://apiv2.online-convert.com/
