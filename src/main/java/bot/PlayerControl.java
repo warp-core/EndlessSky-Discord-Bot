@@ -447,7 +447,11 @@ implements CommandExecutor{
 
 			@Override
 			public void trackLoaded(AudioTrack track){
-				channel.sendMessage("Adding to queue `" + track.getInfo().title + "`" + requestedby).queue();
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+				eb.setDescription("Adding to queue `" + track.getInfo().title + "`" + requestedby);
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
+				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 
 				play(channel.getGuild(), musicManager, track);
 			}
@@ -462,6 +466,7 @@ implements CommandExecutor{
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Adding to queue " + firstTrack.getInfo().title + " (first track of playlist `" + playlist.getName() + "`)" + requestedby);
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				channel.sendMessage(eb.build()).queue();
 
