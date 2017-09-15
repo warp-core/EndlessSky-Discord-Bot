@@ -377,7 +377,7 @@ implements CommandExecutor{
 	// are .png or .jpg (landscapes). Returns nullstring "" if no ending works, otherwise returns
 	// the full ending (including the filetype).
 	public String GetImageEnding(String url){
-		String[] modes = {"", "-0", "+0", "~0", "=0"};
+		String[] modes = {"", "-0", "+0", "~0", "=0", "-00", "+00", "~00", "=00"};
 		String[] filetypes = {".png", ".jpg"};
 		int m = 0;
 		int t = 0;

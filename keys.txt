@@ -1,0 +1,12 @@
+# This file stores all of James's API keys.
+# You don't have to set them up, but commands using the
+# respective services will fail without these.
+
+# This is the NASA demo key. Please don't overuse it,
+# getting your own key merely takes a minute. visit
+# https://api.nasa.gov/index.html#apply-for-an-api-key for more.
+NASA: DEMO_KEY
+
+# you can get a free key for online-convert.com here:
+# https://apiv2.online-convert.com/
+#	ONLINECONVERT: put your key here

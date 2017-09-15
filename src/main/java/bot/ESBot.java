@@ -8,6 +8,11 @@ import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileReader;
+import java.util.Properties;
+
 public class ESBot {
 	private JDA jda;
 	public VersionInfo version = new VersionInfo();
@@ -17,10 +22,12 @@ public class ESBot {
 	public static final String HOST_PUBLIC_URL = "https://github.com/MCOfficer/EndlessSky-Discord-Bot";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
 
+	public Properties keys;
 
 
 	public ESBot(String TOKEN){
 		try{
+			loadKeys();
 			jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).buildBlocking();
 			jda.getPresence().setGame(Game.of("-help"));
 			CommandHandler cmdHandler = new JDA3Handler(jda);
@@ -45,6 +52,28 @@ public class ESBot {
 		catch(RateLimitedException e){
 			e.printStackTrace();
 		}
+	}
+
+
+
+	public String getKey(String id){
+		return keys.getProperty(id, "");
+	}
+
+
+
+	public void loadKeys(){
+		Properties keys = new Properties();
+		try{
+			keys.load(new FileReader("keys.txt"));
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		this.keys = keys;
 	}
 
 
