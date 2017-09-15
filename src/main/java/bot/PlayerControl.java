@@ -459,16 +459,26 @@ implements CommandExecutor{
 			public void playlistLoaded(AudioPlaylist playlist){
 				AudioTrack firstTrack = playlist.getSelectedTrack();
 
-				if(firstTrack == null){
-					firstTrack = playlist.getTracks().get(0);
-				}
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Adding to queue " + firstTrack.getInfo().title + " (first track of playlist `" + playlist.getName() + "`)" + requestedby);
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
-				channel.sendMessage(eb.build()).queue();
 
-				play(channel.getGuild(), musicManager, firstTrack);
+				if (playlist.isSearchResult()){
+					if(firstTrack == null)
+						firstTrack = playlist.getTracks().get(0);
+					eb.setDescription("Adding to queue `" + firstTrack.getInfo().title + "` (first track of `" + playlist.getName() + "`)" + requestedby);
+					play(channel.getGuild(), musicManager, firstTrack);
+				}
+				else{
+					int counter = 0;
+					for (AudioTrack track : playlist.getTracks()){
+						play(channel.getGuild(), musicManager, track);
+						counter ++;
+					}
+					eb.setDescription("Adding to queue playlist `" + playlist.getName() + "` (" + counter + " tracks)" + requestedby);
+
+				}
+				channel.sendMessage(eb.build()).queue();
 			}
 
 			@Override
