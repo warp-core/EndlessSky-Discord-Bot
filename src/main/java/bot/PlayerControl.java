@@ -264,33 +264,20 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-voteskip"}, description = "Start a vote/Vote to skip the current song. Needs 50% response rate from others in the voicechannel in order to succeed.", usage = "-voteskip", privateMessages = false)
 	public synchronized void onVoteskipCommand(Guild guild, TextChannel channel, User author){
-		Member skipvoter = guild.getMember(author);
-		LinkedList<Member> guildVoters = getGuildSkipvoters(guild);
-		if(!guildVoters.contains(skipvoter)){
-			guildVoters.add(skipvoter);
-		}
-		LinkedList<Member> temp = new LinkedList<>();
-		for(Member m : guildVoters){
-			if(guild.getAudioManager().getConnectedChannel() == m.getVoiceState().getChannel()){
-				temp.add(m);
-			}
-		}
-		guildVoters = temp;
-		if((int)((guild.getAudioManager().getConnectedChannel().getMembers().size() - 1) / 2 + 0.5) <= guildVoters.size()){
-			skipTrack(channel, null);
-			guildVoters.clear();
-			skipvoters.remove(Long.parseLong(guild.getId()));
+		Member voter = guild.getMember(author);
+		PlayerVoteHandler voteHandler = getVoteHandler(guild, "voteskip");
+		voteHandler.vote(voter);
+		if (voteHandler.checkVotes() == true){
+			skipTrack(channel, voteHandler.getRequester());
 		}
 		else{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setDescription("Currently are " + guildVoters.size() + " captains voting to skip, but " + (int)((guild.getAudioManager().getConnectedChannel().getMembers().size()-1)/2+0.5) + " are needed to skip!");
+			eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to skip, but " + voteHandler.getRequiredVotes() + " are needed to skip!");
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/voteskip.png");
 			channel.sendMessage(eb.build()).queue();
 		}
-		skipvoters.put(Long.parseLong(guild.getId()), guildVoters);
-
 	}
 
 
