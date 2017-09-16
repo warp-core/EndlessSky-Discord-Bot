@@ -441,6 +441,7 @@ implements CommandExecutor{
 				eb.setDescription("Adding to queue `" + track.getInfo().title + "`" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
+				channel.sendMessage(eb.build()).queue();
 
 				play(channel.getGuild(), musicManager, track);
 			}
