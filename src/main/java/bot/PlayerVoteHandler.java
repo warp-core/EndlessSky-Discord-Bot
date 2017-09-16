@@ -12,6 +12,7 @@ public class PlayerVoteHandler{
 	private Member voteStarter;
 	private Guild guild;
 	private String name;
+	private Member requester;
 
 
 
@@ -24,8 +25,11 @@ public class PlayerVoteHandler{
 
 
 	public void vote(Member voter){
-		if(!voters.contains(voter))
+		if(!voters.contains(voter)){
+			if (voters.isEmpty())
+				this.requester = voter;
 			voters.add(voter);
+		}
 	}
 
 
@@ -37,8 +41,10 @@ public class PlayerVoteHandler{
 			if(guild.getAudioManager().getConnectedChannel() == m.getVoiceState().getChannel())
 				tmpVoterList.add(m);
 		}
-		if(getVoters() >= getRequiredVoters())
+		if(getVotes() >= getRequiredVotes()){
+			clear();
 			return true;
+		}
 		else
 			return false;
 	}
@@ -57,13 +63,19 @@ public class PlayerVoteHandler{
 
 
 
-	public int getVoters(){
+	public int getVotes(){
 		return voters.size();
 	}
 
 
 
-	public int getRequiredVoters(){
+	public int getRequiredVotes(){
 		return (int)((guild.getAudioManager().getConnectedChannel().getMembers().size()-1)/2+0.5);
+	}
+
+
+
+	public Member getRequester(){
+		return requester;
 	}
 }
