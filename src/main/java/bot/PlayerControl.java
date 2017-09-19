@@ -126,21 +126,33 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-skip"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role.", usage = "-skip", privateMessages = false)
-	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
+	@Command(aliases = {"-skip"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started.", usage = "-skip", privateMessages = false)
+	public synchronized void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
+		PlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
 		List<Permission> perm = requester.getPermissions(channel);
 		if((!(guild.getAudioManager().isAttemptingToConnect()
-						|| guild.getAudioManager().isConnected())
-					|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
-				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
-					|| perm.contains(Permission.ADMINISTRATOR)
-					|| requester.isOwner())){
-			if (guild != null) {
-				skipTrack(channel, requester);
-				skipvoters.clear();
-				msg.delete().queue();
-			}
+				|| guild.getAudioManager().isConnected())
+				|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
+				&& (guild != null)){
+					if(hasDJPerms(requester, channel, guild)){
+						skipTrack(channel, requester);
+						voteHandler.clear();
+						msg.delete().queue();
+					}
+					else{
+						voteHandler.vote(requester);
+						if (voteHandler.checkVotes() == true)
+							skipTrack(channel, voteHandler.getRequester());
+						else{
+							EmbedBuilder eb = new EmbedBuilder();
+							eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+							eb.setColor(guild.getMember(bot.getSelf()).getColor());
+							eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to skip, but " + voteHandler.getRequiredVotes() + " are needed to skip!");
+							eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
+							channel.sendMessage(eb.build()).queue();
+						}
+					}
 		}
 	}
 
@@ -212,24 +224,26 @@ implements CommandExecutor{
 	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
 	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		List<Permission> perm = requester.getPermissions(channel);
-		if(!(guild.getAudioManager().isAttemptingToConnect()
-					|| guild.getAudioManager().isConnected())
-				||(requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
-					|| perm.contains(Permission.ADMINISTRATOR)
-					|| requester.isOwner())){
-			GuildMusicManager mng = getGuildAudioPlayer(guild);
-			TrackScheduler scheduler = mng.scheduler;
-			if(!scheduler.getQueue().isEmpty()){
-				scheduler.shuffle();
-				EmbedBuilder eb = new EmbedBuilder();
-				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("The queue has been shuffled by " + requester.getEffectiveName() + "!");
-				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/shuffle.png");
-				channel.sendMessage(eb.build()).queue();
-				msg.delete().queue();
-			}
+		PlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
+		if(!guild.getAudioManager().isAttemptingToConnect()
+			|| guild.getAudioManager().isConnected()){
+				if(hasDJPerms(requester, channel, guild)){
+						shuffle(guild, requester, msg, channel);
+						voteHandler.clear();
+					}
+				else{
+					voteHandler.vote(requester);
+					if (voteHandler.checkVotes() == true)
+						shuffle(guild, voteHandler.getRequester(), msg, channel);
+					else{
+						EmbedBuilder eb = new EmbedBuilder();
+						eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+						eb.setColor(guild.getMember(bot.getSelf()).getColor());
+						eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to shuffle, but " + voteHandler.getRequiredVotes() + " are needed to shuffle!");
+						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
+						channel.sendMessage(eb.build()).queue();
+					}
+				}
 		}
 	}
 
@@ -257,26 +271,6 @@ implements CommandExecutor{
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
 			channel.sendMessage(eb.build()).queue();
 			System.out.println("AXAXAXAX");
-		}
-	}
-
-
-
-	@Command(aliases = {"-voteskip"}, description = "Start a vote/Vote to skip the current song. Needs 50% response rate from others in the voicechannel in order to succeed.", usage = "-voteskip", privateMessages = false)
-	public synchronized void onVoteskipCommand(Guild guild, TextChannel channel, User author){
-		Member voter = guild.getMember(author);
-		PlayerVoteHandler voteHandler = getVoteHandler(guild, "voteskip");
-		voteHandler.vote(voter);
-		if (voteHandler.checkVotes() == true){
-			skipTrack(channel, voteHandler.getRequester());
-		}
-		else{
-			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to skip, but " + voteHandler.getRequiredVotes() + " are needed to skip!");
-			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/voteskip.png");
-			channel.sendMessage(eb.build()).queue();
 		}
 	}
 
@@ -325,25 +319,27 @@ implements CommandExecutor{
 	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
 	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
+		PlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
 		List<Permission> perm = requester.getPermissions(channel);
-		if((!(guild.getAudioManager().isAttemptingToConnect()
-						|| guild.getAudioManager().isConnected())
-					|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
-				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
-					|| perm.contains(Permission.ADMINISTRATOR)
-					|| requester.isOwner())){
-			GuildMusicManager mng = getGuildAudioPlayer(guild);
-			AudioPlayer player = mng.player;
-			if(!(player.getPlayingTrack() == null)){
-				player.setPaused(true);
-				EmbedBuilder eb = new EmbedBuilder();
-				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setDescription("The audio-player has been paused." + requestedby);
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/pause.png");
-				channel.sendMessage(eb.build()).queue();
-				msg.delete().queue();
+		if(!(guild.getAudioManager().isAttemptingToConnect()
+			|| guild.getAudioManager().isConnected())
+			|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel())){
+			if(hasDJPerms(requester, channel, guild)){
+				voteHandler.clear();
+				pause(guild, requester, msg, channel);
+			}
+			else{
+				voteHandler.vote(requester);
+				if (voteHandler.checkVotes() == true)
+					pause(guild, voteHandler.getRequester(), msg, channel);
+				else{
+					EmbedBuilder eb = new EmbedBuilder();
+					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+					eb.setColor(guild.getMember(bot.getSelf()).getColor());
+					eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to pause, but " + voteHandler.getRequiredVotes() + " are needed to pause!");
+					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
+					channel.sendMessage(eb.build()).queue();
+				}
 			}
 		}
 	}
@@ -353,25 +349,27 @@ implements CommandExecutor{
 	@Command(aliases = {"-resume"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume", privateMessages = false)
 	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
+		PlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
 		List<Permission> perm = requester.getPermissions(channel);
-		if((!(guild.getAudioManager().isAttemptingToConnect()
-						|| guild.getAudioManager().isConnected())
-					|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
-				&& (requester.getRoles().containsAll(guild.getRolesByName("DJ", true))
-					|| perm.contains(Permission.ADMINISTRATOR)
-					|| requester.isOwner())){
-			GuildMusicManager mng = getGuildAudioPlayer(guild);
-			AudioPlayer player = mng.player;
-			if(!(player.getPlayingTrack() == null)){
-				player.setPaused(false);
-				EmbedBuilder eb = new EmbedBuilder();
-				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setDescription("The audio-player has been unpaused." + requestedby);
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
-				channel.sendMessage(eb.build()).queue();
-				msg.delete().queue();
+		if(!(guild.getAudioManager().isAttemptingToConnect()
+			|| guild.getAudioManager().isConnected())
+			|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel())){
+			if(hasDJPerms(requester, channel, guild)){
+				voteHandler.clear();
+				resume(guild, requester, msg, channel);
+			}
+			else{
+				voteHandler.vote(requester);
+				if (voteHandler.checkVotes() == true)
+					resume(guild, voteHandler.getRequester(), msg, channel);
+				else{
+					EmbedBuilder eb = new EmbedBuilder();
+					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+					eb.setColor(guild.getMember(bot.getSelf()).getColor());
+					eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to resume, but " + voteHandler.getRequiredVotes() + " are needed to resume!");
+					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
+					channel.sendMessage(eb.build()).queue();
+				}
 			}
 		}
 	}
@@ -518,7 +516,54 @@ implements CommandExecutor{
 	}
 
 
+	private void shuffle(Guild guild, Member requester, Message msg, TextChannel channel){
+		TrackScheduler scheduler = getGuildAudioPlayer(guild).scheduler;
+		if(!scheduler.getQueue().isEmpty()){
+			scheduler.shuffle();
+			EmbedBuilder eb = new EmbedBuilder();
+			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+			eb.setDescription("The queue has been shuffled by `" + requester.getEffectiveName() + "`!");
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/shuffle.png");
+			channel.sendMessage(eb.build()).queue();
+			msg.delete().queue();
+		}
+	}
 
+
+
+ 	private void pause(Guild guild, Member requester, Message msg, TextChannel channel){
+		String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
+		AudioPlayer player = getGuildAudioPlayer(guild).player;
+		if(!(player.getPlayingTrack() == null)){
+			player.setPaused(true);
+			EmbedBuilder eb = new EmbedBuilder();
+			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
+			eb.setDescription("The audio-player has been paused." + requestedby);
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/pause.png");
+			channel.sendMessage(eb.build()).queue();
+			msg.delete().queue();
+		}
+	}
+
+
+
+	private void resume(Guild guild, Member requester, Message msg, TextChannel channel)
+	{
+		String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
+		AudioPlayer player = getGuildAudioPlayer(guild).player;
+		if(!(player.getPlayingTrack() == null)){
+			player.setPaused(false);
+			EmbedBuilder eb = new EmbedBuilder();
+			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
+			eb.setDescription("The audio-player has been unpaused." + requestedby);
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
+			channel.sendMessage(eb.build()).queue();
+			msg.delete().queue();
+		}
+	}
 	private static String getTimestamp(long milliseconds){
 		int seconds = (int) (milliseconds / 1000) % 60 ;
 		int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
@@ -536,6 +581,18 @@ implements CommandExecutor{
 		if(!audioManager.isConnected() && !audioManager.isAttemptingToConnect() && request.getVoiceState().getChannel()!=null ){
 			audioManager.openAudioConnection(request.getVoiceState().getChannel());
 		}
+	}
+
+
+
+	private boolean hasDJPerms(Member member, TextChannel channel, Guild guild)
+	{
+		if (member.getRoles().containsAll(guild.getRolesByName("DJ", true))
+			|| member.getPermissions(channel).contains(Permission.ADMINISTRATOR)
+			|| member.isOwner())
+			return false;
+		else
+			return false;
 	}
 
 
