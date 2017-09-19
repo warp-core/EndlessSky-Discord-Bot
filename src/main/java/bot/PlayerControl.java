@@ -590,7 +590,7 @@ implements CommandExecutor{
 		if (member.getRoles().containsAll(guild.getRolesByName("DJ", true))
 			|| member.getPermissions(channel).contains(Permission.ADMINISTRATOR)
 			|| member.isOwner())
-			return false;
+			return true;
 		else
 			return false;
 	}
