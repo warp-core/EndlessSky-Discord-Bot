@@ -22,6 +22,7 @@ public class ESBot {
 	public static final String HOST_PUBLIC_URL = "https://github.com/MCOfficer/EndlessSky-Discord-Bot";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
 
+
 	public Properties keys;
 
 
@@ -37,8 +38,8 @@ public class ESBot {
 			cmdHandler.registerCommand(new MemeCommands(this));
 			cmdHandler.registerCommand(new PlayerControl(this, jda));
 			cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
-	        jda.addEventListener(new SpellCheckListener(this));
-					jda.addEventListener(new MemberEventListener(this));
+			jda.addEventListener(new SpellCheckListener(this));
+			jda.addEventListener(new MemberEventListener(this));
 		}
 		catch(LoginException e){
 			e.printStackTrace();

@@ -55,24 +55,11 @@ implements CommandExecutor{
 		GuildMusicManager musicManager = musicManagers.get(guildId);
 
 		if(musicManager == null){
-			musicManager = new GuildMusicManager(playerManager);
+			musicManager = new GuildMusicManager(playerManager, this, guild);
 			musicManagers.put(guildId, musicManager);
 		}
 		guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
 		return musicManager;
-	}
-
-
-
-	private synchronized LinkedList<Member> getGuildSkipvoters(Guild guild){
-		long guildId = Long.parseLong(guild.getId());
-		LinkedList<Member> sk = skipvoters.get(guildId);
-
-		if(sk == null){
-			sk = new LinkedList<>();
-			skipvoters.put(guildId, sk);
-		}
-		return sk;
 	}
 
 
@@ -118,8 +105,6 @@ implements CommandExecutor{
 				if (newQuery)
 					i++;
 			}
-			for (String s : output)
-				System.out.println(s);
 			return output;
 		}
 	}
@@ -441,7 +426,7 @@ implements CommandExecutor{
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				channel.sendMessage(eb.build()).queue();
 
-				play(channel.getGuild(), musicManager, track);
+				play(guild, musicManager, track);
 			}
 
 			@Override
@@ -593,6 +578,13 @@ implements CommandExecutor{
 			return true;
 		else
 			return false;
+	}
+
+
+
+	public void onNextTrack(Guild guild)
+	{
+		getVoteHandler(guild, "skip").clear();
 	}
 
 
