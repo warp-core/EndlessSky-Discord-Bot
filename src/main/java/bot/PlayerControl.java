@@ -84,6 +84,7 @@ implements CommandExecutor{
 			return args;
 		}
 		else{
+			// set up an array of strings with a length equal to the amount of songs requested (separated by commata)
 			int counter = 0;
 			for(String s : args) {
 				if(s.endsWith(",")) {
@@ -207,7 +208,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
-	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public synchronized void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
 		if(!guild.getAudioManager().isAttemptingToConnect()
@@ -302,7 +303,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
-	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public synchronized void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
 		List<Permission> perm = requester.getPermissions(channel);
@@ -332,7 +333,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-resume"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume", privateMessages = false)
-	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public synchronized void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
 		List<Permission> perm = requester.getPermissions(channel);
