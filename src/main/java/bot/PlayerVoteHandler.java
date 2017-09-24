@@ -39,7 +39,7 @@ public class PlayerVoteHandler{
 			if(guild.getAudioManager().getConnectedChannel() == m.getVoiceState().getChannel())
 				tmpVoterList.add(m);
 		}
-		if(getVotes() > getRequiredVotes()){
+		if(getVotes() >= getRequiredVotes()){
 			clear();
 			return true;
 		}
@@ -62,7 +62,7 @@ public class PlayerVoteHandler{
 
 
 	public int getRequiredVotes(){
-		return (int)((guild.getAudioManager().getConnectedChannel().getMembers().size()-1)/2+0.5);
+		return (int)((guild.getAudioManager().getConnectedChannel().getMembers().size()-1)/2.0 + 0.5);
 	}
 
 
