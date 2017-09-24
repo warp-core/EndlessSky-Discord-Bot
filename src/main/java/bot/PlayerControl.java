@@ -495,6 +495,7 @@ implements CommandExecutor{
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 		eb.setDescription("Skipped to next track." + requestedby);
+		eb.setColor(channel.getGuild().getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/skip.png");
 		channel.sendMessage(eb.build()).queue();
 	}
