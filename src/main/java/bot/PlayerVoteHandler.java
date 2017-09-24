@@ -11,14 +11,12 @@ public class PlayerVoteHandler{
 	private LinkedList<Member> voters;
 	private Member voteStarter;
 	private Guild guild;
-	private String name;
 	private Member requester;
 
 
 
-	public PlayerVoteHandler(Guild guild, String name){
+	public PlayerVoteHandler(Guild guild){
 		this.guild = guild;
-		this.name = name;
 		this.voters = new LinkedList<Member>();
 	}
 
@@ -41,7 +39,7 @@ public class PlayerVoteHandler{
 			if(guild.getAudioManager().getConnectedChannel() == m.getVoiceState().getChannel())
 				tmpVoterList.add(m);
 		}
-		if(getVotes() >= getRequiredVotes()){
+		if(getVotes() > getRequiredVotes()){
 			clear();
 			return true;
 		}
@@ -53,12 +51,6 @@ public class PlayerVoteHandler{
 
 	public void clear(){
 		voters.clear();
-	}
-
-
-
-	public String getName(){
-		return name;
 	}
 
 

@@ -31,8 +31,7 @@ implements CommandExecutor{
 
 	private final AudioPlayerManager playerManager;
 	private final Map<Long, GuildMusicManager> musicManagers;
-	private Map<Long,LinkedList<Member>> skipvoters;
-	private LinkedList<PlayerVoteHandler> voteHandlers;
+	private Map<String, PlayerVoteHandler> voteHandlers;
 	private ESBot bot;
 
 
@@ -42,8 +41,7 @@ implements CommandExecutor{
 		this.musicManagers = new HashMap<>();
 		new AudioTimeoutControl(musicManagers,jda);
 		this.playerManager = new DefaultAudioPlayerManager();
-		this.skipvoters = new HashMap<>();
-		this.voteHandlers = new LinkedList<PlayerVoteHandler>();
+		this.voteHandlers = new HashMap<String, PlayerVoteHandler>();
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		AudioSourceManagers.registerLocalSource(playerManager);
 	}
@@ -590,16 +588,13 @@ implements CommandExecutor{
 
 
 
-	public PlayerVoteHandler getVoteHandler(Guild guild, String name){
-		PlayerVoteHandler handler = null;
-		for (PlayerVoteHandler h : voteHandlers){
-			if (h.getName() == name)
-				handler = h;
+	public PlayerVoteHandler getVoteHandler(Guild guild, String key){
+		if(voteHandlers.containsKey(key))
+			return voteHandlers.get(key);
+		else{
+			PlayerVoteHandler handler = new PlayerVoteHandler(guild);
+			voteHandlers.put(key, handler);
+			return handler;
 		}
-		if (handler == null){
-			handler = new PlayerVoteHandler(guild, name);
-			voteHandlers.add(handler);
-		}
-		return handler;
 	}
 }
