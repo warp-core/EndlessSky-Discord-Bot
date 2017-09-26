@@ -111,7 +111,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-skip"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started.", usage = "-skip", privateMessages = false)
-	public synchronized void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
 		List<Permission> perm = requester.getPermissions(channel);
@@ -124,18 +124,8 @@ implements CommandExecutor{
 						voteHandler.clear();
 						msg.delete().queue();
 					}
-					else{
-						voteHandler.vote(requester);
-						if (voteHandler.checkVotes() == true)
-							skipTrack(channel, voteHandler.getRequester());
-						else{
-							EmbedBuilder eb = new EmbedBuilder();
-							eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-							eb.setColor(guild.getMember(bot.getSelf()).getColor());
-							eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to skip, but " + voteHandler.getRequiredVotes() + " are needed to skip!");
-							eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
-							channel.sendMessage(eb.build()).queue();
-						}
+					else if (vote(voteHandler, requester, channel, "skip")){
+						skipTrack(channel, voteHandler.getRequester());
 					}
 		}
 	}
@@ -206,7 +196,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
-	public synchronized void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
 		if(!guild.getAudioManager().isAttemptingToConnect()
@@ -215,21 +205,11 @@ implements CommandExecutor{
 						shuffle(guild, requester, msg, channel);
 						voteHandler.clear();
 					}
-				else{
-					voteHandler.vote(requester);
-					if (voteHandler.checkVotes() == true)
-						shuffle(guild, voteHandler.getRequester(), msg, channel);
-					else{
-						EmbedBuilder eb = new EmbedBuilder();
-						eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-						eb.setColor(guild.getMember(bot.getSelf()).getColor());
-						eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to shuffle, but " + voteHandler.getRequiredVotes() + " are needed to shuffle!");
-						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
-						channel.sendMessage(eb.build()).queue();
-					}
-				}
+				else if (vote(voteHandler, requester, channel, "shuffle"))
+					shuffle(guild, voteHandler.getRequester(), msg, channel);
 		}
 	}
+
 
 
 
@@ -261,7 +241,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via '-play'.\n\nRequires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
-	public synchronized void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		String by = " by `" + requester.getEffectiveName() + "`.";
 		List<Permission> perm = requester.getPermissions(channel);
@@ -301,7 +281,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
-	public synchronized void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
 		List<Permission> perm = requester.getPermissions(channel);
@@ -312,26 +292,15 @@ implements CommandExecutor{
 				voteHandler.clear();
 				pause(guild, requester, msg, channel);
 			}
-			else{
-				voteHandler.vote(requester);
-				if (voteHandler.checkVotes() == true)
-					pause(guild, voteHandler.getRequester(), msg, channel);
-				else{
-					EmbedBuilder eb = new EmbedBuilder();
-					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-					eb.setColor(guild.getMember(bot.getSelf()).getColor());
-					eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to pause, but " + voteHandler.getRequiredVotes() + " are needed to pause!");
-					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
-					channel.sendMessage(eb.build()).queue();
-				}
-			}
+			else if (vote(voteHandler, requester, channel, "pause"))
+				pause(guild, voteHandler.getRequester(), msg, channel);
 		}
 	}
 
 
 
 	@Command(aliases = {"-resume"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume", privateMessages = false)
-	public synchronized void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
 		List<Permission> perm = requester.getPermissions(channel);
@@ -342,19 +311,8 @@ implements CommandExecutor{
 				voteHandler.clear();
 				resume(guild, requester, msg, channel);
 			}
-			else{
-				voteHandler.vote(requester);
-				if (voteHandler.checkVotes() == true)
-					resume(guild, voteHandler.getRequester(), msg, channel);
-				else{
-					EmbedBuilder eb = new EmbedBuilder();
-					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-					eb.setColor(guild.getMember(bot.getSelf()).getColor());
-					eb.setDescription("Currently are " + voteHandler.getVotes() + " captains voting to resume, but " + voteHandler.getRequiredVotes() + " are needed to resume!");
-					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
-					channel.sendMessage(eb.build()).queue();
-				}
-			}
+			else if (vote(voteHandler, requester, channel, "resume"))
+				resume(guild, voteHandler.getRequester(), msg, channel);
 		}
 	}
 
@@ -589,7 +547,25 @@ implements CommandExecutor{
 
 
 
-	public PlayerVoteHandler getVoteHandler(Guild guild, String key){
+	public synchronized boolean vote(PlayerVoteHandler handler, Member requester, TextChannel channel, String subject)
+	{
+		handler.vote(requester);
+		if (handler.checkVotes())
+			return true;
+		else{
+			EmbedBuilder eb = new EmbedBuilder();
+			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+			eb.setColor(channel.getGuild().getMember(bot.getSelf()).getColor());
+			eb.setDescription("Currently are " + handler.getVotes() + " captains voting to " + subject + ", but " + handler.getRequiredVotes() + " are needed to " + subject + "!");
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
+			channel.sendMessage(eb.build()).queue();
+			return false;
+		}
+	}
+
+
+
+	public synchronized PlayerVoteHandler getVoteHandler(Guild guild, String key){
 		if(voteHandlers.containsKey(key))
 			return voteHandlers.get(key);
 		else{
