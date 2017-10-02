@@ -10,21 +10,23 @@ public class ESBotMain {
 	}
 
 	public ESBotMain(){
-		System.out.println("Welcome to ESBot-Command Line Interface"
-				+ "\nAvailable Commands:"
+		System.out.println("Welcome to ESBot-Command Line Interface");
+		final String commmandList = "\nAvailable Commands:"
+				+ "\n\thelp: Displays these commands"
 				+ "\n\treadToken: reads the necessary token for the bot from token.txt"
 				+ "\n\tinputToken: reads next input as token"
 				+ "\n\tdisplayToken: displays the current token"
 				+ "\n\tstart: starts the bot with the given token"
 				+ "\n\tstop: stops the bot"
 				+ "\n\texit: stops the bot and exits ESBot-Command Line Interface"
-				+ "\nwhile the bot is running, the token can not be changed");
-
+				+ "\nNote:\n\tWhile the bot is running, the token can not be changed.";
+		System.out.println(commmandList);
 		boolean running = true;
 		boolean botRunning = false;
 
 		ESBot esBot = null;
-		String token = "no token given";
+		final String tokenDefault = "no token given";
+		String token = tokenDefault;
 
 		Scanner keyboard = new Scanner(System.in);
 		String input = "";
@@ -34,14 +36,14 @@ public class ESBotMain {
 			Scanner in = new Scanner(new FileReader("token.txt"));
 			token = in.nextLine();
 			in.close();
-			System.out.println("Reading successfull");
+			System.out.println("\nToken read successfully, autostarting ESBot instance...\n");
+			esBot = new ESBot(token);
+			botRunning = true;
 		}
 		catch(Exception e){
-			System.out.println("Reading failed");
+			System.out.println("\nReading failed. Manual token entry required.");
 			e.printStackTrace();
 		}
-		botRunning = true;
-		esBot = new ESBot(token);
 
 		while(running){
 			input = keyboard.nextLine();
@@ -52,10 +54,10 @@ public class ESBotMain {
 							Scanner in = new Scanner(new FileReader("token.txt"));
 							token = in.nextLine();
 							in.close();
-							System.out.println("Reading successfull");
+							System.out.println("Token read successfully.");
 						}
 						catch(Exception e){
-							System.out.println("Reading failed");
+							System.out.println("Read failed.");
 							e.printStackTrace();
 						}
 						break;
@@ -66,8 +68,15 @@ public class ESBotMain {
 						System.out.println("Current Token: " + token);
 						break;
 					case "start":
-						botRunning = true;
-						esBot = new ESBot(token);
+						if(token.equals(tokenDefault))
+							System.out.println("Token needed.");
+						else{
+							esBot = new ESBot(token);
+							botRunning = true;
+						}
+						break;
+					case "help":
+						System.out.println(commmandList);
 						break;
 					case "stop":
 						System.out.println("ESBot not running!");
@@ -82,6 +91,9 @@ public class ESBotMain {
 			}
 			else{
 				switch(input){
+					case "help":
+						System.out.println(commmandList);
+						break;
 					case "stop":
 						esBot.disconnect();
 						botRunning = false;

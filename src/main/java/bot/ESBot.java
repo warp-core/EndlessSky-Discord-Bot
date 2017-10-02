@@ -40,6 +40,7 @@ public class ESBot {
 			cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
 			jda.addEventListener(new SpellCheckListener(this));
 			jda.addEventListener(new MemberEventListener(this));
+			System.out.println("\nESBot instantiation successful. Ready for chatroom commands.");
 		}
 		catch(LoginException e){
 			e.printStackTrace();
