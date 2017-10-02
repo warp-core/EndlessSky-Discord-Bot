@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.regex.*;
 
 import javax.imageio.ImageIO;
 
@@ -81,56 +82,66 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-issue"}, description = "Link to Endless Sky issue #X. If no issue number is given, links the issues page.", usage = "-issue X", privateMessages = true)
 	public void onIssueCommand(MessageChannel channel, String[] args){
-		StringBuilder path = new StringBuilder("https://github.com/endless-sky/endless-sky/issues");
-		if(args.length > 1){
-			path.append("/");
-			for(String str : args)
-				path.append(str);
-		}
-		else if(args.length > 0)
-			path.append("/" + args[0]);
+		final String base = "https://github.com/endless-sky/endless-sky/issues";
+		StringBuilder output = new StringBuilder("");
+		// Check each input for a numeric portion until a non-numeric arg is found.
+		if(args.length > 0)
+			for(String str : args){
+				String number = GetNumeric(str);
+				if(number.length() > 0)
+					output.append(base + "/" + number + "\n");
+				else
+					break;
+			}
 
-		channel.sendMessage(path.toString().replace(" ", "")).queue();
+		if(output.length() == 1)
+			output.append(base);
+
+		channel.sendMessage(output.toString().replaceAll(" ", "")).queue();
 	}
 
 
 
 	@Command(aliases = {"-pull"}, description = "Link to Endless Sky pull request (PR) #X. If no pull number is given, links the PR page.", usage = "-pull X", privateMessages = true)
 	public void onPullCommand(MessageChannel channel, String[] args){
-		StringBuilder request = new StringBuilder("/");
-		if(args.length > 1)
-			for(String str : args)
-				request.append(str);
-		else if(args.length > 0)
-			request.append(args[0]);
-		else
-			request = new StringBuilder("s");
+		final String base = "https://github.com/endless-sky/endless-sky/pull";
+		StringBuilder output = new StringBuilder("");
+		// Check each input for a numeric portion until a non-numeric arg is found.
+		if(args.length > 0)
+			for(String str : args){
+				String number = GetNumeric(str);
+				if(number.length() > 0)
+					output.append(base + "/" + number + "\n");
+				else
+					break;
+			}
 
-		String path = "https://github.com/endless-sky/endless-sky/pull" + request.toString().replace(" ", "");
+		if(output.length() == 1)
+			output.append(base + "s");
 
-		channel.sendMessage(path).queue();
+		channel.sendMessage(output.toString().replaceAll(" ", "")).queue();
 	}
 
 
 
 	@Command(aliases = {"-commit"}, description = "Link to Endless Sky commit hash \"X\". Only the first 7 letters are necessary.\nLeave blank for the most recent commit.", usage = "-commit X", privateMessages = true)
 	public void onCommitCommand(MessageChannel channel, String[] args){
-		StringBuilder request = new StringBuilder("");
-		if(args.length > 1)
-			for(String str : args)
-				request.append(str);
-		else if(args.length > 0)
-			request.append(args[0]);
+		final String base = "https://github.com/endless-sky/endless-sky/commit/";
+		StringBuilder output = new StringBuilder("");
+		// Check each input for a hexadecimal hash until a non-hash arg is found.
+		if(args.length > 0)
+			for(String str : args){
+				String hash = GetHash(str);
+				if(hash.length() > 6)
+					output.append(base + hash + "\n");
+				else
+					break;
+			}
 
-		if(request.length() > 6){
-			String path = "https://github.com/endless-sky/endless-sky/commit/" + request.toString().replace(" ","");
-			channel.sendMessage(path).queue();
-		}
-		else if(request.length() > 0){
-			channel.sendMessage("At least 7 characters are required.").queue();
-		}
-		else
-			channel.sendMessage("https://github.com/endless-sky/endless-sky/commit/").queue();
+		if(output.length() == 1)
+			output.append(base);
+
+		channel.sendMessage(output.toString().replaceAll(" ", "")).queue();
 	}
 
 
@@ -602,6 +613,28 @@ implements CommandExecutor{
 			default:
 				return true;
 		}
+	}
+
+
+
+	// Return the numeric portion of the passed argument
+	private static String GetNumeric(String arg){
+		arg = arg.replaceAll("\"", "").replaceAll("\'", "").trim();
+		Pattern regex = Pattern.compile("\\d{1,}");
+		Matcher result = regex.matcher(arg);
+		String numberPart = result.find() ? result.group() : "";
+		return numberPart;
+	}
+	
+	
+	
+	// Return the hexadecimal portion of the passed argument.
+	private static String GetHash(String arg){
+		arg = arg.replaceAll("\"", "").replaceAll("\'", "").trim();
+		Pattern regex = Pattern.compile("[\\dA-Fa-f]+");
+		Matcher result = regex.matcher(arg);
+		String hash = result.find() ? result.group() : "";
+		return hash.length() > 6 ? hash : "";
 	}
 
 
