@@ -28,6 +28,21 @@ implements CommandExecutor{
 		data = readData();
 	}
 
+	final String[] dataTypes = {
+		"ship",
+		"outfit",
+		"mission",
+		"person",
+		"planet",
+		"system",
+		"effect",
+		"scene",
+		"fleet",
+		"event",
+		"government",
+		"phrase"
+	};
+
 
 
 	private String readData(){
@@ -260,7 +275,27 @@ implements CommandExecutor{
 	// from the Endless Sky GitHub repository.
 	// Returns nullstring if no data could be found.
 	private String lookupData(String lookup){
-		lookup = checkLookup(lookup, true);
+		// Remove any leading or trailing spaces.
+		lookup = lookup.trim();
+		// The first word of the lookup may be a supported dataType.
+		int countWords = 1 + CountOf(lookup, ' ');
+		String category = "";
+		if(countWords > 1){
+			category = lookup.substring(0, lookup.indexOf(" ")).toLowerCase();
+			boolean isCategory = false;
+			// Is the first word a dataType?
+			for(String str : dataTypes){
+				if(str.contains(category)){
+					isCategory = true;
+					break;
+				}
+			}
+			if(isCategory)
+				lookup = lookup.substring(lookup.indexOf(" ") + 1);
+			else
+				category = "";
+		}
+		lookup = checkLookup(category, lookup, true);
 		if(lookup.length() > 0){
 			int start = data.indexOf(lookup);
 			int end = start + lookup.length();
@@ -281,38 +316,36 @@ implements CommandExecutor{
 	// Queries the loaded datafiles for special Endless Sky keywords.
 	// If helper is 'true', will try both as-passed 'lookup', and with
 	// enforced word capitalization.
-	private String checkLookup(String lookup, boolean helper){
-		final String[] dataTypes = {
-			"ship",
-			"outfit",
-			"mission",
-			"person",
-			"planet",
-			"system",
-			"effect",
-			"scene",
-			"fleet",
-			"event",
-			"government",
-			"phrase"
-		};
+	// If the first word of a lookup was a supported category, it is not
+	// subjected to capitalization and quoting.
+	private String checkLookup(String dataType, String lookup, boolean helper){
 		// The lookup may be exact:
 		if(data.contains("\n" + lookup)){
 			return "\n" + lookup;
 		}
-		// The lookup may be only the value, and not the keyword:
-		for(String str : dataTypes){
-			if(data.contains("\n" + str + " \"" + lookup + "\"")){
-				return "\n" + str + " \"" + lookup + "\"";
+		// A supported dataType limiter may have been used.
+		if(dataType.length() > 0){
+			if(data.contains("\n" + dataType + " \"" + lookup + "\"")){
+				return "\n" + dataType + " \"" + lookup + "\"";
 			}
-			else if(data.contains("\n" + str + " " + lookup)){
-				return "\n" + str + " " + lookup;
+			else if(data.contains("\n" + dataType + " " + lookup)){
+				return "\n" + dataType + " " + lookup;
 			}
 		}
-		// Or perhaps not capitalized correctly.
+		else{
+			for(String str : dataTypes){
+				if(data.contains("\n" + str + " \"" + lookup + "\"")){
+					return "\n" + str + " \"" + lookup + "\"";
+				}
+				else if(data.contains("\n" + str + " " + lookup)){
+					return "\n" + str + " " + lookup;
+				}
+			}
+		}
+		// The input may not have been capitalized correctly.
 		if(helper){
 			lookup = CapitalizeWords(lookup);
-			return checkLookup(lookup, false);
+			return checkLookup(dataType, lookup, false);
 		}
 
 		return "";
