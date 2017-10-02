@@ -144,8 +144,9 @@ implements CommandExecutor{
 			}
 			String message = "";
 			boolean printedImage = false;
+			String variantParsedRequest = ParseVariants(request);
 			if(PrintImage(guild, channel, lookupData(request))
-					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
+					|| PrintImage(guild, channel, lookupData(variantParsedRequest))
 					|| (IsShipVariantRequest(request)
 								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				printedImage = true;
@@ -153,9 +154,8 @@ implements CommandExecutor{
 			else
 				message = "There is no image associated with '" + request + "'";
 
-			request = ParseVariants(request);
-			String output = lookupData(request);
-			if(!ShouldPrintThis(GetDataType(output))){
+			String output = lookupData(variantParsedRequest);
+			if(!ShouldPrintThis(GetDataType(output)) && output.length() > 0){
 				OutputHelper(channel, "Try '-showdata' for that information.");
 				return;
 			}
@@ -168,10 +168,10 @@ implements CommandExecutor{
 			else if(!printedImage)
 				message += ", nor any description.";
 			else if(printedImage)
-				message = "There is no description of '" + request + "'.";
+				message = "There is no description of '" + variantParsedRequest + "'.";
 
 			if(output.length() < 1)
-				message = "I could not find anything associated with '" + request + "'.";
+				message = "I could not find anything associated with '" + variantParsedRequest + "'.";
 
 			if(message.length() > 0)
 				OutputHelper(channel, message);
@@ -189,8 +189,9 @@ implements CommandExecutor{
 			}
 			String message = "";
 			boolean printedImage = false;
+			String variantParsedRequest = ParseVariants(request);
 			if(PrintImage(guild, channel, lookupData(request))
-					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
+					|| PrintImage(guild, channel, lookupData(variantParsedRequest))
 					|| (IsShipVariantRequest(request)
 								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				printedImage = true;
@@ -198,11 +199,10 @@ implements CommandExecutor{
 			else
 				message = "I could not find an image associated with '" + request + "'";
 
-			request = ParseVariants(request);
-			String output = lookupData(request);
+			String output = lookupData(variantParsedRequest);
 			if(output.length() < 1){
 				if(printedImage)
-					message = "I could not find any data associated with '" + request + "'.";
+					message = "I could not find any data associated with '" + variantParsedRequest + "'.";
 				else
 					message += ", nor could I find any data.";
 			}
@@ -570,7 +570,7 @@ implements CommandExecutor{
 		if(end < 0)
 			return "";
 
-		return text.substring(0, end-1).replace("\"", "");
+		return text.substring(0, end-1).replaceAll("\"", "").trim();
 	}
 
 
@@ -580,7 +580,8 @@ implements CommandExecutor{
 	public static String GetDataType(String output){
 		if(output.length() < 1 || output.indexOf(" ") < 1)
 			return "";
-		return output.substring(1, output.indexOf(" "));
+		int start = (output.indexOf('\n') == 0 || output.indexOf('\t') == 0) ? 1 : 0;
+		return output.substring(start, output.indexOf(" "));
 	}
 
 
