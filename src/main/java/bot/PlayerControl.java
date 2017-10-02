@@ -117,7 +117,6 @@ implements CommandExecutor{
 		int count = countStr.length() == 0 ? 1 : new Integer(countStr).intValue();
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
-		List<Permission> perm = requester.getPermissions(channel);
 		if((!(guild.getAudioManager().isAttemptingToConnect()
 				|| guild.getAudioManager().isConnected())
 				|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel()))
@@ -135,7 +134,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-current"}, description = "Displays the current autiotrack.", usage = "-current", privateMessages = false)
+	@Command(aliases = {"-current"}, description = "Displays the current audiotrack.", usage = "-current", privateMessages = false)
 	public void onCurrentCommand(Guild guild, TextChannel channel, Message msg){
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		AudioPlayer player = mng.player;
@@ -198,47 +197,34 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role.", usage = "-shuffle", privateMessages = false)
+	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-shuffle", privateMessages = false)
 	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
 		if(!guild.getAudioManager().isAttemptingToConnect()
-			|| guild.getAudioManager().isConnected()){
-				if(hasDJPerms(requester, channel, guild)){
-						shuffle(guild, requester, msg, channel);
-						voteHandler.clear();
-					}
-				else if (vote(voteHandler, requester, channel, "shuffle"))
-					shuffle(guild, voteHandler.getRequester(), msg, channel);
+				|| guild.getAudioManager().isConnected()){
+			if(hasDJPerms(requester, channel, guild)){
+				shuffle(guild, requester, msg, channel);
+				voteHandler.clear();
+			}
+			else if(vote(voteHandler, requester, channel, "shuffle"))
+				shuffle(guild, voteHandler.getRequester(), msg, channel);
 		}
 	}
 
 
 
 
-	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role.", usage = "-stop", privateMessages = false)
+	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-stop", privateMessages = false)
 	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		String commandby = "\n(command by `" + requester.getEffectiveName() + "`)";
-		List<Permission> perm = requester.getPermissions(channel);
-		if(requester.getRoles().containsAll(guild.getRolesByName("DJ",true))
-				|| perm.contains(Permission.ADMINISTRATOR)
-				|| requester.isOwner()){
-			GuildMusicManager mng = getGuildAudioPlayer(guild);
-			AudioPlayer player = mng.player;
-			TrackScheduler scheduler = mng.scheduler;
-			scheduler.getQueue().clear();
-			player.stopTrack();
-			player.setPaused(false);
-			guild.getAudioManager().closeAudioConnection();
-			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-			eb.setDescription("Playback has been completely stopped and the queue has been cleared." + commandby);
-			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
-			channel.sendMessage(eb.build()).queue();
-			System.out.println("AXAXAXAX");
+		PlayerVoteHandler voteHandler = getVoteHandler(guild, "stop");
+		if(hasDJPerms(requester, channel, guild)){
+			stopPlayback(guild, requester, msg, channel);
+			voteHandler.clear();
 		}
+		else if(vote(voteHandler, requester, channel, "stop"))
+			stopPlayback(guild, requester, msg, channel);
 	}
 
 
@@ -513,6 +499,29 @@ implements CommandExecutor{
 			msg.delete().queue();
 		}
 	}
+
+
+
+	private void stopPlayback(Guild guild, Member requester, Message msg, TextChannel channel)
+	{
+		String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
+		GuildMusicManager mng = getGuildAudioPlayer(guild);
+		AudioPlayer player = mng.player;
+		TrackScheduler scheduler = mng.scheduler;
+		scheduler.getQueue().clear();
+		player.stopTrack();
+		player.setPaused(false);
+		guild.getAudioManager().closeAudioConnection();
+		EmbedBuilder eb = new EmbedBuilder();
+		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+		eb.setDescription("Playback has been completely stopped and the queue has been cleared." + requestedby);
+		eb.setColor(guild.getMember(bot.getSelf()).getColor());
+		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
+		channel.sendMessage(eb.build()).queue();
+	}
+
+
+
 	private static String getTimestamp(long milliseconds){
 		int seconds = (int) (milliseconds / 1000) % 60 ;
 		int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
