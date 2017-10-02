@@ -110,11 +110,12 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-skip"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started.", usage = "-skip, -skip #", privateMessages = false)
+	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started.", usage = "-skip, -skip #, -next, -next #", privateMessages = false)
 	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int count = countStr.length() == 0 ? 1 : new Integer(countStr).intValue();
+		count = count < 1 ? 1 : count;
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
 		if((!(guild.getAudioManager().isAttemptingToConnect()
@@ -273,7 +274,6 @@ implements CommandExecutor{
 	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
-		List<Permission> perm = requester.getPermissions(channel);
 		if(!(guild.getAudioManager().isAttemptingToConnect()
 			|| guild.getAudioManager().isConnected())
 			|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel())){
@@ -292,7 +292,6 @@ implements CommandExecutor{
 	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		PlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
-		List<Permission> perm = requester.getPermissions(channel);
 		if(!(guild.getAudioManager().isAttemptingToConnect()
 			|| guild.getAudioManager().isConnected())
 			|| (requester.getVoiceState().getChannel() == guild.getAudioManager().getConnectedChannel())){
@@ -361,13 +360,13 @@ implements CommandExecutor{
 
 		playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler(){
 
-		final String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
+		final String requestedby = "requested by `" + requester.getEffectiveName() + "`)";
 
 			@Override
 			public void trackLoaded(AudioTrack track){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Adding to queue `" + track.getInfo().title + "`" + requestedby);
+				eb.setDescription("Queuing `" + track.getInfo().title + "`\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				channel.sendMessage(eb.build()).queue();
@@ -384,20 +383,16 @@ implements CommandExecutor{
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
-				if (playlist.isSearchResult()){
+				if(playlist.isSearchResult()){
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
-					eb.setDescription("Adding to queue `" + firstTrack.getInfo().title + "` (first track of `" + playlist.getName() + "`)" + requestedby);
-					play(channel.getGuild(), musicManager, firstTrack);
+					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					play(guild, musicManager, firstTrack);
 				}
 				else{
-					int counter = 0;
-					for (AudioTrack track : playlist.getTracks()){
-						play(channel.getGuild(), musicManager, track);
-						counter ++;
-					}
-					eb.setDescription("Adding to queue playlist `" + playlist.getName() + "` (" + counter + " tracks)" + requestedby);
+					play(guild, musicManager, playlist);
 
+					eb.setDescription("Queuing playlist `" + playlist.getName() + "`\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
 				}
 				channel.sendMessage(eb.build()).queue();
 			}
@@ -406,7 +401,7 @@ implements CommandExecutor{
 			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Nothing found by `" + trackUrl + "`" + requestedby);
+				eb.setDescription("Nothing found by `" + trackUrl + "`\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();
@@ -416,7 +411,7 @@ implements CommandExecutor{
 			public void loadFailed(FriendlyException exception){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Could not play: `" + exception.getMessage() + "`" + requestedby);
+				eb.setDescription("Could not play: `" + exception.getMessage() + "`\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 				channel.sendMessage(eb.build()).queue();
@@ -426,8 +421,14 @@ implements CommandExecutor{
 
 
 
+	// Add a single song to the end of current LinkedList<AudioTrack> queue.
 	private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track){
 		musicManager.scheduler.queue(track);
+	}
+
+	// Add a list of songs to the queue (instead of individually).
+	private void play(Guild guild, GuildMusicManager musicManager, AudioPlaylist playlist){
+		musicManager.scheduler.queue(playlist);
 	}
 
 
@@ -437,10 +438,8 @@ implements CommandExecutor{
 		if (requester != null)
 			requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
 
-		GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
-		for(int i = 0; i<count; ++i)
-			musicManager.scheduler.nextTrack();
-		
+		getGuildAudioPlayer(channel.getGuild()).scheduler.nextTrack(count);
+
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 		eb.setDescription("Skipped " + (count == 1 ? "to next track."
@@ -449,6 +448,7 @@ implements CommandExecutor{
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/skip.png");
 		channel.sendMessage(eb.build()).queue();
 	}
+
 
 
 	private void shuffle(Guild guild, Member requester, Message msg, TextChannel channel){

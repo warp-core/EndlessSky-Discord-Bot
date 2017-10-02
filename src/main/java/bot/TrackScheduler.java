@@ -2,11 +2,13 @@ package bot;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This class schedules tracks for the audio player. It contains the queue of tracks.
@@ -41,7 +43,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	/**
 	 * Add the next track to queue or play right away if nothing is in the queue.
 	 *
-	 * @param track The track to play or add to queue.
+	 * @param AudioTrack track The track to play or add to queue.
 	 */
 	public void queue(AudioTrack track){
 		// Calling startTrack with the noInterrupt set to true will start the track only if nothing is currently playing. If
@@ -52,7 +54,35 @@ public class TrackScheduler extends AudioEventAdapter {
 		}
 	}
 
+	/**
+	 * Queue a number of tracks, playing the first one if possible.
+	 *
+	 * @param AudioPlaylist playlist The playlist to begin playing (or queue).
+	 */
+	public void queue(AudioPlaylist playlist){
+		// Play (or queue) the first track.
+		List<AudioTrack> tracks = playlist.getTracks();
+		queue(tracks.remove(0));
+		// Queue the remaining tracks.
+		if(!tracks.isEmpty())
+			queue.addAll(tracks);
+	}
 
+
+
+	/**
+	 * Stops playing the current song, and advances the queue.
+	 *
+	 * @param int skipCount The number of tracks to advance.
+	 */
+	public void nextTrack(int skipCount){
+		// Decrease the skipped count by one since nextTrack() will advance by 1.
+		skipCount = Math.min(--skipCount, queue.size());
+		for(int i = 0; i < skipCount; ++i){
+			queue.pop();
+		}
+		nextTrack();
+	}
 
 	/**
 	 * Start the next track, stopping the current one if it is playing.
