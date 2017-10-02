@@ -451,7 +451,7 @@ implements CommandExecutor{
 	private static String CapitalizeWords(String input){
 		int countWords = 1 + CountOf(input, ' ') + CountOf(input, '-');
 		char[] ic = input.toCharArray();
-		ic[0] = Character.toUpperCase(ic[0]);
+		ic[ic[0] == '"' ? 1 : 0] = Character.toUpperCase(ic[ic[0] == '"' ? 1 : 0]);
 		boolean hasDash = input.indexOf("-") > -1;
 		boolean hasSpace = input.indexOf(" ") > -1;
 		if(--countWords > 0){
