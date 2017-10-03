@@ -57,7 +57,7 @@ implements CommandExecutor{
 
 
 	// Return a message indicating that the requestor was not authorized.
-	private static String GetRandomDeniedMessage(){
+	public static String GetRandomDeniedMessage(){
 		String[] messageList = {
 			"You can't order me around.",
 			"I don't listen to you.",
