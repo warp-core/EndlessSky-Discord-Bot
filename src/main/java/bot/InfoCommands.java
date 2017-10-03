@@ -56,10 +56,11 @@ implements CommandExecutor{
 						}
 						title += isAlias ? cmd.aliases()[aliasIndex]
 								: (cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage());
-						eb.setTitle(title, null);
+						eb.setTitle(title);
 						eb.setColor(guild.getMember(bot.getSelf()).getColor());
+						eb.setDescription(cmd.usage() + "\n-----\n");
 						if(!cmd.description().equals("none")){
-							eb.setDescription(cmd.description());
+							eb.appendDescription(cmd.description());
 						}
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cmd.png");
 						channel.sendMessage(eb.build()).queue();

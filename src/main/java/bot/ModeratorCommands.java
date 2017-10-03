@@ -74,7 +74,7 @@ implements CommandExecutor{
 			else{
 				int n = Integer.valueOf(args[0]);
 				// Allow custom banlengths, including 0-length.
-				int banLength = (args.length == 3 && IsIntegerInRange(args[2], 0, 86400)) ? Integer.valueOf(args[2]) : 0;
+				int banLength = (args.length > 2 && IsIntegerInRange(args[2], 0, 86400)) ? Integer.valueOf(args[2]) : 0;
 				TextChannel dest = msg.getMentionedChannels().get(0);
 				// Always delete the requesting message.
 				msg.delete().queue();
@@ -142,22 +142,11 @@ implements CommandExecutor{
 				// Place the temporary bans.
 				if(!toTempBan.isEmpty() && banLength > 0){
 					final String gulagRoleName = "Bad Boy/Girl";
-					if(guild.getRolesByName(gulagRoleName, true).size() == 0){
-						guild.getController().createRole().queue( r -> {
-							r.getManager().setName(gulagRoleName).queue();
-						});
-					}
+					EnsureRole(guild, gulagRoleName);
 					List<Role> gulag = guild.getRolesByName(gulagRoleName, true);
 					GuildController gc = guild.getController();
-					Map<Member, List<Role>> oldRole = new HashMap<Member, List<Role>>();
-					for(Member b : toTempBan){
-						oldRole.put(b, b.getRoles());
-						gc.modifyMemberRoles(b, gulag, oldRole.get(b)).queue( x -> {
-							// Lambda to restore the user's roles after the cooldown.
-							gc.modifyMemberRoles(b, oldRole.get(b), gulag).queueAfter(
-									banLength, TimeUnit.SECONDS);
-						});
-					}
+					for(Member b : toTempBan)
+						temporaryGulag(gc, b, gulag, banLength);
 				}
 				else
 					System.out.println("Banlist was empty.");
@@ -165,6 +154,74 @@ implements CommandExecutor{
 		}
 	}
 
+
+
+	@Command(aliases = {"-gulag"}, description = "Sends the mentioned member to the gulag.\nX: Total time in the gulag\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-gulag @member X", privateMessages = true)
+	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args){
+		if(!CanModAndRoleChange(channel, msg.getGuild().getMember(msg.getAuthor())))
+			channel.sendMessage(GetRandomDeniedMessage()).queue();
+		else if(args.length == 2 && IsIntegerInRange(args[1], 1, 86400)){
+			// Ban the mentioned user.
+			Member toBan = guild.getMember(msg.getMentionedUsers().get(0));
+			final String gulagRoleName = "Bad Boy/Girl";
+			int banLength = Math.max(1, Integer.valueOf(args[1]));
+			EnsureRole(guild, gulagRoleName);
+			temporaryGulag(guild, toBan, gulagRoleName, banLength);
+		}
+	}
+
+
+	/**
+	 * Utility functions to send the given member to a timeout room by means of
+	 * changing the assigned roles.
+	 * TODO: The callback does not persist if the bot is destroyed before the
+	 * duration is reached, so some more permanent storage is needed, and should
+	 * be checked upon startup.
+	 * @param Guild   guild        The server with a gulag and a naughty member.
+	 * @param Member  member       The member who needs a time-out.
+	 * @param String  newRoleName  The result of a name-search for the role.
+	 * @param int     duration     The length of the time-out.
+	 */
+	private void temporaryGulag(Guild guild, Member member, String newRoleName, int duration){
+		List<Role> newRole = guild.getRolesByName(newRoleName, true);
+		List<Role> oldRoles = member.getRoles();
+		GuildController gc = guild.getController();
+		temporaryRoleSwapAfterDuration(gc, member, newRole, oldRoles, duration);
+	}
+
+	private void temporaryGulag(GuildController gc, Member member, List<Role> newRoles, int duration){
+		List<Role> oldRoles = member.getRoles();
+		temporaryRoleSwapAfterDuration(gc, member, newRoles, oldRoles, duration);
+	}
+
+	private void temporaryRoleSwapAfterDuration(GuildController gc, Member m, List<Role> newRoles, List<Role> oldRoles, int duration){
+		gc.modifyMemberRoles(m, newRoles, oldRoles).queue( x -> {
+			System.out.println(x);
+			gc.modifyMemberRoles(m, oldRoles, newRoles).queueAfter(
+					duration, TimeUnit.SECONDS);
+		});
+	}
+
+	/**
+	 * If the desired role does not exist, creates it.
+	 * @param  Guild  guild         The server to make the role for.
+	 * @param  String role          The role title to create.
+	 * @return        true / false, depending on if there was an exception.
+	 */
+	private static boolean EnsureRole(Guild guild, String role){
+		try{
+			if(guild.getRolesByName(role, true).size() == 0){
+				guild.getController().createRole().queue( r -> {
+					r.getManager().setName(role).queue();
+				});
+			}
+			return true;
+		}
+		catch(Exception e){
+			System.out.println(e);
+		}
+		return false;
+	}
 
 	/**
 	 * Parse the input string to determine if it is a valid integer in the
@@ -241,7 +298,7 @@ implements CommandExecutor{
 
 
 	/**
-	 * Indicates if the given member has the rights to manage messages, the channel, or otherwise administrate the channel.
+	 * Indicates if the given member has the rights to manage messages, the channel, or otherwise administrate the server.
 	 * @param  TextChannel channel       The channel to moderate.
 	 * @param  Member      member        The member who is/is not a moderator.
 	 * @return             true / false if the member is a mod of that channel.
@@ -249,13 +306,29 @@ implements CommandExecutor{
 	public static boolean CanModerate(TextChannel channel, Member member){
 		if(member.isOwner())
 			return true;
-		
+
 		List<Permission> p = member.getPermissions(channel);
 		if(p.contains(Permission.ADMINISTRATOR)
 				|| p.contains(Permission.MESSAGE_MANAGE)
 				|| p.contains(Permission.MANAGE_CHANNEL))
 			return true;
-		
+
+		return false;
+	}
+
+
+
+	/**
+	 * Indicates if the given member is a mod who is able to alter roles.
+	 * @param  TextChannel channel       The channel to moderate.
+	 * @param  Member      mod           The member who is/is not a moderator.
+	 * @return             true / false as expected.
+	 */
+	public static boolean CanModAndRoleChange(TextChannel channel, Member mod){
+		if(mod.isOwner() || (CanModerate(channel, mod)
+				&& mod.getPermissions().contains(Permission.MANAGE_ROLES)))
+			return true;
+
 		return false;
 	}
 
