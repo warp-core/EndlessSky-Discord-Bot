@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.regex.*;
 
 import javax.imageio.ImageIO;
 
@@ -28,6 +29,21 @@ implements CommandExecutor{
 		data = readData();
 		System.out.println("Lookups instantiated.");
 	}
+
+	final String[] dataTypes = {
+		"ship",
+		"outfit",
+		"mission",
+		"person",
+		"planet",
+		"system",
+		"effect",
+		"scene",
+		"fleet",
+		"event",
+		"government",
+		"phrase"
+	};
 
 
 
@@ -67,56 +83,66 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-issue"}, description = "Link to Endless Sky issue #X. If no issue number is given, links the issues page.", usage = "-issue X", privateMessages = true)
 	public void onIssueCommand(MessageChannel channel, String[] args){
-		StringBuilder path = new StringBuilder("https://github.com/endless-sky/endless-sky/issues");
-		if(args.length > 1){
-			path.append("/");
-			for(String str : args)
-				path.append(str);
-		}
-		else if(args.length > 0)
-			path.append("/" + args[0]);
+		final String base = "https://github.com/endless-sky/endless-sky/issues";
+		StringBuilder output = new StringBuilder("");
+		// Check each input for a numeric portion until a non-numeric arg is found.
+		if(args.length > 0)
+			for(String str : args){
+				String number = GetNumeric(str);
+				if(number.length() > 0)
+					output.append(base + "/" + number + "\n");
+				else
+					break;
+			}
 
-		channel.sendMessage(path.toString().replace(" ", "")).queue();
+		if(output.length() == 1)
+			output.append(base);
+
+		channel.sendMessage(output.toString().replaceAll(" ", "")).queue();
 	}
 
 
 
 	@Command(aliases = {"-pull"}, description = "Link to Endless Sky pull request (PR) #X. If no pull number is given, links the PR page.", usage = "-pull X", privateMessages = true)
 	public void onPullCommand(MessageChannel channel, String[] args){
-		StringBuilder request = new StringBuilder("/");
-		if(args.length > 1)
-			for(String str : args)
-				request.append(str);
-		else if(args.length > 0)
-			request.append(args[0]);
-		else
-			request = new StringBuilder("s");
+		final String base = "https://github.com/endless-sky/endless-sky/pull";
+		StringBuilder output = new StringBuilder("");
+		// Check each input for a numeric portion until a non-numeric arg is found.
+		if(args.length > 0)
+			for(String str : args){
+				String number = GetNumeric(str);
+				if(number.length() > 0)
+					output.append(base + "/" + number + "\n");
+				else
+					break;
+			}
 
-		String path = "https://github.com/endless-sky/endless-sky/pull" + request.toString().replace(" ", "");
+		if(output.length() == 1)
+			output.append(base + "s");
 
-		channel.sendMessage(path).queue();
+		channel.sendMessage(output.toString().replaceAll(" ", "")).queue();
 	}
 
 
 
 	@Command(aliases = {"-commit"}, description = "Link to Endless Sky commit hash \"X\". Only the first 7 letters are necessary.\nLeave blank for the most recent commit.", usage = "-commit X", privateMessages = true)
 	public void onCommitCommand(MessageChannel channel, String[] args){
-		StringBuilder request = new StringBuilder("");
-		if(args.length > 1)
-			for(String str : args)
-				request.append(str);
-		else if(args.length > 0)
-			request.append(args[0]);
+		final String base = "https://github.com/endless-sky/endless-sky/commit/";
+		StringBuilder output = new StringBuilder("");
+		// Check each input for a hexadecimal hash until a non-hash arg is found.
+		if(args.length > 0)
+			for(String str : args){
+				String hash = GetHash(str);
+				if(hash.length() > 6)
+					output.append(base + hash + "\n");
+				else
+					break;
+			}
 
-		if(request.length() > 6){
-			String path = "https://github.com/endless-sky/endless-sky/commit/" + request.toString().replace(" ","");
-			channel.sendMessage(path).queue();
-		}
-		else if(request.length() > 0){
-			channel.sendMessage("At least 7 characters are required.").queue();
-		}
-		else
-			channel.sendMessage("https://github.com/endless-sky/endless-sky/commit/").queue();
+		if(output.length() == 1)
+			output.append(base);
+
+		channel.sendMessage(output.toString().replaceAll(" ", "")).queue();
 	}
 
 
@@ -130,8 +156,9 @@ implements CommandExecutor{
 			}
 			String message = "";
 			boolean printedImage = false;
+			String variantParsedRequest = ParseVariants(request);
 			if(PrintImage(guild, channel, lookupData(request))
-					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
+					|| PrintImage(guild, channel, lookupData(variantParsedRequest))
 					|| (IsShipVariantRequest(request)
 								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				printedImage = true;
@@ -139,9 +166,8 @@ implements CommandExecutor{
 			else
 				message = "There is no image associated with '" + request + "'";
 
-			request = ParseVariants(request);
-			String output = lookupData(request);
-			if(!ShouldPrintThis(GetDataType(output))){
+			String output = lookupData(variantParsedRequest);
+			if(!ShouldPrintThis(GetDataType(output)) && output.length() > 0){
 				OutputHelper(channel, "Try '-showdata' for that information.");
 				return;
 			}
@@ -154,10 +180,10 @@ implements CommandExecutor{
 			else if(!printedImage)
 				message += ", nor any description.";
 			else if(printedImage)
-				message = "There is no description of '" + request + "'.";
+				message = "There is no description of '" + variantParsedRequest + "'.";
 
 			if(output.length() < 1)
-				message = "I could not find anything associated with '" + request + "'.";
+				message = "I could not find anything associated with '" + variantParsedRequest + "'.";
 
 			if(message.length() > 0)
 				OutputHelper(channel, message);
@@ -175,8 +201,9 @@ implements CommandExecutor{
 			}
 			String message = "";
 			boolean printedImage = false;
+			String variantParsedRequest = ParseVariants(request);
 			if(PrintImage(guild, channel, lookupData(request))
-					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
+					|| PrintImage(guild, channel, lookupData(variantParsedRequest))
 					|| (IsShipVariantRequest(request)
 								&& PrintImage(guild, channel, lookupData(GetBaseModelName(request))))){
 				printedImage = true;
@@ -184,11 +211,10 @@ implements CommandExecutor{
 			else
 				message = "I could not find an image associated with '" + request + "'";
 
-			request = ParseVariants(request);
-			String output = lookupData(request);
+			String output = lookupData(variantParsedRequest);
 			if(output.length() < 1){
 				if(printedImage)
-					message = "I could not find any data associated with '" + request + "'.";
+					message = "I could not find any data associated with '" + variantParsedRequest + "'.";
 				else
 					message += ", nor could I find any data.";
 			}
@@ -261,7 +287,27 @@ implements CommandExecutor{
 	// from the Endless Sky GitHub repository.
 	// Returns nullstring if no data could be found.
 	private String lookupData(String lookup){
-		lookup = checkLookup(lookup, true);
+		// Remove any leading or trailing spaces.
+		lookup = lookup.trim();
+		// The first word of the lookup may be a supported dataType.
+		int countWords = 1 + CountOf(lookup, ' ');
+		String category = "";
+		if(countWords > 1){
+			category = lookup.substring(0, lookup.indexOf(" ")).toLowerCase();
+			boolean isCategory = false;
+			// Is the first word a dataType?
+			for(String str : dataTypes){
+				if(str.contains(category)){
+					isCategory = true;
+					break;
+				}
+			}
+			if(isCategory)
+				lookup = lookup.substring(lookup.indexOf(" ") + 1);
+			else
+				category = "";
+		}
+		lookup = checkLookup(category, lookup, true);
 		if(lookup.length() > 0){
 			int start = data.indexOf(lookup);
 			int end = start + lookup.length();
@@ -282,38 +328,36 @@ implements CommandExecutor{
 	// Queries the loaded datafiles for special Endless Sky keywords.
 	// If helper is 'true', will try both as-passed 'lookup', and with
 	// enforced word capitalization.
-	private String checkLookup(String lookup, boolean helper){
-		final String[] dataTypes = {
-			"ship",
-			"outfit",
-			"mission",
-			"person",
-			"planet",
-			"system",
-			"effect",
-			"scene",
-			"fleet",
-			"event",
-			"government",
-			"phrase"
-		};
+	// If the first word of a lookup was a supported category, it is not
+	// subjected to capitalization and quoting.
+	private String checkLookup(String dataType, String lookup, boolean helper){
 		// The lookup may be exact:
 		if(data.contains("\n" + lookup)){
 			return "\n" + lookup;
 		}
-		// The lookup may be only the value, and not the keyword:
-		for(String str : dataTypes){
-			if(data.contains("\n" + str + " \"" + lookup + "\"")){
-				return "\n" + str + " \"" + lookup + "\"";
+		// A supported dataType limiter may have been used.
+		if(dataType.length() > 0){
+			if(data.contains("\n" + dataType + " \"" + lookup + "\"")){
+				return "\n" + dataType + " \"" + lookup + "\"";
 			}
-			else if(data.contains("\n" + str + " " + lookup)){
-				return "\n" + str + " " + lookup;
+			else if(data.contains("\n" + dataType + " " + lookup)){
+				return "\n" + dataType + " " + lookup;
 			}
 		}
-		// Or perhaps not capitalized correctly.
+		else{
+			for(String str : dataTypes){
+				if(data.contains("\n" + str + " \"" + lookup + "\"")){
+					return "\n" + str + " \"" + lookup + "\"";
+				}
+				else if(data.contains("\n" + str + " " + lookup)){
+					return "\n" + str + " " + lookup;
+				}
+			}
+		}
+		// The input may not have been capitalized correctly.
 		if(helper){
 			lookup = CapitalizeWords(lookup);
-			return checkLookup(lookup, false);
+			return checkLookup(dataType, lookup, false);
 		}
 
 		return "";
@@ -419,7 +463,7 @@ implements CommandExecutor{
 	private static String CapitalizeWords(String input){
 		int countWords = 1 + CountOf(input, ' ') + CountOf(input, '-');
 		char[] ic = input.toCharArray();
-		ic[0] = Character.toUpperCase(ic[0]);
+		ic[ic[0] == '"' ? 1 : 0] = Character.toUpperCase(ic[ic[0] == '"' ? 1 : 0]);
 		boolean hasDash = input.indexOf("-") > -1;
 		boolean hasSpace = input.indexOf(" ") > -1;
 		if(--countWords > 0){
@@ -538,7 +582,7 @@ implements CommandExecutor{
 		if(end < 0)
 			return "";
 
-		return text.substring(0, end-1).replace("\"", "");
+		return text.substring(0, end-1).replaceAll("\"", "").trim();
 	}
 
 
@@ -548,7 +592,8 @@ implements CommandExecutor{
 	public static String GetDataType(String output){
 		if(output.length() < 1 || output.indexOf(" ") < 1)
 			return "";
-		return output.substring(1, output.indexOf(" "));
+		int start = (output.indexOf('\n') == 0 || output.indexOf('\t') == 0) ? 1 : 0;
+		return output.substring(start, output.indexOf(" "));
 	}
 
 
@@ -569,6 +614,28 @@ implements CommandExecutor{
 			default:
 				return true;
 		}
+	}
+
+
+
+	// Return the numeric portion of the passed argument
+	private static String GetNumeric(String arg){
+		arg = arg.replaceAll("\"", "").replaceAll("\'", "").trim();
+		Pattern regex = Pattern.compile("\\d{1,}");
+		Matcher result = regex.matcher(arg);
+		String numberPart = result.find() ? result.group() : "";
+		return numberPart;
+	}
+	
+	
+	
+	// Return the hexadecimal portion of the passed argument.
+	private static String GetHash(String arg){
+		arg = arg.replaceAll("\"", "").replaceAll("\'", "").trim();
+		Pattern regex = Pattern.compile("[\\dA-Fa-f]+");
+		Matcher result = regex.matcher(arg);
+		String hash = result.find() ? result.group() : "";
+		return hash.length() > 6 ? hash : "";
 	}
 
 
