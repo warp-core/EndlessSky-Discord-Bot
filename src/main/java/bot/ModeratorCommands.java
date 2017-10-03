@@ -86,16 +86,18 @@ implements CommandExecutor{
 
 
 
-	/*
-	@Command(aliases = {"-update"}, description = "Updates the data,memes and all other not-source-code changes.", usage = "-update", privateMessages = true)
+
+	@Command(aliases = {"-update"}, description = "Reloads the memes and content of known GitHub files.", usage = "-update", privateMessages = true)
 	public void onUpdateCommand(Message msg, TextChannel channel){
 		Member author = msg.getGuild().getMember(msg.getAuthor());
 		List<Permission> perm = author.getPermissions(channel);
-		if( perm.contains(Permission.ADMINISTRATOR) || author.isOwner()){
+		if(author.isOwner() || perm.contains(Permission.ADMINISTRATOR)){
 			channel.sendMessage("Updating...").queue();
 			bot.update();
 			channel.sendMessage("Update finished").queue();
 		}
+		else
+			channel.sendMessage(GetRandomDeniedMessage()).queue();
 	}
-	*/
+
 }
