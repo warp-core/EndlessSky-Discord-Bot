@@ -367,7 +367,7 @@ implements CommandExecutor{
 
 	// Send the message 'output' to the desired channel, cutting into
 	// multiple messages as needed.
-	private void OutputHelper(MessageChannel channel, String output){
+	private static void OutputHelper(MessageChannel channel, String output){
 		if(output.length() < 1993){
 			channel.sendMessage(":\n```" + output + "```").queue();
 		}
