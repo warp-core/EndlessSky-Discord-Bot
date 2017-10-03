@@ -24,7 +24,7 @@ dependencies {
 	compile 'junit:junit:4.12'
 	runtime "ch.qos.logback:logback-classic:$logbackVersion"
 	runtime "ch.qos.logback:logback-core:$logbackVersion"
-	compile 'com.squareup.okhttp3:okhttp:1.13.0'
+	compile 'com.squareup.okhttp3:okhttp:3.9.0'
 }
 
 task writeVersion(type: Exec) {
