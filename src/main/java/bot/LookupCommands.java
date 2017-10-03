@@ -26,6 +26,7 @@ implements CommandExecutor{
 	public LookupCommands(ESBot bot){
 		this.bot = bot;
 		data = readData();
+		System.out.println("Lookups instantiated.");
 	}
 
 

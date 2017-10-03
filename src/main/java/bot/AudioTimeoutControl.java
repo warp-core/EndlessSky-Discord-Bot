@@ -57,14 +57,12 @@ public class AudioTimeoutControl {
 		@Override
 		public void run(){
 			musicManagers.forEach( (l,mM) -> {
-				if(mM.player.getPlayingTrack() == null || jda.getGuildById(l.toString()).getAudioManager().getConnectedChannel().getMembers().size() == 1){
-					if(idleValues.get(l) != null){
+				if(jda.getGuildById(l.toString()).getAudioManager().isConnected()){
+					if(mM.player.getPlayingTrack() == null || mM.player.isPaused() || jda.getGuildById(l.toString()).getAudioManager().getConnectedChannel().getMembers().size() == 1){
 						synchronized(this){
-						idleValues.put(l, idleValues.get(l) + 1);
+							idleValues.put(l, idleValues.get(l) == null ? 0
+									: idleValues.get(l) + (mM.player.isPaused() ? 1 : 8));
 						}
-					}
-					else{
-						idleValues.put(l, 0);
 					}
 				}
 			});
@@ -88,10 +86,11 @@ public class AudioTimeoutControl {
 		@Override
 		public void run(){
 			idleValues.forEach( (l,i) -> {
-				if(i>12){
+				if(i > 96){
 					synchronized(this){
-					jda.getGuildById(l.toString()).getAudioManager().closeAudioConnection();
-					idleValues.put(l, 0);
+						jda.getGuildById(l.toString()).getAudioManager().closeAudioConnection();
+						idleValues.remove(l);
+						System.out.println("Resetting the idle count.");
 					}
 				}
 			});
