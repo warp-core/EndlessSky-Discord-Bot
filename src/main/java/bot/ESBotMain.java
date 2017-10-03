@@ -63,6 +63,7 @@ public class ESBotMain {
 						break;
 					case "inputToken":
 						token = keyboard.nextLine();
+						System.out.println("Received token: " + token);
 						break;
 					case "displayToken":
 						System.out.println("Current Token: " + token);
