@@ -32,7 +32,7 @@ implements CommandExecutor{
 
 	private final AudioPlayerManager playerManager;
 	private final Map<Long, GuildMusicManager> musicManagers;
-	private Map<String, PlayerVoteHandler> voteHandlers;
+	private Map<String, AudioPlayerVoteHandler> voteHandlers;
 	private ESBot bot;
 
 
@@ -42,7 +42,7 @@ implements CommandExecutor{
 		this.musicManagers = new HashMap<>();
 		new AudioTimeoutControl(musicManagers, jda);
 		this.playerManager = new DefaultAudioPlayerManager();
-		this.voteHandlers = new HashMap<String, PlayerVoteHandler>();
+		this.voteHandlers = new HashMap<String, AudioPlayerVoteHandler>();
 		AudioSourceManagers.registerRemoteSources(playerManager);
 		AudioSourceManagers.registerLocalSource(playerManager);
 	}
@@ -66,8 +66,8 @@ implements CommandExecutor{
 	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words.", usage = "-play URL", privateMessages = false)
 	public void onPlayCommand(Guild guild, TextChannel channel, String[] args, User author, Message msg){
 		Member requester = guild.getMember(author);
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length > 0 && requester.getVoiceState().getChannel() != null){
 			checkVoiceChannel(guild.getAudioManager(), requester);
 			for(String query : normalize(args))
@@ -117,9 +117,9 @@ implements CommandExecutor{
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int count = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
 		Member requester = guild.getMember(author);
-		PlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
 				skipTrack(channel, requester, count);
@@ -138,8 +138,8 @@ implements CommandExecutor{
 	@Command(aliases = {"-current"}, description = "Displays the current audiotrack.", usage = "-current", privateMessages = false)
 	public void onCurrentCommand(Guild guild, TextChannel channel, Message msg){
 		Member requester = guild.getMember(msg.getAuthor());
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			AudioTrack track = getGuildAudioPlayer(guild).player.getPlayingTrack();
 			EmbedBuilder eb = new EmbedBuilder();
@@ -166,8 +166,8 @@ implements CommandExecutor{
 	@Command(aliases = {"-queue"}, description = "Displays the current queue.", usage = "-queue", privateMessages = false)
 	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
 		Member requester = guild.getMember(msg.getAuthor());
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
 			StringBuilder sb = new StringBuilder("Current Queue:\n");
@@ -183,7 +183,7 @@ implements CommandExecutor{
 				sb.append("Entries: " + queue.size() + "\n");
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(++trackCount < 10){
+					if(++trackCount < 11){
 						sb.append("`[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
 					}
@@ -201,9 +201,9 @@ implements CommandExecutor{
 	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-shuffle", privateMessages = false)
 	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		PlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
 				shuffle(guild, requester, msg, channel);
@@ -220,9 +220,9 @@ implements CommandExecutor{
 	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-stop", privateMessages = false)
 	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		PlayerVoteHandler voteHandler = getVoteHandler(guild, "stop");
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "stop");
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
 				stopPlayback(guild, requester, msg, channel);
@@ -250,12 +250,8 @@ implements CommandExecutor{
 		String by = "By order of `" + requester.getEffectiveName() + "`:\n";
 		if(hasDJPerms(requester, channel, guild)){
 			List<User> banned = msg.getMentionedUsers();
-			if(guild.getRolesByName("Anti-DJ", true).size() == 0){
-				guild.getController().createRole().queue( r -> {
-					r.getManager().setName("Anti-DJ").queue();
-				});
-			}
-			List<Role> antiDJ = guild.getRolesByName("Anti-DJ", true);
+			Helper.EnsureRole(guild, Helper.ROLE_PLAYBANNED);
+			List<Role> antiDJ = guild.getRolesByName(Helper.ROLE_PLAYBANNED, true);
 			StringBuilder newBans = new StringBuilder("");
 			StringBuilder newUnbans = new StringBuilder("");
 			for(User u : banned){
@@ -288,7 +284,7 @@ implements CommandExecutor{
 			channel.sendMessage(eb.build()).queue();
 		}
 		else
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 	}
 
 
@@ -296,9 +292,9 @@ implements CommandExecutor{
 	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
 	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		PlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
 				voteHandler.clear();
@@ -324,15 +320,15 @@ implements CommandExecutor{
 	@Command(aliases = {"-resume", "-unpause"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume\n-unpause", privateMessages = false)
 	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
-		PlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
 				voteHandler.clear();
 				setPauseState(false, guild, requester, channel);
 			}
-			else if (vote(voteHandler, requester, channel, "resume"))
+			else if(vote(voteHandler, requester, channel, "resume"))
 				setPauseState(false, guild, voteHandler.getRequester(), channel);
 			msg.delete().queue();
 		}
@@ -353,8 +349,8 @@ implements CommandExecutor{
 	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg){
 		Member requester = guild.getMember(author);
 		String by = " by `" + requester.getEffectiveName() + "`.";
-		if(requester.getRoles().containsAll(guild.getRolesByName("Anti-DJ", true)))
-			channel.sendMessage(ModeratorCommands.GetRandomDeniedMessage()).queue();
+		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length == 1 && canDoCommand(guild, requester)
 				&& hasDJPerms(requester, channel, guild)){
 			AudioPlayer player = getGuildAudioPlayer(guild).player;
@@ -587,7 +583,7 @@ implements CommandExecutor{
 
 
 
-	public synchronized boolean vote(PlayerVoteHandler handler, Member requester, TextChannel channel, String subject)
+	public synchronized boolean vote(AudioPlayerVoteHandler handler, Member requester, TextChannel channel, String subject)
 	{
 		handler.vote(requester);
 		if(handler.checkVotes())
@@ -605,11 +601,11 @@ implements CommandExecutor{
 
 
 
-	public synchronized PlayerVoteHandler getVoteHandler(Guild guild, String key){
+	public synchronized AudioPlayerVoteHandler getVoteHandler(Guild guild, String key){
 		if(voteHandlers.containsKey(key))
 			return voteHandlers.get(key);
 		else{
-			PlayerVoteHandler handler = new PlayerVoteHandler(guild);
+			AudioPlayerVoteHandler handler = new AudioPlayerVoteHandler(guild);
 			voteHandlers.put(key, handler);
 			return handler;
 		}
