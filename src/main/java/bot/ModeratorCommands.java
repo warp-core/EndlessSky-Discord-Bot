@@ -78,78 +78,49 @@ implements CommandExecutor{
 				TextChannel dest = msg.getMentionedChannels().get(0);
 				// Always delete the requesting message.
 				msg.delete().queue();
-				// Acquire (in blocking fashion) the messages to move.
-				List<Message> toMove = channel.getHistory().retrievePast(n).complete();
-				HashSet<Member> toTempBan = new HashSet<Member>();
-				LinkedList<String> moved = new LinkedList<String>();
-				if(!toMove.isEmpty()){
-					for(Message m : toMove){
+				// Use a lambda to asynchronously perform this request:
+				channel.getHistory().retrievePast(n).queue( toDelete -> {
+					if(toDelete.isEmpty())
+						return;
+					HashSet<Member> toTempBan = new HashSet<Member>();
+					LinkedList<String> toMove = new LinkedList<String>();
+					for(Message m : toDelete){
 						Member author = guild.getMember(m.getAuthor());
-						// Do not ban any bots or moderators.
-						if(!(m.getAuthor().isBot() || CanModerate(channel, author)))
+						if(isBannable(channel, author))
 							toTempBan.add(author);
-						// Embeds are not moved. They are food for the wormhole.
 						String what = m.getStrippedContent().trim();
-						if(!what.isEmpty()){
-							String by = author.getEffectiveName();
-							String at = m.getCreationTime()
-									.format(DateTimeFormatter.ISO_INSTANT).substring(11);
-							moved.addFirst(at + " " + by + ": " + what + "\n");
-						}
+						if(what.isEmpty())
+							continue;
+						toMove.addFirst(m.getCreationTime()
+								.format(DateTimeFormatter.ISO_INSTANT).substring(11, 19)
+								+ "Z " + author.getEffectiveName() + ": " + what +"\n"
+						);
 					}
-					System.out.println("Writelist:\n" + moved);
-					System.out.println("Banlist:\n" + toTempBan);
-
-					// Remove the messages from the original channel.
-					channel.deleteMessages(toMove).queue( x -> {
+					// Remove the messages from the original channel and log the move.
+					channel.deleteMessages(toDelete).queue( x -> {
 						EmbedBuilder log = new EmbedBuilder();
 						log.setDescription(dest.getAsMention());
 						log.setThumbnail("https://cdn.discordapp.com/emojis/344684586904584202.png");
-						log.appendDescription("\n(" + moved.size() + " messages await)");
-						if(toMove.size() - moved.size() > 0)
+						log.appendDescription("\n(" + toMove.size() + " messages await)");
+						if(toDelete.size() - toMove.size() > 0)
 							log.appendDescription("\n(Some embeds were eaten)");
 						channel.sendMessage(log.build()).queue();
 					});
-				}
-				else
-					System.out.println("No messages to delete.");
 
-				// Transport the message content to the new channel.
-				if(!moved.isEmpty()){
-					StringBuilder chunk = new StringBuilder(moveHeader);
-					int chunkSize = chunk.length() + moveFooter.length();
-					final int sizeLimit = 1990;
-					if(chunkSize > sizeLimit){
-						System.out.println("Cannot ever print: header + footer too large.");
-						return;
-					}
-					for(String str : moved){
-						if(chunkSize + str.length() <= sizeLimit)
-							chunk.append(str);
-						else{
-							dest.sendMessage(chunk.append(moveFooter).toString()).queue();
-							chunk = new StringBuilder(moveHeader);
-						}
-						chunkSize = chunk.length() + moveFooter.length();
-					}
-					// Write the final chunk.
-					if(chunk.length() > moveHeader.length())
-						dest.sendMessage(chunk.append(moveFooter).toString()).queue();
-				}
-				else
-					System.out.println("Writelist was empty.");
+					// Transport the message content to the new channel.
+					if(!toMove.isEmpty())
+						writeChunks(dest, toMove, moveHeader, moveFooter);
 
-				// Place the temporary bans.
-				if(!toTempBan.isEmpty() && banLength > 0){
-					final String gulagRoleName = "Bad Boy/Girl";
-					EnsureRole(guild, gulagRoleName);
-					List<Role> gulag = guild.getRolesByName(gulagRoleName, true);
-					GuildController gc = guild.getController();
-					for(Member b : toTempBan)
-						temporaryGulag(gc, b, gulag, banLength);
-				}
-				else
-					System.out.println("Banlist was empty.");
+					// Place the temporary bans.
+					if(!toTempBan.isEmpty() && banLength > 0){
+						final String gulagRoleName = "Bad Boy/Girl";
+						EnsureRole(guild, gulagRoleName);
+						List<Role> gulag = guild.getRolesByName(gulagRoleName, true);
+						GuildController gc = guild.getController();
+						for(Member b : toTempBan)
+							temporaryGulag(gc, b, gulag, banLength);
+					}
+				});
 			}
 		}
 	}
@@ -316,6 +287,53 @@ implements CommandExecutor{
 		return false;
 	}
 
+
+
+	// Do not ban any bots or moderators.
+	private static boolean isBannable(TextChannel channel, Member member){
+		if(member.getUser().isBot())
+			return false;
+
+		if(CanModerate(channel, member))
+			return false;
+
+		return true;
+	}
+
+
+
+	/**
+	 * Utility function that will concatenate a list of strings into valid
+	 * Discord messages.
+	 * @param TextChannel  channel The desired output channel
+	 * @param List<String> output  The list of strings to write.
+	 * @param String       header  A string that should prefix every chunk.
+	 * @param String       footer  A string that should end every chunk.
+	 */
+	public static void writeChunks(TextChannel channel, List<String> output, String header, String footer){
+		if(output.isEmpty())
+			return;
+
+		StringBuilder chunk = new StringBuilder(header);
+		int chunkSize = chunk.length() + footer.length();
+		final int sizeLimit = 1990;
+		if(chunkSize > sizeLimit){
+			System.out.println("Cannot ever print: header + footer too large.");
+			return;
+		}
+		for(String str : output){
+			if(chunkSize + str.length() <= sizeLimit)
+				chunk.append(str);
+			else{
+				channel.sendMessage(chunk.append(footer).toString()).queue();
+				chunk = new StringBuilder(header);
+			}
+			chunkSize = chunk.length() + footer.length();
+		}
+		// Write the final chunk.
+		if(chunk.length() > header.length())
+			channel.sendMessage(chunk.append(footer).toString()).queue();
+	}
 
 
 	/**
