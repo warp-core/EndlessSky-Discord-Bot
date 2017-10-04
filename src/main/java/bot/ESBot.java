@@ -31,15 +31,8 @@ public class ESBot {
 			loadKeys();
 			jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).buildBlocking();
 			jda.getPresence().setGame(Game.of("-help"));
-			CommandHandler cmdHandler = new JDA3Handler(jda);
-			cmdHandler.registerCommand(new InfoCommands(cmdHandler,this));
-			cmdHandler.registerCommand(new ModeratorCommands(this));
-			cmdHandler.registerCommand(new LookupCommands(this));
-			cmdHandler.registerCommand(new MemeCommands(this));
-			cmdHandler.registerCommand(new PlayerControl(this, jda));
-			cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
-			jda.addEventListener(new SpellCheckListener(this));
-//					jda.addEventListener(new MemberEventListener(this));
+			update();
+			System.out.println("\nESBot instantiation successful. Ready for chatroom commands.");
 		}
 		catch(LoginException e){
 			e.printStackTrace();
@@ -55,6 +48,23 @@ public class ESBot {
 		}
 	}
 
+
+
+	/**
+	 * Shutters the existing data structures, then re-loads everything.
+	 * Does not refresh the known filename lists.
+	 */
+	public synchronized void update(){
+		CommandHandler cmdHandler = new JDA3Handler(jda);
+		cmdHandler.registerCommand(new LookupCommands(this));
+		cmdHandler.registerCommand(new PlayerControl(this, jda));
+		cmdHandler.registerCommand(new InfoCommands(cmdHandler,this));
+		cmdHandler.registerCommand(new ModeratorCommands(this));
+		cmdHandler.registerCommand(new MemeCommands(this));
+		cmdHandler.registerCommand(new MiscCommands(cmdHandler,this));
+		jda.addEventListener(new SpellCheckListener(this));
+		jda.addEventListener(new MemberEventListener(this));
+	}
 
 
 	public String getKey(String id){

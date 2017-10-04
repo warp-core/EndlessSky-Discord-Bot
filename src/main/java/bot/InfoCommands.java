@@ -32,23 +32,35 @@ implements CommandExecutor{
 				for(CommandHandler.SimpleCommand simpleCommand : commandHandler.getCommands()){
 					arg = arg.trim();
 					Command cmd = simpleCommand.getCommandAnnotation();
-					if(cmd.usage().equals(arg) || cmd.aliases()[0].equals(arg)
-							|| arg.equals(cmd.usage().substring(1))
-							|| arg.equals(cmd.aliases()[0].substring(1))){
-						if(!cmd.showInHelpPage()){
-							continue;
+					if(!cmd.showInHelpPage())
+						continue;
+					boolean isPrimary = cmd.usage().equals(arg)
+							|| arg.equals(cmd.usage().substring(1));
+					int aliasIndex = -1;
+					boolean isAlias = false;
+					if(!isPrimary)
+						for(String alias : cmd.aliases()){
+							++aliasIndex;
+							if(arg.equals(alias) || arg.equals(alias.substring(1))){
+								isAlias = true;
+								break;
+							}
 						}
+					
+					if(isPrimary || isAlias){
 						EmbedBuilder eb = new EmbedBuilder();
 						String title = "";
 						if(!cmd.requiresMention()){
 							// The default prefix only works if the command does not require a mention.
 							title = commandHandler.getDefaultPrefix();
 						}
-						title += cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage();
-						eb.setTitle(title, null);
+						title += isAlias ? cmd.aliases()[aliasIndex]
+								: (cmd.usage().isEmpty() ? cmd.aliases()[0] : cmd.usage());
+						eb.setTitle(title);
 						eb.setColor(guild.getMember(bot.getSelf()).getColor());
+						eb.setDescription(cmd.usage() + "\n-----\n");
 						if(!cmd.description().equals("none")){
-							eb.setDescription(cmd.description());
+							eb.appendDescription(cmd.description());
 						}
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cmd.png");
 						channel.sendMessage(eb.build()).queue();

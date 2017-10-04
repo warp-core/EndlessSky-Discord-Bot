@@ -16,7 +16,6 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.kohsuke', name: 'github-api', version: '1.85'
 	compile 'com.sedmelluq:lavaplayer:1.2.43'
 	compile 'net.dv8tion:JDA:3.3.0_271'
 	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.5'
@@ -24,7 +23,7 @@ dependencies {
 	compile 'junit:junit:4.12'
 	runtime "ch.qos.logback:logback-classic:$logbackVersion"
 	runtime "ch.qos.logback:logback-core:$logbackVersion"
-	compile 'com.squareup.okhttp3:okhttp:1.13.0'
+	compile 'com.squareup.okhttp3:okhttp:3.9.0'
 }
 
 task writeVersion(type: Exec) {

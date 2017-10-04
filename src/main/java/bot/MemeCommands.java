@@ -55,7 +55,7 @@ implements CommandExecutor{
 	public void onListmemesCommand(Guild guild, User user, MessageChannel channel, Message message, String[] args){
 		if(args.length == 0){
 			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("Available Memes:", "https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/data");
+			eb.setTitle("Available Memes:", "https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/master/data");
 			eb.addField("Text-based Memes", getMemelist(), false);
 			eb.addField("Image-based Memes", getMemelistImgs(), false);
 			eb.setThumbnail(HOST_RAW_URL + "/thumbnails/meme.png");
@@ -94,15 +94,15 @@ implements CommandExecutor{
 		this.memeImgs = memes;
 	}
 
-	public boolean isImgMeme(String key){
+	private boolean isImgMeme(String key){
 		return memeImgs.containsKey(key);
 	}
 
-	public String getMeme(String meme){
+	private String getMeme(String meme){
 		return memes.getProperty(meme, "Please don't joke about that sort of thing.");
 	}
 
-	public String getRandomMeme(){
+	private String getRandomMeme(){
 		Enumeration<?> keys = memes.propertyNames();
 		Random rGen = new Random();
 		int random = rGen.nextInt(memes.size());
@@ -113,11 +113,11 @@ implements CommandExecutor{
 		return memes.getProperty(key);
 	}
 
-	public String getImgMemePath(String string){
+	private String getImgMemePath(String string){
 		return memeImgs.getProperty(string);
 	}
 
-	public String getMemelist(){
+	private String getMemelist(){
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(baos);
 		memes.list(ps);
@@ -126,7 +126,7 @@ implements CommandExecutor{
 		return output.substring(output.indexOf('\n'));
 	}
 
-	public String getMemelistImgs(){
+	private String getMemelistImgs(){
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(baos);
 		memeImgs.list(ps);
@@ -134,19 +134,4 @@ implements CommandExecutor{
 		String output = new String(baos.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
 		return output.substring(output.indexOf('\n'));
 	}
-
-	public void OutputHelper(MessageChannel channel,String output){
-		if(output.length() < 1993){
-			channel.sendMessage(":\n```" + output + "```").queue();
-		}
-		else{
-			int cut = output.lastIndexOf('\n', 0+1992);
-			String o = output.substring(0, cut);
-			channel.sendMessage(":\n```" + o + "```").queue(x -> {
-				OutputHelper(channel, output.substring(cut+1));
-			});
-		}
-	}
-
-
 }
