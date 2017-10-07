@@ -5,7 +5,6 @@ coalition%20outfits
 coalition%20ships
 coalition%20weapons
 coalition
-combat%20ratings
 commodities
 conversations
 deep%20jobs
@@ -56,6 +55,7 @@ pug
 quarg%20missions
 quarg%20outfits
 quarg%20ships
+ratings
 remnant%20missions
 remnant%20outfits
 remnant%20ships
