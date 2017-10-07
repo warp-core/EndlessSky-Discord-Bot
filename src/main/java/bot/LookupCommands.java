@@ -1,6 +1,7 @@
 package bot;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
@@ -51,19 +52,25 @@ implements CommandExecutor{
 
 	private String readData(){
 		String data = "";
-		try{
-			LinkedList<URL> dataFiles = new LinkedList<>();
-			try(BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get("data", "dataFileNames.txt")))){
-				String line = br.readLine();
+		
+		LinkedList<URL> dataFiles = new LinkedList<>();
+		try(BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get("data", "dataFileNames.txt")))){
+			String line = br.readLine();
 
-				while (line != null){
-					dataFiles.add(new URL(bot.DATA_URL + line + ".txt"));
-					line = br.readLine();
-				}
+			while (line != null){
+				dataFiles.add(new URL(bot.DATA_URL + line + ".txt"));
+				line = br.readLine();
 			}
+		}
+		catch(IOException e){
+			System.out.println("\nNo datafile found for file names.\nAll lookups will fail.\n");
+			System.out.println(e.toString());
+			return data;
+		}
+		try{
+			StringBuilder sb = new StringBuilder();
 			for(URL url : dataFiles){
 				try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))){
-					StringBuilder sb = new StringBuilder();
 					String line = br.readLine();
 
 					while(line != null){
@@ -71,9 +78,16 @@ implements CommandExecutor{
 						sb.append(System.lineSeparator());
 						line = br.readLine();
 					}
-					data += sb.toString() + "\n~\n";
+					sb.append("\n~\n");
+				}
+				catch(IOException e){
+					// A file that is expected to exist might not (for example,
+					// lookups are being reinitialized but dataFileNames is old
+					// and the file was renamed on GitHub).
+					System.out.println(e.toString());
 				}
 			}
+			data = sb.toString();
 		}
 		catch(Exception e){
 			e.printStackTrace();
