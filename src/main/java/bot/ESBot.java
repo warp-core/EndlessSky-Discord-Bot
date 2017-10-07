@@ -21,6 +21,7 @@ public class ESBot {
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 	public static final String HOST_PUBLIC_URL = "https://github.com/MCOfficer/EndlessSky-Discord-Bot";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
+	public static  final String DATA_URL = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/data/";
 
 
 	public Properties keys;

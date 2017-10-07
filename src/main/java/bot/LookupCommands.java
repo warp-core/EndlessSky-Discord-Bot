@@ -3,6 +3,8 @@ package bot;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
@@ -51,11 +53,11 @@ implements CommandExecutor{
 		String data = "";
 		try{
 			LinkedList<URL> dataFiles = new LinkedList<>();
-			try(BufferedReader br = new BufferedReader(new InputStreamReader(new URL(HOST_RAW_URL + "/data/dataFileNames.txt").openStream()))){
+			try(BufferedReader br = new BufferedReader(Files.newBufferedReader(Paths.get("data", "dataFileNames.txt")))){
 				String line = br.readLine();
 
 				while (line != null){
-					dataFiles.add(new URL("https://raw.githubusercontent.com/endless-sky/endless-sky/master/data/" + line + ".txt"));
+					dataFiles.add(new URL(bot.DATA_URL + line + ".txt"));
 					line = br.readLine();
 				}
 			}
