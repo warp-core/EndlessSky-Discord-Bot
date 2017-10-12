@@ -79,11 +79,8 @@ implements CommandExecutor{
 
 
 	private String[] normalize(String[] args){
-		if(args.length == 1){
-			return args;
-		}
-		else{
-			// set up an array of strings with a length equal to the amount of songs requested (separated by commata)
+			// set up an array of strings with a length equal to the amount of songs requested
+			// (separated by commata). Each string in the array is one request.
 			int counter = 0;
 			for(String s : args) {
 				if(s.endsWith(",")) {
@@ -92,21 +89,27 @@ implements CommandExecutor{
 
 			int i = 0;
 			for(String s : args){
-				boolean newQuery = false;
+				boolean endOfQuery = false;
 				if (s.endsWith(",")){
-					newQuery = true;
-					s = s.substring(0,s.length() - 1);
+					endOfQuery = true;
+					s = s.substring(0, s.length() - 1);
 				}
-				if (output[i] == null)
-					output[i] = "ytsearch: " + s;
+				if (output[i] == null){
+					if (s.contains("soundcloud.com") || s.contains("youtu.be"))
+						output[i] = s;
+					else if(s.contains("://youtube.") || s.contains("www.youtube."))
+						output[i] = s.replaceAll("youtube.*/", "youtube.com/");
+					else
+						output[i] = "ytsearch: " + s;
+					}
 				else
 					output[i] += " " + s;
 
-				if (newQuery)
+				if (endOfQuery)
 					i++;
 			}
+
 			return output;
-		}
 	}
 
 
@@ -265,7 +268,7 @@ implements CommandExecutor{
 					newUnbans.append(m.getEffectiveName() + "\n");
 				}
 			}
-			
+
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -420,7 +423,7 @@ implements CommandExecutor{
 			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Nothing found by `" + trackUrl + "`\n(" + requestedby);
+				eb.setDescription("Nothing found by `" + trackUrl.replace("ytsearch: ", "") + "`\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();
