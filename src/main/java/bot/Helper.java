@@ -5,6 +5,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -430,4 +436,96 @@ public class Helper {
 
 		return true;
 	}
+
+
+
+	/**
+	 * Gets the thumbnail of a track/video to be used in an embed.
+	 * @param  String      TrackUrl    The URL of the track in question.
+	 * @return             The URL of the thumbnail. Defaults to /thumbnails/info.png ,if no fitting thumbnail is found.
+	 */
+	public static String getTrackThumbnail(String TrackUrl){
+		String thumbnail = null;
+		if (TrackUrl.contains("soundcloud.com/"))
+			thumbnail = ((thumbnail = getSoundcloudThumbnail(TrackUrl)) != null) ? thumbnail : null;
+		else if (TrackUrl.contains("youtube.com/") || TrackUrl.contains("youtu.be/"))
+			thumbnail = ((thumbnail = getYoutubeThumbnail(TrackUrl)) != null) ? thumbnail : null;
+		thumbnail = (thumbnail != null) ? thumbnail : ESBot.HOST_RAW_URL + "/thumbnails/info.png";
+		return thumbnail;
+	}
+
+
+
+	/**
+	 * Gets a Soundcloud thumbnail URL.
+	 * @param  String      TrackUrl    The Soundcloud url linking to the track.
+	 * @return             The URL of the thumbnail, with the size 500x500. May be null, if not found.
+	 */
+	public static String getSoundcloudThumbnail(String TrackUrl){
+		String html = getPlainHtml(TrackUrl);
+		int pos = html.indexOf("\"artwork_url\":") + 15;
+		String artwork_url = html.substring(pos, html.indexOf("-large.jpg\"", pos) + 10);
+		return artwork_url;
+	}
+
+
+	/**
+	 * Gets a YouTube thumbnail URL.
+	 * @param  String      TrackUrl    The YouTube url linking to the track.
+	 * @return             The URL of the thumbnail. May be null, if not found.
+	 */
+	public static String getYoutubeThumbnail(String TrackUrl){
+		String thumbnail_url = null;
+		String id = getYoutubeId(TrackUrl);
+		if (id != null)
+			thumbnail_url = "http://i1.ytimg.com/vi/" + id + "/0.jpg";
+		System.out.println(thumbnail_url);
+		return thumbnail_url;
+	}
+
+
+
+	/**
+	 * Gets a YouTube video ID.
+	 * @param  String      url    The YouTube url linking to the track.
+	 * @return             The video ID. May be null, if not found.
+	 */
+	public static String getYoutubeId(String url){
+		String pattern = "(?<=watch\\?v=|/videos/|embed\\/)[^#\\&\\?]*";
+		Pattern p = Pattern.compile(pattern);
+		Matcher m = p.matcher(url);
+		if(m.find()){
+			return m.group();
+		}
+		else
+			return null;
+	}
+
+
+
+
+	public static String getPlainHtml(String path) {
+		URL url;
+		StringBuilder sb = new StringBuilder();
+		try {
+			url = new URL(path);
+			URLConnection c = url.openConnection();
+			BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+			String inputLine;
+			while ((inputLine = br.readLine()) != null) {
+				sb.append(inputLine);
+			}
+			br.close();
+			return sb.toString();
+		}
+		catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
+	}
+
+
 }

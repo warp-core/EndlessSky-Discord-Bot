@@ -148,7 +148,7 @@ implements CommandExecutor{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+			eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 			if(track != null){
 				String nowplaying = String.format("**Playing:** %s\n**Time:** [%s / %s]",
 						track.getInfo().title,
@@ -390,7 +390,7 @@ implements CommandExecutor{
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 				eb.setDescription("Queuing `" + track.getInfo().title + "`\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
+				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 				channel.sendMessage(eb.build()).queue();
 
 				play(guild, musicManager, track);
@@ -402,19 +402,19 @@ implements CommandExecutor{
 
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
 				if(playlist.isSearchResult()){
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
 					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
 				}
 				else{
 					play(guild, musicManager, playlist);
-
 					eb.setDescription("Queuing playlist `" + playlist.getName() + "`\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
+					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				}
 				channel.sendMessage(eb.build()).queue();
 			}
