@@ -1,7 +1,5 @@
 package bot;
 
-import java.io.File;
-import java.io.FileReader;
 import java.lang.String;
 import java.net.URL;
 import java.io.BufferedReader;
@@ -11,7 +9,6 @@ import org.json.JSONArray;
 import java.util.concurrent.TimeUnit;
 
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.ScriptException;
@@ -30,9 +27,7 @@ import de.btobastian.sdcf4j.CommandHandler;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.Message.Attachment;
 import net.dv8tion.jda.core.entities.MessageChannel;
-import net.dv8tion.jda.core.MessageBuilder;
 
 public class MiscCommands
 implements CommandExecutor{

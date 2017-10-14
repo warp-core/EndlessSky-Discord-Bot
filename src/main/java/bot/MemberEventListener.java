@@ -1,9 +1,5 @@
 package bot;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.TextChannel;
