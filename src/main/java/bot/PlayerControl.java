@@ -63,7 +63,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words.", usage = "-play URL", privateMessages = false)
+	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words. Can process multiple inputs separated by commata. As URLs, songs and Playlists from Soundcloud and YouTube can be used", usage = "-play URL [, URL 2, ...]", privateMessages = false)
 	public void onPlayCommand(Guild guild, TextChannel channel, String[] args, User author, Message msg){
 		Member requester = guild.getMember(author);
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
@@ -114,7 +114,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started.", usage = "-skip\n-skip #\n-next\n-next #", privateMessages = false)
+	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started. Can be used to skip multiple songs by appending a number to the command", usage = "-skip [amount]\n-next [amount]", privateMessages = false)
 	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
