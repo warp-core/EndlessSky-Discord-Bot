@@ -166,13 +166,17 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-queue"}, description = "Displays the current queue.", usage = "-queue", privateMessages = false)
+	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue.", usage = "-queue [X]", privateMessages = false)
 	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
+		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
+				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1) * 10 - 10;
 		Member requester = guild.getMember(msg.getAuthor());
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+            int qsize = queue.size();
 			StringBuilder sb = new StringBuilder("Current Queue:\n");
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -181,16 +185,22 @@ implements CommandExecutor{
 			if(queue.isEmpty())
 				sb.append("The queue is empty!");
 			else{
-				int trackCount = 0;
+                if(showFrom >= qsize)
+                    showFrom = qsize - (qsize % 10);
+				int trackCount = 0 + showFrom;
+				System.out.println(trackCount);
+                int countMax = trackCount + 11;
 				long queueLength = 0;
-				sb.append("Entries: " + queue.size() + "\n");
+				sb.append("Entries: " + qsize + "\n");
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(++trackCount < 11){
-						sb.append("`[" + getTimestamp(track.getDuration()) + "]` ");
+					if(++trackCount < countMax){
+						sb.append("`" + trackCount + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
 					}
 				}
+                sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
+						+ ", Tracks " + (showFrom / 10 + 1) + " - " + (showFrom / 10 + 11) + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
 			eb.setDescription(sb.toString());
