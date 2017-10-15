@@ -188,7 +188,6 @@ implements CommandExecutor{
                 if(showFrom >= qsize)
                     showFrom = qsize - (qsize % 10);
 				int trackCount = 0 + showFrom;
-				System.out.println(trackCount);
                 int countMax = trackCount + 11;
 				long queueLength = 0;
 				sb.append("Entries: " + qsize + "\n");
@@ -398,7 +397,7 @@ implements CommandExecutor{
 			public void trackLoaded(AudioTrack track){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Queuing `" + track.getInfo().title + "`\n(" + requestedby);
+				eb.setDescription("Queuing `" + track.getInfo().title + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 				channel.sendMessage(eb.build()).queue();
@@ -417,13 +416,13 @@ implements CommandExecutor{
 				if(playlist.isSearchResult()){
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
-					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`[\uD83D\uDD17](" + firstTrack.getInfo().uri + ")\n(first track of `" + playlist.getName() + "`, " + requestedby);
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
 				}
 				else{
 					play(guild, musicManager, playlist);
-					eb.setDescription("Queuing playlist `" + playlist.getName() + "`\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
+					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				}
 				channel.sendMessage(eb.build()).queue();
