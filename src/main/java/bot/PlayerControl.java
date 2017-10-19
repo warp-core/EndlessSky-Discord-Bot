@@ -176,7 +176,7 @@ implements CommandExecutor{
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
-            int qsize = queue.size();
+			int qsize = queue.size();
 			StringBuilder sb = new StringBuilder("Current Queue:\n");
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -185,10 +185,10 @@ implements CommandExecutor{
 			if(queue.isEmpty())
 				sb.append("The queue is empty!");
 			else{
-                if(showFrom >= qsize)
-                    showFrom = qsize - (qsize % 10);
+				if(showFrom >= qsize)
+					showFrom = qsize - (qsize % 10);
 				int trackCount = 0 + showFrom;
-                int countMax = trackCount + 11;
+					int countMax = trackCount + 11;
 				long queueLength = 0;
 				sb.append("Entries: " + qsize + "\n");
 				for(AudioTrack track : queue){
@@ -198,7 +198,7 @@ implements CommandExecutor{
 						sb.append(track.getInfo().title + "\n");
 					}
 				}
-                sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
+				sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
 						+ ", Tracks " + (showFrom / 10 + 1) + " - " + (showFrom / 10 + 11) + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
