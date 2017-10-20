@@ -256,6 +256,83 @@ implements CommandExecutor{
 
 
 
+	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
+	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+		EmbedBuilder eb = new EmbedBuilder();
+		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+		eb.setColor(guild.getMember(bot.getSelf()).getColor());
+
+		if (args[0].equalsIgnoreCase("save")) {
+			if (Helper.getPlaylistbyKey(args[1]) != null)
+				eb.setDescription("This Playlist already exists.");
+			else if (args[2].contains("youtube.com/") || args[2].contains("soundcloud.com/")){
+				Helper.savePlaylist(args[1], args[2], author.getName() + "#" + author.getDiscriminator(), author.getIdLong());
+				eb.setDescription("Saved Playlist as '" + args[1] + "'.");
+			}
+			else
+				eb.setDescription("Enter a valid Soundcloud or YouTube URL.");
+			channel.sendMessage(eb.build()).queue();
+		}
+
+		else if (args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("delete")){
+			String[] playlist = Helper.getPlaylistbyKey(args[0]);
+			if (playlist != null) {
+				if (Long.toString(author.getIdLong()).equals(playlist[3])){
+					if (args[0].equalsIgnoreCase("edit")){
+						if (args[2].toLowerCase().contains("youtube.com/") || args[2].toLowerCase().contains("soundcloud.com/")) {
+							Helper.deletePlaylist(args[1]);
+							Helper.savePlaylist(args[1], args[2], author.getName() + "#" + author.getDiscriminator(), author.getIdLong());
+							eb.setDescription("Edited Playlist '" + args[1] + "'.");
+						}
+						else
+							eb.setDescription("Enter a valid Soundcloud or YouTube URL.");
+					}
+					else {
+						Helper.deletePlaylist(args[1]);
+						eb.setDescription("Removed Playlist '" + args[1] + "'.");
+					}
+				}
+				else
+					eb.setDescription("The owner of this playlist is `" + playlist[2] + "`.");
+			}
+			else
+				eb.setDescription("This Playlist does not exist.");
+			channel.sendMessage(eb.build()).queue();
+		}
+
+		else if (args[0].equalsIgnoreCase("info")){
+			String[] playlist = Helper.getPlaylistbyKey(args[1]);
+			if (playlist != null) {
+				eb.setDescription("Key: " + playlist[0]);
+				eb.appendDescription("\nURL: " + playlist[1]);
+				eb.appendDescription("\nOwner: `" + playlist[2] + "`");
+			}
+			else
+				eb.setDescription("This Playlist does not exist.");
+			channel.sendMessage(eb.build()).queue();
+		}
+
+		else{
+			String[] playlist = Helper.getPlaylistbyKey(args[0]);
+			if (playlist == null){
+				eb.setDescription("This Playlist does not exist.");
+				channel.sendMessage(eb.build()).queue();
+			}
+			else {
+				Member requester = guild.getMember(author);
+				if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+					channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+				else if(args.length > 0 && requester.getVoiceState().getChannel() != null) {
+					checkVoiceChannel(guild.getAudioManager(), requester);
+					loadAndPlay(guild, channel, playlist[1], requester);
+				}
+			}
+		}
+	}
+
+
+
 	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via '-play'.\n\nRequires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
 	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);

@@ -1,13 +1,17 @@
 package bot;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -503,7 +507,11 @@ public class Helper {
 
 
 
-
+	/**
+	 * Gets the HTML code from a URL.
+	 * @param  String      path    The URL linking to the site.
+	 * @return             The HTML content as String.
+	 */
 	public static String getPlainHtml(String path) {
 		URL url;
 		StringBuilder sb = new StringBuilder();
@@ -527,5 +535,75 @@ public class Helper {
 		return sb.toString();
 	}
 
+
+
+	/**
+	 * Saves a playlist to playlists.txt
+	 * @param  String      key    The key to the playlist will be associated with.
+	 * @param  String      url    The playlist's URL.
+	 * @param  String      owner  The playlist's owner. Note that this is only for printing out info about the playlist, not for checking for the playlists owner.
+	 * @param  long        ownerid The owner's id.
+	 */
+	public static void savePlaylist(String key, String url, String owner, long ownerid) {
+		try {
+			Path path = Paths.get("data/playlists.txt");
+			String str = key.toLowerCase() + " " + url + " " + owner + " " + ownerid;
+					Files.write(path, Arrays.asList(str), StandardCharsets.UTF_8,
+					Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+		}
+		catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	/**
+	 * Deletes a playlist from playlists.txt
+	 * @param  String      key    The key to the playlist is be associated with.
+	 */
+	public static void deletePlaylist(String key) {
+		try {
+			File inputFile = new File("data/playlists.txt");
+			File tempFile = new File("data/playlistsTemp.txt");
+			BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+			String line;
+			while((line = reader.readLine()) != null) {
+				if(line.toLowerCase().startsWith(key.toLowerCase()))
+					continue;
+				writer.write(line + System.getProperty("line.separator"));
+			}
+			writer.close();
+			reader.close();
+			tempFile.renameTo(inputFile);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	/**
+	 * Gets data for a playlist from data/playlists.txt.
+	 * @param  String      key    The key to the wanted playlist is associated with.
+	 * @return             A possibly null Array of Strings containing the Playlist data.
+	 */
+	public static String[] getPlaylistbyKey(String key){
+		String[] data = null;
+		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				data = line.split(" ");
+				if (data[0].equalsIgnoreCase(key))
+					return data;
+			}
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return data;
+	}
 
 }
