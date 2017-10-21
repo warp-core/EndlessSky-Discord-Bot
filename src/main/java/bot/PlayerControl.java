@@ -213,7 +213,7 @@ implements CommandExecutor{
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
 					if(++trackCount < countMax){
-						sb.append("`" + trackCount + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
+						sb.append("`" + (trackCount - 1) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
 					}
 				}
