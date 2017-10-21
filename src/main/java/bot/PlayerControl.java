@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -116,23 +117,41 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started. Can be used to skip multiple songs by appending a number to the command", usage = "-skip [amount]\n-next [amount]", privateMessages = false)
 	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
+		Member requester = guild.getMember(author);
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int count = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
-		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
-			if(hasDJPerms(requester, channel, guild)){
+			if(hasDJPerms(requester, channel, guild)) {
 				skipTrack(channel, requester, count);
 				voteHandler.clear();
-				msg.delete().queue();
+			}
+			else if(getGuildAudioPlayer(guild).player.getPlayingTrack().getUserData().equals(requester)) {
+				if (count <= 1)
+					skipTrack(channel, requester, count);
+				else {
+					LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+					boolean permitted = true;
+					for (int i = 0; i < count - 1; ++i) {
+						if (!queue.get(i).getUserData().equals(requester)) {
+							permitted = false;
+							break;
+						}
+					}
+					if (permitted)
+						skipTrack(channel, requester, count);
+					else if (vote(voteHandler, requester, channel, "skip")) {
+						skipTrack(channel, voteHandler.getRequester(), count);
+					}
+				}
 			}
 			else if(vote(voteHandler, requester, channel, "skip")){
 				skipTrack(channel, voteHandler.getRequester(), count);
-				msg.delete().queue();
 			}
+			msg.delete().queue();
 		}
 	}
 
@@ -479,6 +498,7 @@ implements CommandExecutor{
 				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 				channel.sendMessage(eb.build()).queue();
 
+				track.setUserData(requester);
 				play(guild, musicManager, track);
 			}
 
@@ -493,12 +513,17 @@ implements CommandExecutor{
 				if(playlist.isSearchResult()){
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
+					firstTrack.setUserData(requester);
 					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`[\uD83D\uDD17](" + firstTrack.getInfo().uri + ")\n(first track of `" + playlist.getName() + "`, " + requestedby);
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
 				}
 				else{
-					play(guild, musicManager, playlist);
+					List<AudioTrack> tracks = playlist.getTracks();
+					for (AudioTrack track : tracks)
+						track.setUserData(requester);
+					BasicAudioPlaylist newplaylist = new BasicAudioPlaylist(playlist.getName(), tracks, tracks.get(0), false);
+					play(guild, musicManager, newplaylist);
 					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				}
