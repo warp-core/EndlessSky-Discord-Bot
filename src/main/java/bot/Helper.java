@@ -1,10 +1,20 @@
 package bot;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
@@ -430,4 +440,170 @@ public class Helper {
 
 		return true;
 	}
+
+
+
+	/**
+	 * Gets the thumbnail of a track/video to be used in an embed.
+	 * @param  String      TrackUrl    The URL of the track in question.
+	 * @return             The URL of the thumbnail. Defaults to /thumbnails/info.png ,if no fitting thumbnail is found.
+	 */
+	public static String getTrackThumbnail(String TrackUrl){
+		String thumbnail = null;
+		if (TrackUrl.contains("soundcloud.com/"))
+			thumbnail = ((thumbnail = getSoundcloudThumbnail(TrackUrl)) != null) ? thumbnail : null;
+		else if (TrackUrl.contains("youtube.com/") || TrackUrl.contains("youtu.be/"))
+			thumbnail = ((thumbnail = getYoutubeThumbnail(TrackUrl)) != null) ? thumbnail : null;
+		thumbnail = (thumbnail != null) ? thumbnail : ESBot.HOST_RAW_URL + "/thumbnails/info.png";
+		return thumbnail;
+	}
+
+
+
+	/**
+	 * Gets a Soundcloud thumbnail URL.
+	 * @param  String      TrackUrl    The Soundcloud url linking to the track.
+	 * @return             The URL of the thumbnail, with the size 500x500. May be null, if not found.
+	 */
+	public static String getSoundcloudThumbnail(String TrackUrl){
+		String html = getPlainHtml(TrackUrl);
+		int pos = html.indexOf("\"artwork_url\":") + 15;
+		String artwork_url = html.substring(pos, html.indexOf("-large.jpg\"", pos) + 10);
+		return artwork_url;
+	}
+
+
+	/**
+	 * Gets a YouTube thumbnail URL.
+	 * @param  String      TrackUrl    The YouTube url linking to the track.
+	 * @return             The URL of the thumbnail. May be null, if not found.
+	 */
+	public static String getYoutubeThumbnail(String TrackUrl){
+		String thumbnail_url = null;
+		String id = getYoutubeId(TrackUrl);
+		if (id != null)
+			thumbnail_url = "http://i1.ytimg.com/vi/" + id + "/0.jpg";
+		System.out.println(thumbnail_url);
+		return thumbnail_url;
+	}
+
+
+
+	/**
+	 * Gets a YouTube video ID.
+	 * @param  String      url    The YouTube url linking to the track.
+	 * @return             The video ID. May be null, if not found.
+	 */
+	public static String getYoutubeId(String url){
+		String pattern = "(?<=watch\\?v=|/videos/|embed\\/)[^#\\&\\?]*";
+		Pattern p = Pattern.compile(pattern);
+		Matcher m = p.matcher(url);
+		if(m.find()){
+			return m.group();
+		}
+		else
+			return null;
+	}
+
+
+
+	/**
+	 * Gets the HTML code from a URL.
+	 * @param  String      path    The URL linking to the site.
+	 * @return             The HTML content as String.
+	 */
+	public static String getPlainHtml(String path) {
+		URL url;
+		StringBuilder sb = new StringBuilder();
+		try {
+			url = new URL(path);
+			URLConnection c = url.openConnection();
+			BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+			String inputLine;
+			while ((inputLine = br.readLine()) != null) {
+				sb.append(inputLine);
+			}
+			br.close();
+			return sb.toString();
+		}
+		catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return sb.toString();
+	}
+
+
+
+	/**
+	 * Saves a playlist to playlists.txt
+	 * @param  String      key    The key to the playlist will be associated with.
+	 * @param  String      url    The playlist's URL.
+	 * @param  String      owner  The playlist's owner. Note that this is only for printing out info about the playlist, not for checking for the playlists owner.
+	 * @param  long        ownerid The owner's id.
+	 */
+	public static void savePlaylist(String key, String url, String owner, long ownerid) {
+		try {
+			Path path = Paths.get("data/playlists.txt");
+			String str = key.toLowerCase() + " " + url + " " + owner + " " + ownerid;
+					Files.write(path, Arrays.asList(str), StandardCharsets.UTF_8,
+					Files.exists(path) ? StandardOpenOption.APPEND : StandardOpenOption.CREATE);
+		}
+		catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	/**
+	 * Deletes a playlist from playlists.txt
+	 * @param  String      key    The key to the playlist is be associated with.
+	 */
+	public static void deletePlaylist(String key) {
+		try {
+			File inputFile = new File("data/playlists.txt");
+			File tempFile = new File("data/playlistsTemp.txt");
+			BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+			String line;
+			while((line = reader.readLine()) != null) {
+				if(line.toLowerCase().startsWith(key.toLowerCase()))
+					continue;
+				writer.write(line + System.getProperty("line.separator"));
+			}
+			writer.close();
+			reader.close();
+			tempFile.renameTo(inputFile);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	/**
+	 * Gets data for a playlist from data/playlists.txt.
+	 * @param  String      key    The key to the wanted playlist is associated with.
+	 * @return             A possibly null Array of Strings containing the Playlist data.
+	 */
+	public static String[] getPlaylistbyKey(String key){
+		String[] data = null;
+		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				data = line.split(" ");
+				if (data[0].equalsIgnoreCase(key))
+					return data;
+			}
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		return data;
+	}
+
 }

@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -63,7 +64,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words.", usage = "-play URL", privateMessages = false)
+	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words. Can process multiple inputs separated by commata. As URLs, songs and Playlists from Soundcloud and YouTube can be used", usage = "-play URL [, URL 2, ...]", privateMessages = false)
 	public void onPlayCommand(Guild guild, TextChannel channel, String[] args, User author, Message msg){
 		Member requester = guild.getMember(author);
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
@@ -79,11 +80,8 @@ implements CommandExecutor{
 
 
 	private String[] normalize(String[] args){
-		if(args.length == 1){
-			return args;
-		}
-		else{
-			// set up an array of strings with a length equal to the amount of songs requested (separated by commata)
+			// set up an array of strings with a length equal to the amount of songs requested
+			// (separated by commata). Each string in the array is one request.
 			int counter = 0;
 			for(String s : args) {
 				if(s.endsWith(",")) {
@@ -92,44 +90,68 @@ implements CommandExecutor{
 
 			int i = 0;
 			for(String s : args){
-				boolean newQuery = false;
+				boolean endOfQuery = false;
 				if (s.endsWith(",")){
-					newQuery = true;
-					s = s.substring(0,s.length() - 1);
+					endOfQuery = true;
+					s = s.substring(0, s.length() - 1);
 				}
-				if (output[i] == null)
-					output[i] = "ytsearch: " + s;
+				if (output[i] == null){
+					if (s.contains("soundcloud.com") || s.contains("youtu.be"))
+						output[i] = s;
+					else if(s.contains("://youtube.") || s.contains("www.youtube."))
+						output[i] = s.replaceAll("youtube.*/", "youtube.com/");
+					else
+						output[i] = "ytsearch: " + s;
+					}
 				else
 					output[i] += " " + s;
 
-				if (newQuery)
+				if (endOfQuery)
 					i++;
 			}
+
 			return output;
-		}
 	}
 
 
 
-	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started.", usage = "-skip\n-skip #\n-next\n-next #", privateMessages = false)
+	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started. Can be used to skip multiple songs by appending a number to the command", usage = "-skip [amount]\n-next [amount]", privateMessages = false)
 	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
+		Member requester = guild.getMember(author);
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int count = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
-		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
-			if(hasDJPerms(requester, channel, guild)){
+			if(hasDJPerms(requester, channel, guild)) {
 				skipTrack(channel, requester, count);
 				voteHandler.clear();
-				msg.delete().queue();
+			}
+			else if(getGuildAudioPlayer(guild).player.getPlayingTrack().getUserData().equals(requester)) {
+				if (count <= 1)
+					skipTrack(channel, requester, count);
+				else {
+					LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+					boolean permitted = true;
+					for (int i = 0; i < count - 1; ++i) {
+						if (!queue.get(i).getUserData().equals(requester)) {
+							permitted = false;
+							break;
+						}
+					}
+					if (permitted)
+						skipTrack(channel, requester, count);
+					else if (vote(voteHandler, requester, channel, "skip")) {
+						skipTrack(channel, voteHandler.getRequester(), count);
+					}
+				}
 			}
 			else if(vote(voteHandler, requester, channel, "skip")){
 				skipTrack(channel, voteHandler.getRequester(), count);
-				msg.delete().queue();
 			}
+			msg.delete().queue();
 		}
 	}
 
@@ -145,7 +167,7 @@ implements CommandExecutor{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+			eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 			if(track != null){
 				String nowplaying = String.format("**Playing:** %s\n**Time:** [%s / %s]",
 						track.getInfo().title,
@@ -163,13 +185,17 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-queue"}, description = "Displays the current queue.", usage = "-queue", privateMessages = false)
+	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue.", usage = "-queue [X]", privateMessages = false)
 	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
+		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
+				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1) * 10 - 10;
 		Member requester = guild.getMember(msg.getAuthor());
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+			int qsize = queue.size();
 			StringBuilder sb = new StringBuilder("Current Queue:\n");
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -178,16 +204,21 @@ implements CommandExecutor{
 			if(queue.isEmpty())
 				sb.append("The queue is empty!");
 			else{
-				int trackCount = 0;
+				if(showFrom >= qsize)
+					showFrom = qsize - (qsize % 10);
+				int trackCount = 0 + showFrom;
+					int countMax = trackCount + 11;
 				long queueLength = 0;
-				sb.append("Entries: " + queue.size() + "\n");
+				sb.append("Entries: " + qsize + "\n");
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(++trackCount < 11){
-						sb.append("`[" + getTimestamp(track.getDuration()) + "]` ");
+					if(++trackCount < countMax){
+						sb.append("`" + (trackCount - 1) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
 					}
 				}
+				sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
+						+ ", Tracks " + (showFrom / 10 + 1) + " - " + (showFrom / 10 + 11) + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
 			eb.setDescription(sb.toString());
@@ -244,6 +275,83 @@ implements CommandExecutor{
 
 
 
+	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
+	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+		EmbedBuilder eb = new EmbedBuilder();
+		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+		eb.setColor(guild.getMember(bot.getSelf()).getColor());
+
+		if (args[0].equalsIgnoreCase("save")) {
+			if (Helper.getPlaylistbyKey(args[1]) != null)
+				eb.setDescription("This Playlist already exists.");
+			else if (args[2].contains("youtube.com/") || args[2].contains("soundcloud.com/")){
+				Helper.savePlaylist(args[1], args[2], author.getName() + "#" + author.getDiscriminator(), author.getIdLong());
+				eb.setDescription("Saved Playlist as '" + args[1] + "'.");
+			}
+			else
+				eb.setDescription("Enter a valid Soundcloud or YouTube URL.");
+			channel.sendMessage(eb.build()).queue();
+		}
+
+		else if (args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("delete")){
+			String[] playlist = Helper.getPlaylistbyKey(args[0]);
+			if (playlist != null) {
+				if (Long.toString(author.getIdLong()).equals(playlist[3])){
+					if (args[0].equalsIgnoreCase("edit")){
+						if (args[2].toLowerCase().contains("youtube.com/") || args[2].toLowerCase().contains("soundcloud.com/")) {
+							Helper.deletePlaylist(args[1]);
+							Helper.savePlaylist(args[1], args[2], author.getName() + "#" + author.getDiscriminator(), author.getIdLong());
+							eb.setDescription("Edited Playlist '" + args[1] + "'.");
+						}
+						else
+							eb.setDescription("Enter a valid Soundcloud or YouTube URL.");
+					}
+					else {
+						Helper.deletePlaylist(args[1]);
+						eb.setDescription("Removed Playlist '" + args[1] + "'.");
+					}
+				}
+				else
+					eb.setDescription("The owner of this playlist is `" + playlist[2] + "`.");
+			}
+			else
+				eb.setDescription("This Playlist does not exist.");
+			channel.sendMessage(eb.build()).queue();
+		}
+
+		else if (args[0].equalsIgnoreCase("info")){
+			String[] playlist = Helper.getPlaylistbyKey(args[1]);
+			if (playlist != null) {
+				eb.setDescription("Key: " + playlist[0]);
+				eb.appendDescription("\nURL: " + playlist[1]);
+				eb.appendDescription("\nOwner: `" + playlist[2] + "`");
+			}
+			else
+				eb.setDescription("This Playlist does not exist.");
+			channel.sendMessage(eb.build()).queue();
+		}
+
+		else{
+			String[] playlist = Helper.getPlaylistbyKey(args[0]);
+			if (playlist == null){
+				eb.setDescription("This Playlist does not exist.");
+				channel.sendMessage(eb.build()).queue();
+			}
+			else {
+				Member requester = guild.getMember(author);
+				if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+					channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+				else if(args.length > 0 && requester.getVoiceState().getChannel() != null) {
+					checkVoiceChannel(guild.getAudioManager(), requester);
+					loadAndPlay(guild, channel, playlist[1], requester);
+				}
+			}
+		}
+	}
+
+
+
 	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via '-play'.\n\nRequires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
 	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
@@ -265,7 +373,7 @@ implements CommandExecutor{
 					newUnbans.append(m.getEffectiveName() + "\n");
 				}
 			}
-			
+
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -385,11 +493,12 @@ implements CommandExecutor{
 			public void trackLoaded(AudioTrack track){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Queuing `" + track.getInfo().title + "`\n(" + requestedby);
+				eb.setDescription("Queuing `" + track.getInfo().title + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
+				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 				channel.sendMessage(eb.build()).queue();
 
+				track.setUserData(requester);
 				play(guild, musicManager, track);
 			}
 
@@ -399,19 +508,24 @@ implements CommandExecutor{
 
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
 				if(playlist.isSearchResult()){
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
-					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					firstTrack.setUserData(requester);
+					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`[\uD83D\uDD17](" + firstTrack.getInfo().uri + ")\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
 				}
 				else{
-					play(guild, musicManager, playlist);
-
-					eb.setDescription("Queuing playlist `" + playlist.getName() + "`\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
+					List<AudioTrack> tracks = playlist.getTracks();
+					for (AudioTrack track : tracks)
+						track.setUserData(requester);
+					BasicAudioPlaylist newplaylist = new BasicAudioPlaylist(playlist.getName(), tracks, tracks.get(0), false);
+					play(guild, musicManager, newplaylist);
+					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
+					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 				}
 				channel.sendMessage(eb.build()).queue();
 			}
@@ -420,7 +534,7 @@ implements CommandExecutor{
 			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Nothing found by `" + trackUrl + "`\n(" + requestedby);
+				eb.setDescription("Nothing found by `" + trackUrl.replace("ytsearch: ", "") + "`\n(" + requestedby);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();

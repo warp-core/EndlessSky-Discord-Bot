@@ -16,10 +16,10 @@ repositories {
 }
 
 dependencies {
-	compile 'com.sedmelluq:lavaplayer:1.2.43'
-	compile 'net.dv8tion:JDA:3.3.0_271'
-	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.5'
-	compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.5'
+	compile 'com.sedmelluq:lavaplayer:1.2.44'
+	compile 'net.dv8tion:JDA:3.3.1_291'
+	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.6'
+	compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.6'
 	compile 'junit:junit:4.12'
 	runtime "ch.qos.logback:logback-classic:$logbackVersion"
 	runtime "ch.qos.logback:logback-core:$logbackVersion"
