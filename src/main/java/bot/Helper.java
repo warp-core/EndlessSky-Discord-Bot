@@ -595,9 +595,8 @@ public class Helper {
 		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				data = line.split(" ");
-				if (data[0].equalsIgnoreCase(key))
-					return data;
+				if (line.split((" "))[0].equalsIgnoreCase(key))
+					return line.split(" ");
 			}
 		}
 		catch(IOException e){
