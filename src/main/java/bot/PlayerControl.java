@@ -285,7 +285,7 @@ implements CommandExecutor{
 		if (args[0].equalsIgnoreCase("save")) {
 			if (Helper.getPlaylistbyKey(args[1]) != null)
 				eb.setDescription("This Playlist already exists.");
-			else if (args[0].equalsIgnoreCase("save") || args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("delete"))
+			else if (args[1].equalsIgnoreCase("save") || args[1].equalsIgnoreCase("edit") || args[1].equalsIgnoreCase("info") || args[1].equalsIgnoreCase("delete"))
 				eb.setDescription("Find a better name!");
 			else if (args[2].contains("youtube.com/") || args[2].contains("soundcloud.com/")){
 				Helper.savePlaylist(args[1], args[2], author.getName() + "#" + author.getDiscriminator(), author.getIdLong());
