@@ -209,11 +209,11 @@ implements CommandExecutor{
 				sb.append("The queue is empty!");
 			else{
 				if(showFrom >= qsize)
-					showFrom = qsize - (qsize % 10);
+					showFrom = qsize - (qsize % 10) == qsize ? showFrom = qsize - 9 : qsize - (qsize % 10) + 1;
 				// If the page number requested is higher than the total number of pages, start on the last page.
 				int trackCount = 0 + showFrom;
 				// Create a variable to count the position of the track being added to the output list.
-					int countMax = trackCount + 11;
+					int countMax = trackCount + 9 < qsize ? trackCount + 9 : qzise;
 				// Create a variable to show the last track to be put into the output list.
 				long queueLength = 0;
 				sb.append("Entries: " + qsize + "\n");
@@ -228,7 +228,7 @@ implements CommandExecutor{
 					++queuePos;
 				}
 				sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
-						+ ", Tracks " + (showFrom) + " - " + (showFrom + 9) + "/" +  qsize + "." );
+						+ ", Tracks " + (showFrom) + " - " + countMax + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
 			eb.setDescription(sb.toString());
