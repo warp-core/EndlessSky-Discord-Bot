@@ -213,14 +213,14 @@ implements CommandExecutor{
 				// If the page number requested is higher than the total number of pages, start on the last page.
 				int trackCount = 0 + showFrom;
 				// Create a variable to count the position of the track being added to the output list.
-					int countMax = trackCount + 9 < qsize ? trackCount + 9 : qzise;
+					int countMax = trackCount + 9 <= qsize ? trackCount + 9 : qzise;
 				// Create a variable to show the last track to be put into the output list.
 				long queueLength = 0;
 				sb.append("Entries: " + qsize + "\n");
 				int queuePos = 1;
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(trackCount + 1 < countMax && queuePos > trackCount + 1){
+					if(trackCount <= countMax && queuePos >= trackCount){
 						sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
 						++trackCount;
