@@ -191,7 +191,7 @@ implements CommandExecutor{
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
 		// Then set 'CountStr' to everything following the space in the command.
-		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 10, 1);
+		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
 		// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
 		// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
 		Member requester = guild.getMember(msg.getAuthor());
@@ -227,8 +227,8 @@ implements CommandExecutor{
 					}
 					++queuePos;
 				}
-				sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
-						+ ", Tracks " + (showFrom) + " - " + (showFrom + 11) + "/" +  qsize + "." );
+				sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
+						+ ", Tracks " + (showFrom) + " - " + (showFrom + 9) + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
 			eb.setDescription(sb.toString());
