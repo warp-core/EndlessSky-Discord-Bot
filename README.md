@@ -37,5 +37,6 @@ Current Maintainer / Hoster: @MCOfficer
 
 Contributors / PR Bots:
  - @tehhowch
+ - @warp-core
 
 24/7 Development Support: @MinnDevelopment and the JDA Discord Server
