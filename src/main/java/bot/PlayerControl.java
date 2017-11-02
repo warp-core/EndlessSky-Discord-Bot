@@ -220,10 +220,12 @@ implements CommandExecutor{
 				int queuePos = 1;
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(++trackCount < countMax && queuePos < ){
-						sb.append("`" + (trackCount - 1) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
+					if(trackCount + 1 < countMax && queuePos > trackCount + 1){
+						sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
+						++trackCount;
 					}
+					++queuePos;
 				}
 				sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
 						+ ", Tracks " + (showFrom) + " - " + (showFrom + 11) + "/" +  qsize + "." );
