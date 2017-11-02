@@ -189,7 +189,11 @@ implements CommandExecutor{
 	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
-		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1) * 10 - 10;
+		// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
+		// Then set 'CountStr' to everything following the space in the command.
+		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 10, 1);
+		// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
+		// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
 		Member requester = guild.getMember(msg.getAuthor());
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
@@ -206,19 +210,23 @@ implements CommandExecutor{
 			else{
 				if(showFrom >= qsize)
 					showFrom = qsize - (qsize % 10);
+				// If the page number requested is higher than the total number of pages, start on the last page.
 				int trackCount = 0 + showFrom;
+				// Create a variable to count the position of the track being added to the output list.
 					int countMax = trackCount + 11;
+				// Create a variable to show the last track to be put into the output list.
 				long queueLength = 0;
 				sb.append("Entries: " + qsize + "\n");
+				int queuePos = 1;
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(++trackCount < countMax){
+					if(++trackCount < countMax && queuePos < ){
 						sb.append("`" + (trackCount - 1) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
 					}
 				}
 				sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
-						+ ", Tracks " + (showFrom / 10 + 1) + " - " + (showFrom / 10 + 11) + "/" +  qsize + "." );
+						+ ", Tracks " + (showFrom) + " - " + (showFrom + 11) + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
 			eb.setDescription(sb.toString());
