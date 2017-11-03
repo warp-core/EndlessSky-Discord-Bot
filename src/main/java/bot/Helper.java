@@ -303,7 +303,8 @@ public class Helper {
 			"I have the power. You don't.",
 			"Go play in a hyperspace lane.",
 			"How about I put *you* in the airlock?",
-			"Access Denied."
+			"Access Denied.",
+			"Please don't joke about that sort of thing."
 		};
 		Random rGen = new Random();
 		int choice = rGen.nextInt(messageList.length);
