@@ -350,7 +350,7 @@ implements CommandExecutor{
 				eb.setDescription("Playlists: " + playlists.length());
 				int position = 1;
 				for (String list : playlists){
-					eb.appendDescription("\n" + position + ". " + list);
+					eb.appendDescription("\n" + position + ". `" + list + "`");
 					++position;
 				}
 			}
