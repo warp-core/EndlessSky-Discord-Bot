@@ -285,7 +285,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
+	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist list\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
 	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
