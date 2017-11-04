@@ -347,7 +347,7 @@ implements CommandExecutor{
 		else if (args[0].equalsIgnoreCase("list")){
 			String[] playlists = Helper.getPlaylistList();
 			if (playlists != null) {
-				eb.setDescription("Playlists: " + playlists.size());
+				eb.setDescription("Playlists: " + playlists.length);
 				int position = 1;
 				for (String list : playlists){
 					eb.appendDescription("\n" + position + ". `" + list + "`");
