@@ -611,7 +611,7 @@ public class Helper {
 	 */
 	public static String[] getPlaylistList(){
 		String[] playlists = null;
-		List<string> keys = new ArrayList<string>();
+		List<String> keys = new ArrayList<String>();
 		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -621,7 +621,7 @@ public class Helper {
 		catch(IOException e){
 			e.printStackTrace();
 		}
-		playlists = keys.toArray(new String[list.size()]);
+		playlists = keys.toArray(new String[keys.size()]);
 		return playlists;
 	}
 
