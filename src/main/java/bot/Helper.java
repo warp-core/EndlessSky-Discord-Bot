@@ -605,5 +605,25 @@ public class Helper {
 		}
 		return data;
 	}
+	
+	/**
+	 * Gets data for all playlists from data/playlists.txt.
+	 * @return             An array containing the names of each playlist.
+	 */
+	public static String[] getPlaylistList(){
+		String[] playlists = null;
+		List<String> keys = new ArrayList<String>();
+		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				keys.add(line.split((" "))[0]);
+			}
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		playlists = keys.toArray(new String[keys.size()]);
+		return playlists;
+	}
 
 }
