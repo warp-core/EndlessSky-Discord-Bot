@@ -615,7 +615,7 @@ public class Helper {
 		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
 			String line;
 			while ((line = br.readLine()) != null) {
-				keys.Add(line.split((" "))[0]);
+				keys.add(line.split((" "))[0]);
 			}
 		}
 		catch(IOException e){
