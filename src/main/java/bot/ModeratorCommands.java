@@ -126,12 +126,22 @@ implements CommandExecutor{
 	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args){
 		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(msg.getAuthor())))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
-		else if(args.length == 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
+		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
 			// Ban the mentioned user.
 			Member toBan = guild.getMember(msg.getMentionedUsers().get(0));
 			int banLength = Math.max(1, Integer.valueOf(args[1]));
 			Helper.EnsureRole(guild, Helper.ROLE_GULAG);
 			temporaryGulag(guild, toBan, Helper.ROLE_GULAG, banLength);
+			String message = "Gulagged: `" + toBan.getEffectiveName() + "` for " + banLength + " seconds.";
+			if(args.length > 2){
+				message += "\nReason: ";
+				for(int i = 1; i < args.length - 1; i++){
+					message += (args[i] + " ");
+				}
+				message += args[args.length - 1] + ".";
+			}
+			TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
+			Helper.OutputHelper(modLog, message);
 		}
 	}
 
