@@ -141,7 +141,7 @@ implements CommandExecutor{
 				message += args[args.length - 1] + ".";
 			}
 			TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
-			Helper.OutputHelper(modLog, message);
+			modlog.sendMessage(message).queue();
 		}
 	}
 
