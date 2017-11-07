@@ -135,7 +135,7 @@ implements CommandExecutor{
 			String message = "Gulagged: `" + toBan.getEffectiveName() + "` for " + banLength + " seconds.";
 			if(args.length > 2){
 				message += "\nReason: ";
-				for(int i = 1; i < args.length - 1; i++){
+				for(int i = 2; i < args.length - 1; i++){
 					message += (args[i] + " ");
 				}
 				message += args[args.length - 1] + ".";
