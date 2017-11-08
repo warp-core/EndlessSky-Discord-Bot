@@ -42,6 +42,8 @@ implements CommandExecutor{
 						eb.setDescription("Spaced " + m.size() + " messages! Who's next?!");
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
+						TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
+						modLog.sendMessage("Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + author.getEffectiveName() + "`.").queue();
 					});
 				});
 			}
