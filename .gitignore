@@ -11,3 +11,4 @@ hs_err_pid*
 /src/main/main.iml
 *_version.txt
 branch_name.txt
+/data/playlists.txt
