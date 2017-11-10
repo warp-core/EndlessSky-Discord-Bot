@@ -6,7 +6,9 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 
@@ -14,6 +16,7 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
 public class LookupCommands
@@ -299,6 +302,38 @@ implements CommandExecutor{
 
 
 
+	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
+	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild	) {
+		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
+				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+		int swizzle = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
+		EmbedBuilder eb = new EmbedBuilder();
+		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
+		eb.setColor(guild.getMember(bot.getSelf()).getColor());
+		if (swizzle >= 0 && swizzle <= 8) {
+			String[] vectors = {
+					"{GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA} // red + yellow markings (republic)",
+					"{GL_RED, GL_BLUE, GL_GREEN, GL_ALPHA} // red + magenta markings",
+					"{GL_GREEN, GL_RED, GL_BLUE, GL_ALPHA} // green + yellow (freeholders)",
+					"{GL_BLUE, GL_RED, GL_GREEN, GL_ALPHA} // green + cyan",
+					"{GL_GREEN, GL_BLUE, GL_RED, GL_ALPHA} // blue + magenta (syndicate)",
+					"{GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA} // blue + cyan (merchant)",
+					"{GL_GREEN, GL_BLUE, GL_BLUE, GL_ALPHA} // red and black (pirate)",
+					"{GL_BLUE, GL_ZERO, GL_ZERO, GL_ALPHA} // red only (cloaked)",
+					"{GL_ZERO, GL_ZERO, GL_ZERO, GL_ALPHA} // black only (outline)"
+			};
+			eb.setDescription("**Swizzle Vector:**\n```" + vectors[swizzle] + "```\n\n**Governments using this swizzle:**\n" + getGovernmentsBySwizzle(swizzle));
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/swizzles/" + swizzle + ".png");
+		}
+		else {
+			eb.setDescription("This swizzle does not exist");
+			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
+		}
+		channel.sendMessage(eb.build()).queue();
+	}
+
+
+
 	// Convert the requested lookup parameter into the relevant data
 	// from the Endless Sky GitHub repository.
 	// Returns nullstring if no data could be found.
@@ -481,6 +516,24 @@ implements CommandExecutor{
 		}
 
 		return input;
+	}
+
+
+	// Returns a String with one Government using the Swizzle swizzle in every line, starting with a newline
+	public String getGovernmentsBySwizzle(int swizzle) {
+		Scanner sc = new Scanner(data);
+		String formerLine = "";
+		ArrayList<String> results = new ArrayList<>();
+		while (sc.hasNext()) {
+			String line = sc.nextLine();
+			if(line.contains("swizzle " + swizzle))
+				results.add(formerLine);
+			formerLine = line;
+		}
+		StringBuilder sb = new StringBuilder("");
+		for (String s : results)
+			sb.append("\n• " + s.replace("government \"", "").replace("\"", "").trim());
+		return sb.toString();
 	}
 
 

@@ -67,7 +67,8 @@ implements CommandExecutor{
 	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words. Can process multiple inputs separated by commata. As URLs, songs and Playlists from Soundcloud and YouTube can be used", usage = "-play URL [, URL 2, ...]", privateMessages = false)
 	public void onPlayCommand(Guild guild, TextChannel channel, String[] args, User author, Message msg){
 		Member requester = guild.getMember(author);
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length > 0 && requester.getVoiceState().getChannel() != null){
 			checkVoiceChannel(guild.getAudioManager(), requester);
@@ -122,7 +123,8 @@ implements CommandExecutor{
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int count = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)) {
@@ -160,7 +162,8 @@ implements CommandExecutor{
 	@Command(aliases = {"-current"}, description = "Displays the current audiotrack.", usage = "-current", privateMessages = false)
 	public void onCurrentCommand(Guild guild, TextChannel channel, Message msg){
 		Member requester = guild.getMember(msg.getAuthor());
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			AudioTrack track = getGuildAudioPlayer(guild).player.getPlayingTrack();
@@ -189,9 +192,14 @@ implements CommandExecutor{
 	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
-		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1) * 10 - 10;
+		// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
+		// Then set 'CountStr' to everything following the space in the command.
+		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
+		// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
+		// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
 		Member requester = guild.getMember(msg.getAuthor());
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
@@ -205,20 +213,26 @@ implements CommandExecutor{
 				sb.append("The queue is empty!");
 			else{
 				if(showFrom >= qsize)
-					showFrom = qsize - (qsize % 10);
+					showFrom = qsize - (qsize % 10) == qsize ? showFrom = qsize - 9 : qsize - (qsize % 10) + 1;
+				// If the page number requested is higher than the total number of pages, start on the last page.
 				int trackCount = 0 + showFrom;
-					int countMax = trackCount + 11;
+				// Create a variable to count the position of the track being added to the output list.
+					int countMax = trackCount + 9 <= qsize ? trackCount + 9 : qsize;
+				// Create a variable to show the last track to be put into the output list.
 				long queueLength = 0;
 				sb.append("Entries: " + qsize + "\n");
+				int queuePos = 1;
 				for(AudioTrack track : queue){
 					queueLength += track.getDuration();
-					if(++trackCount < countMax){
-						sb.append("`" + (trackCount - 1) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
+					if(trackCount <= countMax && queuePos >= trackCount){
+						sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
 						sb.append(track.getInfo().title + "\n");
+						++trackCount;
 					}
+					++queuePos;
 				}
-				sb.append("\n").append("Showing Page " + (showFrom / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
-						+ ", Tracks " + (showFrom / 10 + 1) + " - " + (showFrom / 10 + 11) + "/" +  qsize + "." );
+				sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
+						+ ", Tracks " + (showFrom) + " - " + countMax + "/" +  qsize + "." );
 				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 			}
 			eb.setDescription(sb.toString());
@@ -233,7 +247,8 @@ implements CommandExecutor{
 	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
@@ -252,7 +267,8 @@ implements CommandExecutor{
 	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "stop");
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
@@ -275,17 +291,18 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
+	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist list\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
 	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
-		if (args[0].equalsIgnoreCase("save")) {
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if (args[0].equalsIgnoreCase("save")) {
 			if (Helper.getPlaylistbyKey(args[1]) != null)
 				eb.setDescription("This Playlist already exists.");
-			else if (args[1].equalsIgnoreCase("save") || args[1].equalsIgnoreCase("edit") || args[1].equalsIgnoreCase("info") || args[1].equalsIgnoreCase("delete"))
+			else if (args[1].equalsIgnoreCase("save") || args[1].equalsIgnoreCase("edit") || args[1].equalsIgnoreCase("info") || args[1].equalsIgnoreCase("list") || args[1].equalsIgnoreCase("delete"))
 				eb.setDescription("Find a better name!");
 			else if (args[2].contains("youtube.com/") || args[2].contains("soundcloud.com/")){
 				Helper.savePlaylist(args[1], args[2], author.getName() + "#" + author.getDiscriminator(), author.getIdLong());
@@ -333,6 +350,19 @@ implements CommandExecutor{
 				eb.setDescription("This Playlist does not exist.");
 			channel.sendMessage(eb.build()).queue();
 		}
+		
+		else if (args[0].equalsIgnoreCase("list")){
+			String[] playlists = Helper.getPlaylistList();
+			if (playlists != null) {
+				eb.setDescription("Playlists: " + playlists.length);
+				int position = 1;
+				for (String list : playlists){
+					eb.appendDescription("\n" + position + ". `" + list + "`");
+					++position;
+				}
+			}
+			channel.sendMessage(eb.build()).queue();
+		}
 
 		else{
 			String[] playlist = Helper.getPlaylistbyKey(args[0]);
@@ -358,7 +388,8 @@ implements CommandExecutor{
 	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		String by = "By order of `" + requester.getEffectiveName() + "`:\n";
-		if(hasDJPerms(requester, channel, guild)){
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(hasDJPerms(requester, channel, guild)){
 			List<User> banned = msg.getMentionedUsers();
 			Helper.EnsureRole(guild, Helper.ROLE_PLAYBANNED);
 			List<Role> antiDJ = guild.getRolesByName(Helper.ROLE_PLAYBANNED, true);
@@ -403,7 +434,8 @@ implements CommandExecutor{
 	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
@@ -431,7 +463,8 @@ implements CommandExecutor{
 	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
@@ -459,7 +492,8 @@ implements CommandExecutor{
 	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg){
 		Member requester = guild.getMember(author);
 		String by = " by `" + requester.getEffectiveName() + "`.";
-		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length == 1 && canDoCommand(guild, requester)
 				&& hasDJPerms(requester, channel, guild)){

@@ -303,7 +303,8 @@ public class Helper {
 			"I have the power. You don't.",
 			"Go play in a hyperspace lane.",
 			"How about I put *you* in the airlock?",
-			"Access Denied."
+			"Access Denied.",
+			"Please don't joke about that sort of thing."
 		};
 		Random rGen = new Random();
 		int choice = rGen.nextInt(messageList.length);
@@ -603,6 +604,26 @@ public class Helper {
 			e.printStackTrace();
 		}
 		return data;
+	}
+	
+	/**
+	 * Gets data for all playlists from data/playlists.txt.
+	 * @return             An array containing the names of each playlist.
+	 */
+	public static String[] getPlaylistList(){
+		String[] playlists = null;
+		List<String> keys = new ArrayList<String>();
+		try (BufferedReader br = new BufferedReader(new FileReader("data/playlists.txt"))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				keys.add(line.split((" "))[0]);
+			}
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
+		playlists = keys.toArray(new String[keys.size()]);
+		return playlists;
 	}
 
 }

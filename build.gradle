@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
 	compile 'com.sedmelluq:lavaplayer:1.2.44'
-	compile 'net.dv8tion:JDA:3.3.1_291'
+	compile 'net.dv8tion:JDA:3.3.1_303'
 	compile 'de.btobastian.sdcf4j:sdcf4j-core:1.0.6'
 	compile 'de.btobastian.sdcf4j:sdcf4j-jda3:1.0.6'
 	compile 'junit:junit:4.12'

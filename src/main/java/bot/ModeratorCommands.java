@@ -42,6 +42,8 @@ implements CommandExecutor{
 						eb.setDescription("Spaced " + m.size() + " messages! Who's next?!");
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
+						TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
+						modLog.sendMessage("Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + author.getEffectiveName() + "`.").queue();
 					});
 				});
 			}
@@ -126,12 +128,22 @@ implements CommandExecutor{
 	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args){
 		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(msg.getAuthor())))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
-		else if(args.length == 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
+		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
 			// Ban the mentioned user.
 			Member toBan = guild.getMember(msg.getMentionedUsers().get(0));
 			int banLength = Math.max(1, Integer.valueOf(args[1]));
 			Helper.EnsureRole(guild, Helper.ROLE_GULAG);
 			temporaryGulag(guild, toBan, Helper.ROLE_GULAG, banLength);
+			String message = "Gulagged: `" + toBan.getEffectiveName() + "` for " + banLength + " seconds.";
+			if(args.length > 2){
+				message += "\nReason: ";
+				for(int i = 2; i < args.length - 1; i++){
+					message += (args[i] + " ");
+				}
+				message += args[args.length - 1] + ".";
+			}
+			TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
+			modLog.sendMessage(message).queue();
 		}
 	}
 
