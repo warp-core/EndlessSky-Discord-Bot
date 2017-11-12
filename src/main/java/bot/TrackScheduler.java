@@ -5,6 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import net.dv8tion.jda.core.entities.Guild;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -19,6 +20,7 @@ public class TrackScheduler extends AudioEventAdapter {
 	private final LinkedList<AudioTrack> queue;
 	private final PlayerControl control;
 	private final GuildMusicManager manager;
+	private Guild cachedManagerGuild;
 
 
 
@@ -76,6 +78,8 @@ public class TrackScheduler extends AudioEventAdapter {
 	 * @param int skipCount The number of tracks to advance.
 	 */
 	public void nextTrack(int skipCount){
+		// by caching the guild, we can call onNextTrack() even when manager.getGuild() would normally return null (when the queue is empty).
+		cachedManagerGuild = manager.getGuild();
 		// Decrease the skipped count by one since nextTrack() will advance by 1.
 		skipCount = Math.min(--skipCount, queue.size());
 		for(int i = 0; i < skipCount; ++i){
@@ -92,8 +96,7 @@ public class TrackScheduler extends AudioEventAdapter {
 		// giving null to startTrack, which is a valid argument and will simply stop the player.
 		player.startTrack(queue.peek(), false);
 		player.setPaused(false);
-		if (queue.poll() != null)
-			control.onNextTrack(manager.getGuild());
+		control.onNextTrack(queue.poll() != null ? manager.getGuild() : cachedManagerGuild);
 	}
 
 
