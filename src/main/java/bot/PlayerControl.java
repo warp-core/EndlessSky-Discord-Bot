@@ -536,6 +536,9 @@ implements CommandExecutor{
 
 				track.setUserData(requester);
 				play(guild, musicManager, track);
+				//If the queue is still empty, we just started now playback.
+				if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
+					setGameFromTrack(guild);
 			}
 
 			@Override
@@ -553,6 +556,9 @@ implements CommandExecutor{
 					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`[\uD83D\uDD17](" + firstTrack.getInfo().uri + ")\n(first track of `" + playlist.getName() + "`, " + requestedby);
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
+					//If the queue is still empty, we just started now playback.
+					if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
+						setGameFromTrack(guild);
 				}
 				else{
 					List<AudioTrack> tracks = playlist.getTracks();
@@ -562,6 +568,7 @@ implements CommandExecutor{
 					play(guild, musicManager, newplaylist);
 					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
+					//Conveniently, we don't need to call setGamefromTrack() here, since starting playback from a playlist automatically triggers onNextTrack().
 				}
 				channel.sendMessage(eb.build()).queue();
 			}
@@ -674,6 +681,7 @@ implements CommandExecutor{
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
 		channel.sendMessage(eb.build()).queue();
+		bot.setGame("-help");
 	}
 
 
@@ -729,9 +737,21 @@ implements CommandExecutor{
 
 
 
-	public void onNextTrack(Guild guild)
-	{
+	public void onNextTrack(Guild guild) {
 		getVoteHandler(guild, "skip").clear();
+		setGameFromTrack(guild);
+	}
+
+
+
+	public void setGameFromTrack(Guild guild) {
+		//Note: This will be buggy should James play music in multiple guilds at once; since James is only active in one Guild atm, it shouldn't be a problem (for now).
+		try {
+			bot.setGame(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
+		}
+		catch (NullPointerException e) {
+			bot.setGame("-help");
+		}
 	}
 
 
