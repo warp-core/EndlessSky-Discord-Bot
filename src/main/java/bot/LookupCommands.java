@@ -304,9 +304,9 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
 	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild	) {
-		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
+		String swizzleStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
-		int swizzle = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
+		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1); // if no number is given, assign 9 (invalid swizzle) to prevent a NumberFormatException
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -326,7 +326,7 @@ implements CommandExecutor{
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/swizzles/" + swizzle + ".png");
 		}
 		else {
-			eb.setDescription("This swizzle does not exist");
+			eb.setDescription("This swizzle does not exist.");
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 		}
 		channel.sendMessage(eb.build()).queue();
