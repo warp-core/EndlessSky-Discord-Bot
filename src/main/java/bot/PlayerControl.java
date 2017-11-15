@@ -537,7 +537,8 @@ implements CommandExecutor{
 			public void trackLoaded(AudioTrack track){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Queuing `" + track.getInfo().title + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + requestedby);
+				eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(%s",
+						track.getInfo().title, trackUrl, requestedby));
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 				channel.sendMessage(eb.build()).queue();
@@ -561,7 +562,8 @@ implements CommandExecutor{
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
 					firstTrack.setUserData(requester);
-					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`[\uD83D\uDD17](" + firstTrack.getInfo().uri + ")\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(first track of `%s`, %s",
+							firstTrack.getInfo().title, firstTrack.getInfo().uri, playlist.getName(), requestedby));
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
 					//If the queue is still empty, we just started now playback.
@@ -573,7 +575,8 @@ implements CommandExecutor{
 					for (AudioTrack at : tracks)
 						at.setUserData(requester);
 					play(guild, musicManager, playlist);
-					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + tracks.size() + " tracks, " + requestedby);
+					eb.setDescription(String.format("Queuing playlist `%s`[\uD83D\uDD17](%s)\n(%d tracks, %s",
+							playlist.getName(), trackUrl, tracks.size(), requestedby));
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 					//Conveniently, we don't need to call setGamefromTrack() here, since starting playback from a playlist automatically triggers onNextTrack().
 				}
@@ -584,7 +587,8 @@ implements CommandExecutor{
 			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Nothing found by `" + trackUrl.replace("ytsearch: ", "") + "`\n(" + requestedby);
+				eb.setDescription(String.format("Nothing found by `%s`\n(%s",
+						trackUrl.replace("ytsearch: ", ""), requestedby));
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();
@@ -772,7 +776,8 @@ implements CommandExecutor{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(channel.getGuild().getMember(bot.getSelf()).getColor());
-			eb.setDescription("Currently are " + handler.getVotes() + " captains voting to " + subject + ", but " + handler.getRequiredVotes() + " are needed to " + subject + "!");
+			eb.setDescription(String.format("Currently are %d captains voting to %s, but %d are needed to %s!",
+					handler.getVotes(), subject, handler.getRequiredVotes(), subject));
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
 			channel.sendMessage(eb.build()).queue();
 			return false;

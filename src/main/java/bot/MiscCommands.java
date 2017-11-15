@@ -100,7 +100,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-apod"}, description = "posts a random APOD(NASA's Astronomy Picture of the Day).", usage = "-apod")
+	@Command(aliases = {"-apod"}, description = "posts a random APOD (NASA's Astronomy Picture of the Day).", usage = "-apod")
 	public void onApodCommand(Guild guild, MessageChannel channel)
 	{
 		JSONObject json = null;
@@ -142,7 +142,10 @@ implements CommandExecutor{
 
 			// Send POST to start up the conversion
 			MediaType mediaType = MediaType.parse("application/json");
-			String payload = "{\"input\":[{\"type\":\"remote\",\"source\":\"" + url + "\", \"filename\": \"" + filename + "\"}],\"conversion\":[{\"category\":\"audio\",\"target\":\"wav\", \"options\":{\"frequency\": 44100,\"channels\": \"mono\",\"normalize\": false,\"pcm_format\": \"pcm_s16le\"}}]}";
+			String payload = String.format("{\"input\":[{\"type\":\"remote\",\"source\":\"%s\", \"filename\": \"%s\"}]" +
+							",\"conversion\":[{\"category\":\"audio\",\"target\":\"wav\", \"options\":" +
+							"{\"frequency\": 44100,\"channels\": \"mono\",\"normalize\": false,\"pcm_format\":" +
+							" \"pcm_s16le\"}}]}", url, filename);
 			RequestBody body = RequestBody.create(mediaType, payload);
 			Request request = new Request.Builder()
 			.url("http://api2.online-convert.com/jobs")
