@@ -64,10 +64,10 @@ public class TrackScheduler extends AudioEventAdapter {
 	public void queue(AudioPlaylist playlist){
 		// Play (or queue) the first track.
 		List<AudioTrack> tracks = playlist.getTracks();
-		queue(tracks.remove(0));
+		queue(tracks.get(0)); //Removing it from the tracks will cause problems in playlistLoaded (see #88)
 		// Queue the remaining tracks.
 		if(!tracks.isEmpty())
-			queue.addAll(tracks);
+			queue.addAll(tracks.subList(1, tracks.size()));
 	}
 
 
