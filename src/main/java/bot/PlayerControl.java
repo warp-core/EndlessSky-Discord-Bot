@@ -23,6 +23,9 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -188,56 +191,60 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue.", usage = "-queue [X]", privateMessages = false)
-	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
-		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
-				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
-		// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
-		// Then set 'CountStr' to everything following the space in the command.
-		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
-		// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
-		// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
-		Member requester = guild.getMember(msg.getAuthor());
-		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
-		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
-			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
-		else if(canDoCommand(guild, requester)){
-			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
-			int qsize = queue.size();
-			StringBuilder sb = new StringBuilder("Current Queue:\n");
-			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
-			if(queue.isEmpty())
-				sb.append("The queue is empty!");
-			else{
-				if(showFrom >= qsize)
-					showFrom = qsize - (qsize % 10) == qsize ? showFrom = qsize - 9 : qsize - (qsize % 10) + 1;
-				// If the page number requested is higher than the total number of pages, start on the last page.
-				int trackCount = 0 + showFrom;
-				// Create a variable to count the position of the track being added to the output list.
+	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue. Can also print the queue & currently playing track to a .txt file", usage = "-queue [X]\n-queue print", privateMessages = false)
+	public void onqueueCommand(Guild guild, TextChannel channel, Message msg, String[] args){
+		if (args.length > 0 && args[0].equalsIgnoreCase("print"))
+			printQueue(channel);
+		else {
+			String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
+					: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+			// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
+			// Then set 'CountStr' to everything following the space in the command.
+			int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
+			// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
+			// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
+			Member requester = guild.getMember(msg.getAuthor());
+			if (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")) {
+			} else if (requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+			else if (canDoCommand(guild, requester)) {
+				LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+				int qsize = queue.size();
+				StringBuilder sb = new StringBuilder("Current Queue:\n");
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
+				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+				if (queue.isEmpty())
+					sb.append("The queue is empty!");
+				else {
+					if (showFrom >= qsize)
+						showFrom = qsize - (qsize % 10) == qsize ? showFrom = qsize - 9 : qsize - (qsize % 10) + 1;
+					// If the page number requested is higher than the total number of pages, start on the last page.
+					int trackCount = 0 + showFrom;
+					// Create a variable to count the position of the track being added to the output list.
 					int countMax = trackCount + 9 <= qsize ? trackCount + 9 : qsize;
-				// Create a variable to show the last track to be put into the output list.
-				long queueLength = 0;
-				sb.append("Entries: " + qsize + "\n");
-				int queuePos = 1;
-				for(AudioTrack track : queue){
-					queueLength += track.getDuration();
-					if(trackCount <= countMax && queuePos >= trackCount){
-						sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
-						sb.append(track.getInfo().title + "\n");
-						++trackCount;
+					// Create a variable to show the last track to be put into the output list.
+					long queueLength = 0;
+					sb.append("Entries: " + qsize + "\n");
+					int queuePos = 1;
+					for (AudioTrack track : queue) {
+						queueLength += track.getDuration();
+						if (trackCount <= countMax && queuePos >= trackCount) {
+							sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
+							sb.append(track.getInfo().title + "\n");
+							++trackCount;
+						}
+						++queuePos;
 					}
-					++queuePos;
+					sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ((qsize - (qsize % 10)) / 10 + 1)
+							+ ", Tracks " + (showFrom) + " - " + countMax + "/" + qsize + ".");
+					sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 				}
-				sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
-						+ ", Tracks " + (showFrom) + " - " + countMax + "/" +  qsize + "." );
-				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
+				eb.setDescription(sb.toString());
+				channel.sendMessage(eb.build()).queue();
+				msg.delete().queue();
 			}
-			eb.setDescription(sb.toString());
-			channel.sendMessage(eb.build()).queue();
-			msg.delete().queue();
 		}
 	}
 
@@ -768,6 +775,29 @@ implements CommandExecutor{
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
 			channel.sendMessage(eb.build()).queue();
 			return false;
+		}
+	}
+
+
+
+	public synchronized void printQueue(TextChannel channel) {
+		try {
+			File output = new File(".qprintcache");
+			output.delete();
+			output.createNewFile();
+			StringBuilder sb = new StringBuilder();
+			sb.append(getGuildAudioPlayer(channel.getGuild()).player.getPlayingTrack().getInfo().uri + "\n");
+			LinkedList<AudioTrack> queue = getGuildAudioPlayer(channel.getGuild()).scheduler.getQueue();
+			for (AudioTrack at : queue)
+				sb.append(at.getInfo().uri + "\n");
+			FileWriter ft = new FileWriter(output);
+			ft.write(sb.toString());
+			ft.close();
+			channel.sendFile(output, "queue.txt", null).complete();
+			output.delete();
+		}
+		catch(IOException e) {
+			e.printStackTrace();
 		}
 	}
 
