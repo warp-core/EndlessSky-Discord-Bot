@@ -562,11 +562,10 @@ implements CommandExecutor{
 				}
 				else{
 					List<AudioTrack> tracks = playlist.getTracks();
-					for (AudioTrack track : tracks)
-						track.setUserData(requester);
-					BasicAudioPlaylist newplaylist = new BasicAudioPlaylist(playlist.getName(), tracks, tracks.get(0), false);
-					play(guild, musicManager, newplaylist);
-					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
+					for (AudioTrack at : tracks)
+						at.setUserData(requester);
+					play(guild, musicManager, playlist);
+					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + tracks.size() + " tracks, " + requestedby);
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 					//Conveniently, we don't need to call setGamefromTrack() here, since starting playback from a playlist automatically triggers onNextTrack().
 				}

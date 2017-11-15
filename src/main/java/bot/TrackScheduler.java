@@ -82,9 +82,8 @@ public class TrackScheduler extends AudioEventAdapter {
 		cachedManagerGuild = manager.getGuild();
 		// Decrease the skipped count by one since nextTrack() will advance by 1.
 		skipCount = Math.min(--skipCount, queue.size());
-		for(int i = 0; i < skipCount; ++i){
+		for(int i = 0; i < skipCount; ++i)
 			queue.pop();
-		}
 		nextTrack();
 	}
 
