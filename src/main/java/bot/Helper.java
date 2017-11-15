@@ -563,7 +563,7 @@ public class Helper {
 	 * Deletes a playlist from playlists.txt
 	 * @param  String      key    The key to the playlist is be associated with.
 	 */
-	public static void deletePlaylist(String key) {
+	public static synchronized void deletePlaylist(String key) {
 		try {
 			File inputFile = new File("data/playlists.txt");
 			File tempFile = new File("data/playlistsTemp.txt");
