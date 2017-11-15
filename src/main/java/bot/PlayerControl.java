@@ -175,8 +175,9 @@ implements CommandExecutor{
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 			if(track != null){
-				String nowplaying = String.format("**Playing:** %s\n**Time:** [%s / %s]",
+				String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
 						track.getInfo().title,
+						track.getInfo().uri,
 						getTimestamp(track.getPosition()),
 						getTimestamp(track.getDuration()));
 				eb.setDescription(nowplaying);
