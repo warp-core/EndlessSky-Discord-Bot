@@ -300,14 +300,18 @@ implements CommandExecutor{
 	@Command(aliases = {"-translate"}, description = "Translates a query from a language 'source' to a language 'target'. Both 'source' and 'target' are optional ('source' can be auto-detected, 'target' defaults to english). Use the `list` parameter to get all supported languages.", usage = "-translate [source] [target] <query>\n-translate list")
 	public void onTranslateCommand(Guild guild, TextChannel channel, String[] args, User author) {
 		if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
-			StringBuilder sb = new StringBuilder("**Languages Supported by the Yandex Translation API:**");
-			for (String[] pair : yandexGetLangs())
-				sb.append("\n`" + pair[0] + "` (" + pair[1] + ")");
-			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
-			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setDescription(sb.toString());
-			channel.sendMessage(eb.build()).queue();
+			if (channel.getTopic().contains("spam") && !channel.getName().contains("spam")) {
+				StringBuilder sb = new StringBuilder("**Languages Supported by the Yandex Translation API:**");
+				for (String[] pair : yandexGetLangs())
+					sb.append("\n`" + pair[0] + "` (" + pair[1] + ")");
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
+				eb.setDescription(sb.toString());
+				channel.sendMessage(eb.build()).queue();
+			}
+			else
+				channel.sendMessage("This is a long list... please only use this command in a channel dedicated to spam").queue();
 		}
 		else if(args.length > 0){
 			String result;
