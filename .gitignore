@@ -13,3 +13,4 @@ hs_err_pid*
 branch_name.txt
 /data/playlists.txt
 .qprintcache
+.playlistinput

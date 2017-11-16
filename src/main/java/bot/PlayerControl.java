@@ -23,9 +23,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +74,7 @@ implements CommandExecutor{
 		else if(args.length > 0 && requester.getVoiceState().getChannel() != null){
 			checkVoiceChannel(guild.getAudioManager(), requester);
 			for(String query : normalize(args))
-				loadAndPlay(guild, channel, query, requester);
+				loadAndPlay(guild, channel, query, requester, true);
 			msg.delete().queue();
 		}
 	}
@@ -301,12 +299,44 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist list\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
 	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+		Member requester = guild.getMember(author);
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){return;}
+
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
-		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		if (!msg.getAttachments().isEmpty() && requester.getVoiceState().getChannel() != null) {
+			if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true))) {
+				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+				return;
+			}
+			checkVoiceChannel(guild.getAudioManager(), requester);
+			for (Message.Attachment att : msg.getAttachments()){
+				File input = new File(".playlistinput");
+				input.delete();
+				if (!att.download(input))
+					eb.setDescription("Failed downloading file " + att.getFileName()).setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
+				else{
+					int counter = 0;
+					try (BufferedReader br = new BufferedReader(new FileReader(".playlistinput"))) {
+						String line;
+						while ((line = br.readLine()) != null) {
+							loadAndPlay(guild, channel, line, requester, false);
+							counter++;
+						}
+					}
+					catch(IOException e){
+						e.printStackTrace();
+					}
+					eb.setDescription(String.format("Queuing playlist `%s`\n(%d tracks)",
+							att.getFileName(), counter));
+				}
+				channel.sendMessage(eb.build()).queue();
+				input.deleteOnExit();
+			}
+		}
 		else if (args[0].equalsIgnoreCase("save")) {
 			if (Helper.getPlaylistbyKey(args[1]) != null)
 				eb.setDescription("This Playlist already exists.");
@@ -379,12 +409,11 @@ implements CommandExecutor{
 				channel.sendMessage(eb.build()).queue();
 			}
 			else {
-				Member requester = guild.getMember(author);
 				if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 					channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 				else if(args.length > 0 && requester.getVoiceState().getChannel() != null) {
 					checkVoiceChannel(guild.getAudioManager(), requester);
-					loadAndPlay(guild, channel, playlist[1], requester);
+					loadAndPlay(guild, channel, playlist[1], requester, true);
 				}
 			}
 		}
@@ -526,7 +555,7 @@ implements CommandExecutor{
 
 
 
-	private void loadAndPlay(Guild guild, final TextChannel channel, final String trackUrl, final Member requester){
+	private void loadAndPlay(Guild guild, final TextChannel channel, final String trackUrl, final Member requester, boolean sendMessage){
 		GuildMusicManager musicManager = getGuildAudioPlayer(guild);
 
 		playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler(){
@@ -535,14 +564,15 @@ implements CommandExecutor{
 
 			@Override
 			public void trackLoaded(AudioTrack track){
-				EmbedBuilder eb = new EmbedBuilder();
-				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(%s",
-						track.getInfo().title, trackUrl, requestedby));
-				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
-				channel.sendMessage(eb.build()).queue();
-
+				if (sendMessage) {
+					EmbedBuilder eb = new EmbedBuilder();
+					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(%s",
+							track.getInfo().title, trackUrl, requestedby));
+					eb.setColor(guild.getMember(bot.getSelf()).getColor());
+					eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
+					channel.sendMessage(eb.build()).queue();
+				}
 				track.setUserData(requester);
 				play(guild, musicManager, track);
 				//If the queue is still empty, we just started now playback.
@@ -580,7 +610,8 @@ implements CommandExecutor{
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
 					//Conveniently, we don't need to call setGamefromTrack() here, since starting playback from a playlist automatically triggers onNextTrack().
 				}
-				channel.sendMessage(eb.build()).queue();
+				if (sendMessage)
+					channel.sendMessage(eb.build()).queue();
 			}
 
 			@Override
@@ -799,8 +830,9 @@ implements CommandExecutor{
 			FileWriter ft = new FileWriter(output);
 			ft.write(sb.toString());
 			ft.close();
+			//use complete here, so .qprintcache doesn't get altered before it has been sent
 			channel.sendFile(output, "queue.txt", null).complete();
-			output.delete();
+			output.deleteOnExit();
 		}
 		catch(IOException e) {
 			e.printStackTrace();
