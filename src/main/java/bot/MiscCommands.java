@@ -1,19 +1,25 @@
 package bot;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.String;
 import java.net.URL;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+
+import net.dv8tion.jda.core.entities.*;
 import org.json.JSONObject;
 import org.json.JSONArray;
+
+import java.net.URLEncoder;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
 import javax.script.ScriptEngineManager;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import javax.script.ScriptException;
-import java.io.IOException;
-import java.io.FileNotFoundException;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -25,9 +31,6 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import de.btobastian.sdcf4j.CommandHandler;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageChannel;
 
 public class MiscCommands
 implements CommandExecutor{
@@ -292,6 +295,120 @@ implements CommandExecutor{
 				e.printStackTrace(System.out);
 		}
 	}
+
+
+	@Command(aliases = {"-translate"}, description = "Translates a query from a language 'source' to a language 'target'. Both 'source' and 'target' are optional ('source' can be auto-detected, 'target' defaults to english). Use the `list` parameter to get all supported languages.", usage = "-translate [source] [target] <query>\n-translate list")
+	public void onTranslateCommand(Guild guild, TextChannel channel, String[] args, User author) {
+		if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
+			StringBuilder sb = new StringBuilder("**Languages Supported by the Yandex Translation API:**");
+			for (String[] pair : yandexGetLangs())
+				sb.append("\n`" + pair[0] + "` (" + pair[1] + ")");
+			EmbedBuilder eb = new EmbedBuilder();
+			eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
+			eb.setDescription(sb.toString());
+			channel.sendMessage(eb.build()).queue();
+		}
+		else if(args.length > 0){
+			String result;
+			if (yandexIsSupportedLang(args[0]))
+				if (yandexIsSupportedLang(args[1]))
+					result = yandexTranslate(args[0], args[1], String.join(" ", Arrays.asList(args).subList(2, args.length)));
+				else
+					result = yandexTranslate(null, args[0], String.join(" ", Arrays.asList(args).subList(1, args.length)));
+			else
+				result = yandexTranslate(null, "en", String.join(" ", args));
+			channel.sendMessage(result).queue();
+		}
+	}
+
+
+	/**
+	 * Gets all supported languages of the Yandex Translation API.
+	 * @return   ArrayList<>      possibly empty ArrayList containing key-Language pair Arrays such as ["en", "English"].
+	 */
+	private ArrayList<String[]> yandexGetLangs() {
+		ArrayList<String[]> results = new ArrayList<>();
+		try{
+			JSONObject json = getJson(new URL("https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=" + bot.getKey("YANDEXTRANSLATE") + "&ui=en"));
+			Iterator<?> keys = json.getJSONObject("langs").keys();
+			while (keys.hasNext()) {
+				String[] pair = new String[2];
+				String key = (String)keys.next();
+				pair[0] = key;
+				pair[1] = json.getJSONObject("langs").getString(key);
+				results.add(pair);
+			}
+			// sort alphabetically by keys
+			Collections.sort(results, new Comparator<String[]>() {
+				@Override
+				public int compare(String[] pair1, String[] pair2) {
+					return pair1[0].compareTo(pair2[0]);
+				}
+			});
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
+		return results;
+	}
+
+
+	/**
+	 * Checks if a language is supported by the Yandex Translation API.
+	 * @Param    String    language    A String representing a language code (e.g. "en").
+	 * @return   boolean               True if the language is supported.
+	 */
+	private boolean yandexIsSupportedLang(String language) {
+		for (String pair[] : yandexGetLangs())
+			if (pair[0].equalsIgnoreCase(language))
+				return true;
+		return false;
+	}
+
+
+
+	/**
+	 * Detects the language of a text.
+	 * @Param    String    text    A String representing a language code (e.g. "en").
+	 * @return   String            possibly null language code that has been returned by the API.
+	 */
+	private String yandexDetectLang(String text) {
+		String result = null;
+		try {
+			text = URLEncoder.encode(text, "UTF-8");
+			JSONObject json = getJson(new URL("https://translate.yandex.net/api/v1.5/tr.json/detect?key=" + bot.getKey("YANDEXTRANSLATE") + "&text=" + text));
+			return json.getString("lang");
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+
+
+	/**
+	 * Translates a text using the Yandex Translation API.
+	 * @Param    String    source    the language code (e.g. "en") of the source language, may ne null (will be auto-detected).
+	 * @Param    String    target    the language code (e.g. "en") of the target language, may ne null (defaults to english).
+	 * @return   String              the translated text, possibly null.
+	 */
+	private String yandexTranslate(@Nullable String source, String target, String text) {
+		try {
+			text = URLEncoder.encode(text, "UTF-8");
+			if (source == null)
+				source = yandexDetectLang(text);
+			String baseUrl= "https://translate.yandex.net/api/v1.5/tr.json/translate";
+			URL url = new URL(baseUrl + "?key=" + bot.getKey("YANDEXTRANSLATE") + "&text=" + text + "&lang=" + source + "-" + target);
+			return getJson(url).getJSONArray("text").getString(0);
+		}
+		catch(IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 
 
 	private static JSONObject getJson(URL url) throws IOException {
