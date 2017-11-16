@@ -300,7 +300,7 @@ implements CommandExecutor{
 	@Command(aliases = {"-translate"}, description = "Translates a query from a language 'source' to a language 'target'. Both 'source' and 'target' are optional ('source' can be auto-detected, 'target' defaults to english). Use the `list` parameter to get all supported languages.", usage = "-translate [source] [target] <query>\n-translate list")
 	public void onTranslateCommand(Guild guild, TextChannel channel, String[] args, User author) {
 		if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
-			if (channel.getTopic().contains("spam") && channel.getName().contains("spam")) {
+			if (channel.getTopic().contains("spam") || channel.getName().contains("spam")) {
 				StringBuilder sb = new StringBuilder("**Languages Supported by the Yandex Translation API:**");
 				for (String[] pair : yandexGetLangs())
 					sb.append("\n`" + pair[0] + "` (" + pair[1] + ")");
