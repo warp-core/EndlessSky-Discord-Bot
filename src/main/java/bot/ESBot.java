@@ -89,6 +89,10 @@ public class ESBot {
 	}
 
 
+	public void setGame(String game) {
+		jda.getPresence().setGame(Game.of(game));
+	}
+
 
 	public long getPing(){
 		return jda.getPing();

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.entities.Game;
 
 import static java.util.concurrent.TimeUnit.*;
 
@@ -89,6 +90,7 @@ public class AudioTimeoutControl {
 				if(i > 96){
 					synchronized(this){
 						jda.getGuildById(l.toString()).getAudioManager().closeAudioConnection();
+						jda.getPresence().setGame(Game.of("-help"));
 						idleValues.remove(l);
 						System.out.println("Resetting the idle count.");
 					}

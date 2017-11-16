@@ -10,3 +10,7 @@ NASA: DEMO_KEY
 # you can get a free key for online-convert.com here:
 # https://apiv2.online-convert.com/
 #	ONLINECONVERT: put your key here
+
+# you can get a free key for the yandex translation API here:
+# https://translate.yandex.com/developers/keys
+# YANDEXTRANSLATE: put your key here

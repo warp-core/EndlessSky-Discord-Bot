@@ -23,6 +23,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +74,7 @@ implements CommandExecutor{
 		else if(args.length > 0 && requester.getVoiceState().getChannel() != null){
 			checkVoiceChannel(guild.getAudioManager(), requester);
 			for(String query : normalize(args))
-				loadAndPlay(guild, channel, query, requester);
+				loadAndPlay(guild, channel, query, requester, true);
 			msg.delete().queue();
 		}
 	}
@@ -172,8 +173,9 @@ implements CommandExecutor{
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
 			if(track != null){
-				String nowplaying = String.format("**Playing:** %s\n**Time:** [%s / %s]",
+				String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
 						track.getInfo().title,
+						track.getInfo().uri,
 						getTimestamp(track.getPosition()),
 						getTimestamp(track.getDuration()));
 				eb.setDescription(nowplaying);
@@ -188,56 +190,60 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue.", usage = "-queue [X]", privateMessages = false)
-	public void onqueueCommand(Guild guild, TextChannel channel, Message msg){
-		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
-				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
-		// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
-		// Then set 'CountStr' to everything following the space in the command.
-		int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
-		// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
-		// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
-		Member requester = guild.getMember(msg.getAuthor());
-		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
-		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
-			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
-		else if(canDoCommand(guild, requester)){
-			LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
-			int qsize = queue.size();
-			StringBuilder sb = new StringBuilder("Current Queue:\n");
-			EmbedBuilder eb = new EmbedBuilder();
-			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
-			if(queue.isEmpty())
-				sb.append("The queue is empty!");
-			else{
-				if(showFrom >= qsize)
-					showFrom = qsize - (qsize % 10) == qsize ? showFrom = qsize - 9 : qsize - (qsize % 10) + 1;
-				// If the page number requested is higher than the total number of pages, start on the last page.
-				int trackCount = 0 + showFrom;
-				// Create a variable to count the position of the track being added to the output list.
+	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue. Can also print the queue & currently playing track to a .txt file", usage = "-queue [X]\n-queue print", privateMessages = false)
+	public void onqueueCommand(Guild guild, TextChannel channel, Message msg, String[] args){
+		if (args.length > 0 && args[0].equalsIgnoreCase("print"))
+			printQueue(channel);
+		else {
+			String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
+					: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+			// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
+			// Then set 'CountStr' to everything following the space in the command.
+			int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
+			// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
+			// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
+			Member requester = guild.getMember(msg.getAuthor());
+			if (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")) {
+			} else if (requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
+				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+			else if (canDoCommand(guild, requester)) {
+				LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+				int qsize = queue.size();
+				StringBuilder sb = new StringBuilder("Current Queue:\n");
+				EmbedBuilder eb = new EmbedBuilder();
+				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+				eb.setColor(guild.getMember(bot.getSelf()).getColor());
+				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+				if (queue.isEmpty())
+					sb.append("The queue is empty!");
+				else {
+					if (showFrom >= qsize)
+						showFrom = qsize - (qsize % 10) == qsize ? showFrom = qsize - 9 : qsize - (qsize % 10) + 1;
+					// If the page number requested is higher than the total number of pages, start on the last page.
+					int trackCount = 0 + showFrom;
+					// Create a variable to count the position of the track being added to the output list.
 					int countMax = trackCount + 9 <= qsize ? trackCount + 9 : qsize;
-				// Create a variable to show the last track to be put into the output list.
-				long queueLength = 0;
-				sb.append("Entries: " + qsize + "\n");
-				int queuePos = 1;
-				for(AudioTrack track : queue){
-					queueLength += track.getDuration();
-					if(trackCount <= countMax && queuePos >= trackCount){
-						sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
-						sb.append(track.getInfo().title + "\n");
-						++trackCount;
+					// Create a variable to show the last track to be put into the output list.
+					long queueLength = 0;
+					sb.append("Entries: " + qsize + "\n");
+					int queuePos = 1;
+					for (AudioTrack track : queue) {
+						queueLength += track.getDuration();
+						if (trackCount <= countMax && queuePos >= trackCount) {
+							sb.append("`" + (trackCount) + ".` `[" + getTimestamp(track.getDuration()) + "]` ");
+							sb.append(track.getInfo().title + "\n");
+							++trackCount;
+						}
+						++queuePos;
 					}
-					++queuePos;
+					sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ((qsize - (qsize % 10)) / 10 + 1)
+							+ ", Tracks " + (showFrom) + " - " + countMax + "/" + qsize + ".");
+					sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 				}
-				sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ( (qsize - (qsize % 10)) / 10 + 1)
-						+ ", Tracks " + (showFrom) + " - " + countMax + "/" +  qsize + "." );
-				sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
+				eb.setDescription(sb.toString());
+				channel.sendMessage(eb.build()).queue();
+				msg.delete().queue();
 			}
-			eb.setDescription(sb.toString());
-			channel.sendMessage(eb.build()).queue();
-			msg.delete().queue();
 		}
 	}
 
@@ -293,12 +299,44 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist list\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
 	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+		Member requester = guild.getMember(author);
+		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){return;}
+
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
-		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
+		if (!msg.getAttachments().isEmpty() && requester.getVoiceState().getChannel() != null) {
+			if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true))) {
+				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+				return;
+			}
+			checkVoiceChannel(guild.getAudioManager(), requester);
+			for (Message.Attachment att : msg.getAttachments()){
+				File input = new File(".playlistinput");
+				input.delete();
+				if (!att.download(input))
+					eb.setDescription("Failed downloading file " + att.getFileName()).setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
+				else{
+					int counter = 0;
+					try (BufferedReader br = new BufferedReader(new FileReader(".playlistinput"))) {
+						String line;
+						while ((line = br.readLine()) != null) {
+							loadAndPlay(guild, channel, line, requester, false);
+							counter++;
+						}
+					}
+					catch(IOException e){
+						e.printStackTrace();
+					}
+					eb.setDescription(String.format("Queuing playlist `%s`\n(%d tracks)",
+							att.getFileName(), counter));
+				}
+				channel.sendMessage(eb.build()).queue();
+				input.deleteOnExit();
+			}
+		}
 		else if (args[0].equalsIgnoreCase("save")) {
 			if (Helper.getPlaylistbyKey(args[1]) != null)
 				eb.setDescription("This Playlist already exists.");
@@ -371,12 +409,11 @@ implements CommandExecutor{
 				channel.sendMessage(eb.build()).queue();
 			}
 			else {
-				Member requester = guild.getMember(author);
 				if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 					channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 				else if(args.length > 0 && requester.getVoiceState().getChannel() != null) {
 					checkVoiceChannel(guild.getAudioManager(), requester);
-					loadAndPlay(guild, channel, playlist[1], requester);
+					loadAndPlay(guild, channel, playlist[1], requester, true);
 				}
 			}
 		}
@@ -518,7 +555,7 @@ implements CommandExecutor{
 
 
 
-	private void loadAndPlay(Guild guild, final TextChannel channel, final String trackUrl, final Member requester){
+	private void loadAndPlay(Guild guild, final TextChannel channel, final String trackUrl, final Member requester, boolean sendMessage){
 		GuildMusicManager musicManager = getGuildAudioPlayer(guild);
 
 		playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler(){
@@ -527,15 +564,20 @@ implements CommandExecutor{
 
 			@Override
 			public void trackLoaded(AudioTrack track){
-				EmbedBuilder eb = new EmbedBuilder();
-				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Queuing `" + track.getInfo().title + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + requestedby);
-				eb.setColor(guild.getMember(bot.getSelf()).getColor());
-				eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
-				channel.sendMessage(eb.build()).queue();
-
+				if (sendMessage) {
+					EmbedBuilder eb = new EmbedBuilder();
+					eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
+					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(%s",
+							track.getInfo().title, trackUrl, requestedby));
+					eb.setColor(guild.getMember(bot.getSelf()).getColor());
+					eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
+					channel.sendMessage(eb.build()).queue();
+				}
 				track.setUserData(requester);
 				play(guild, musicManager, track);
+				//If the queue is still empty, we just started now playback.
+				if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
+					setGameFromTrack(guild);
 			}
 
 			@Override
@@ -550,27 +592,34 @@ implements CommandExecutor{
 					if(firstTrack == null)
 						firstTrack = playlist.getTracks().get(0);
 					firstTrack.setUserData(requester);
-					eb.setDescription("Queuing `" + firstTrack.getInfo().title + "`[\uD83D\uDD17](" + firstTrack.getInfo().uri + ")\n(first track of `" + playlist.getName() + "`, " + requestedby);
+					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(first track of `%s`, %s",
+							firstTrack.getInfo().title, firstTrack.getInfo().uri, playlist.getName(), requestedby));
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
 					play(guild, musicManager, firstTrack);
+					//If the queue is still empty, we just started now playback.
+					if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
+						setGameFromTrack(guild);
 				}
 				else{
 					List<AudioTrack> tracks = playlist.getTracks();
-					for (AudioTrack track : tracks)
-						track.setUserData(requester);
-					BasicAudioPlaylist newplaylist = new BasicAudioPlaylist(playlist.getName(), tracks, tracks.get(0), false);
-					play(guild, musicManager, newplaylist);
-					eb.setDescription("Queuing playlist `" + playlist.getName() + "`[\uD83D\uDD17](" + trackUrl + ")\n(" + playlist.getTracks().size() + " tracks, " + requestedby);
+					for (AudioTrack at : tracks)
+						at.setUserData(requester);
+					play(guild, musicManager, playlist);
+					eb.setDescription(String.format("Queuing playlist `%s`[\uD83D\uDD17](%s)\n(%d tracks, %s",
+							playlist.getName(), trackUrl, tracks.size(), requestedby));
 					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/play.png");
+					//Conveniently, we don't need to call setGamefromTrack() here, since starting playback from a playlist automatically triggers onNextTrack().
 				}
-				channel.sendMessage(eb.build()).queue();
+				if (sendMessage)
+					channel.sendMessage(eb.build()).queue();
 			}
 
 			@Override
 			public void noMatches(){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
-				eb.setDescription("Nothing found by `" + trackUrl.replace("ytsearch: ", "") + "`\n(" + requestedby);
+				eb.setDescription(String.format("Nothing found by `%s`\n(%s",
+						trackUrl.replace("ytsearch: ", ""), requestedby));
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 				channel.sendMessage(eb.build()).queue();
@@ -674,6 +723,7 @@ implements CommandExecutor{
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
 		channel.sendMessage(eb.build()).queue();
+		bot.setGame("-help");
 	}
 
 
@@ -682,8 +732,11 @@ implements CommandExecutor{
 		int seconds = (int) (milliseconds / 1000) % 60 ;
 		int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
 		int hours   = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
+		int days   = (int) (milliseconds / (1000 * 60 * 60 * 24));
 
-		if(hours > 0)
+		if(days > 0)
+			return String.format("%2dd %02d:%02d:%02d", days, hours, minutes, seconds);
+		else if(hours > 0)
 			return String.format("%02d:%02d:%02d", hours, minutes, seconds);
 		else
 			return String.format("%02d:%02d", minutes, seconds);
@@ -726,9 +779,21 @@ implements CommandExecutor{
 
 
 
-	public void onNextTrack(Guild guild)
-	{
+	public void onNextTrack(Guild guild) {
 		getVoteHandler(guild, "skip").clear();
+		setGameFromTrack(guild);
+	}
+
+
+
+	public void setGameFromTrack(Guild guild) {
+		//Note: This will be buggy should James play music in multiple guilds at once; since James is only active in one Guild atm, it shouldn't be a problem (for now).
+		try {
+			bot.setGame(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
+		}
+		catch (NullPointerException e) {
+			bot.setGame("-help");
+		}
 	}
 
 
@@ -742,10 +807,35 @@ implements CommandExecutor{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(channel.getGuild().getMember(bot.getSelf()).getColor());
-			eb.setDescription("Currently are " + handler.getVotes() + " captains voting to " + subject + ", but " + handler.getRequiredVotes() + " are needed to " + subject + "!");
+			eb.setDescription(String.format("Currently are %d captains voting to %s, but %d are needed to %s!",
+					handler.getVotes(), subject, handler.getRequiredVotes(), subject));
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
 			channel.sendMessage(eb.build()).queue();
 			return false;
+		}
+	}
+
+
+
+	public synchronized void printQueue(TextChannel channel) {
+		try {
+			File output = new File(".qprintcache");
+			output.delete();
+			output.createNewFile();
+			StringBuilder sb = new StringBuilder();
+			sb.append(getGuildAudioPlayer(channel.getGuild()).player.getPlayingTrack().getInfo().uri + "\n");
+			LinkedList<AudioTrack> queue = getGuildAudioPlayer(channel.getGuild()).scheduler.getQueue();
+			for (AudioTrack at : queue)
+				sb.append(at.getInfo().uri + "\n");
+			FileWriter ft = new FileWriter(output);
+			ft.write(sb.toString());
+			ft.close();
+			//use complete here, so .qprintcache doesn't get altered before it has been sent
+			channel.sendFile(output, "queue.txt", null).complete();
+			output.deleteOnExit();
+		}
+		catch(IOException e) {
+			e.printStackTrace();
 		}
 	}
 

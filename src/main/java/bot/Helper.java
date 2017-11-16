@@ -545,7 +545,7 @@ public class Helper {
 	 * @param  String      owner  The playlist's owner. Note that this is only for printing out info about the playlist, not for checking for the playlists owner.
 	 * @param  long        ownerid The owner's id.
 	 */
-	public static void savePlaylist(String key, String url, String owner, long ownerid) {
+	public static synchronized void savePlaylist(String key, String url, String owner, long ownerid) {
 		try {
 			Path path = Paths.get("data/playlists.txt");
 			String str = key.toLowerCase() + " " + url + " " + owner + " " + ownerid;
@@ -563,7 +563,7 @@ public class Helper {
 	 * Deletes a playlist from playlists.txt
 	 * @param  String      key    The key to the playlist is be associated with.
 	 */
-	public static void deletePlaylist(String key) {
+	public static synchronized void deletePlaylist(String key) {
 		try {
 			File inputFile = new File("data/playlists.txt");
 			File tempFile = new File("data/playlistsTemp.txt");
