@@ -90,7 +90,7 @@ public class AudioTimeoutControl {
 				if(i > 96){
 					synchronized(this){
 						jda.getGuildById(l.toString()).getAudioManager().closeAudioConnection();
-						jda.getPresence().setGame(Game.of("-help"));
+						jda.getPresence().setGame(Game.listening("-help"));
 						idleValues.remove(l);
 						System.out.println("Resetting the idle count.");
 					}

@@ -31,7 +31,7 @@ public class ESBot {
 		try{
 			loadKeys();
 			jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).buildBlocking();
-			jda.getPresence().setGame(Game.of("-help"));
+			setGameListening("-help");
 			update();
 			System.out.println("\nESBot instantiation successful. Ready for chatroom commands.");
 		}
@@ -90,8 +90,13 @@ public class ESBot {
 	}
 
 
-	public void setGame(String game) {
-		jda.getPresence().setGame(Game.of(game));
+	public void setGamePlaying(String game) {
+		jda.getPresence().setGame(Game.playing(game));
+	}
+
+
+	public void setGameListening(String game) {
+		jda.getPresence().setGame(Game.playing(game));
 	}
 
 

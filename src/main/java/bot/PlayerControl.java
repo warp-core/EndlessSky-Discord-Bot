@@ -9,7 +9,6 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -728,7 +727,7 @@ implements CommandExecutor{
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
 		channel.sendMessage(eb.build()).queue();
-		bot.setGame("-help");
+		bot.setGameListening("-help");
 	}
 
 
@@ -794,10 +793,10 @@ implements CommandExecutor{
 	public void setGameFromTrack(Guild guild) {
 		//Note: This will be buggy should James play music in multiple guilds at once; since James is only active in one Guild atm, it shouldn't be a problem (for now).
 		try {
-			bot.setGame(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
+			bot.setGamePlaying(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
 		}
 		catch (NullPointerException e) {
-			bot.setGame("-help");
+			bot.setGameListening("-help");
 		}
 	}
 
