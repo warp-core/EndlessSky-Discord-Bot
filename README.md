@@ -6,7 +6,7 @@ Meet James, the Discord Bot made specifically for the Endless Sky Server.
 
 ## Installation
 ### Requirements
-- A JDK (recommended Java 8 or better)
+- A JDK (Java 8 or better)
 - gradle on Linux, on Ẃindows use depr_gradlew.bat instead
 - Python and the [requests module](http://docs.python-requests.org/en/master/)
 ### Setup
