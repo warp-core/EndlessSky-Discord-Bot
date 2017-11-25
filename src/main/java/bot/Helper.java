@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -449,13 +450,13 @@ public class Helper {
 	 * @param  String      TrackUrl    The URL of the track in question.
 	 * @return             The URL of the thumbnail. Defaults to /thumbnails/info.png ,if no fitting thumbnail is found.
 	 */
-	public static String getTrackThumbnail(String TrackUrl){
+	public static String getTrackThumbnail(AudioTrack track){
+		String trackUrl = track.getInfo().uri;
 		String thumbnail = null;
-		if (TrackUrl.contains("soundcloud.com/"))
-			thumbnail = ((thumbnail = getSoundcloudThumbnail(TrackUrl)) != null) ? thumbnail : null;
-		else if (TrackUrl.contains("youtube.com/") || TrackUrl.contains("youtu.be/"))
-			thumbnail = ((thumbnail = getYoutubeThumbnail(TrackUrl)) != null) ? thumbnail : null;
-		thumbnail = (thumbnail != null) ? thumbnail : ESBot.HOST_RAW_URL + "/thumbnails/info.png";
+		if (trackUrl.contains("soundcloud.com/"))
+			thumbnail = getSoundcloudThumbnail(trackUrl);
+		else if (trackUrl.contains("youtube.com/") || trackUrl.contains("youtu.be/"))
+			thumbnail = "http://i1.ytimg.com/vi/" + track.getIdentifier() + "/0.jpg";
 		return thumbnail;
 	}
 
@@ -464,28 +465,19 @@ public class Helper {
 	/**
 	 * Gets a Soundcloud thumbnail URL.
 	 * @param  String      TrackUrl    The Soundcloud url linking to the track.
-	 * @return             The URL of the thumbnail, with the size 500x500. May be null, if not found.
+	 * @return             The URL of the thumbnail, with the size 500x500.
 	 */
 	public static String getSoundcloudThumbnail(String TrackUrl){
 		String html = getPlainHtml(TrackUrl);
 		int pos = html.indexOf("\"artwork_url\":") + 15;
-		String artwork_url = html.substring(pos, html.indexOf("-large.jpg\"", pos) + 10);
-		return artwork_url;
-	}
-
-
-	/**
-	 * Gets a YouTube thumbnail URL.
-	 * @param  String      TrackUrl    The YouTube url linking to the track.
-	 * @return             The URL of the thumbnail. May be null, if not found.
-	 */
-	public static String getYoutubeThumbnail(String TrackUrl){
-		String thumbnail_url = null;
-		String id = getYoutubeId(TrackUrl);
-		if (id != null)
-			thumbnail_url = "http://i1.ytimg.com/vi/" + id + "/0.jpg";
-		System.out.println(thumbnail_url);
-		return thumbnail_url;
+		try {
+			String artwork_url = html.substring(pos, html.indexOf("-large.jpg\"", pos) + 10);
+			return artwork_url;
+		}
+		catch (IndexOutOfBoundsException e) {
+			System.out.println("Getting Soundcloud thumbnail failed, falling back to default");
+			return ESBot.HOST_RAW_URL + "/thumbnails/info.png";
+		}
 	}
 
 

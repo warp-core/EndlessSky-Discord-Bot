@@ -171,7 +171,7 @@ implements CommandExecutor{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
+			eb.setThumbnail(Helper.getTrackThumbnail(track));
 			if(track != null){
 				String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
 						track.getInfo().title,
@@ -574,7 +574,7 @@ implements CommandExecutor{
 					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(%s",
 							track.getInfo().title, trackUrl, requestedby));
 					eb.setColor(guild.getMember(bot.getSelf()).getColor());
-					eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
+					eb.setThumbnail(Helper.getTrackThumbnail(track));
 					channel.sendMessage(eb.build()).queue();
 				}
 				track.setUserData(requester);
@@ -598,7 +598,7 @@ implements CommandExecutor{
 					firstTrack.setUserData(requester);
 					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(first track of `%s`, %s",
 							firstTrack.getInfo().title, firstTrack.getInfo().uri, playlist.getName(), requestedby));
-					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
+					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack));
 					play(guild, musicManager, firstTrack);
 					//If the queue is still empty, we just started now playback.
 					if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
