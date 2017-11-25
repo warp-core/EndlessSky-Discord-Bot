@@ -24,6 +24,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -821,25 +822,17 @@ implements CommandExecutor{
 
 
 
-	public synchronized void printQueue(TextChannel channel, String queueName) {
+	public void printQueue(TextChannel channel, String queueName) {
 		try {
-			File output = new File(".qprintcache");
-			output.delete();
-			output.createNewFile();
 			StringBuilder sb = new StringBuilder();
 			sb.append(getGuildAudioPlayer(channel.getGuild()).player.getPlayingTrack().getInfo().uri + "\n");
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(channel.getGuild()).scheduler.getQueue();
 			for (AudioTrack at : queue)
 				sb.append(at.getInfo().uri + "\n");
-			FileWriter ft = new FileWriter(output);
-			ft.write(sb.toString());
-			ft.close();
-			//use complete here, so .qprintcache doesn't get altered before it has been sent
 			if(!queueName.equals(""))
-				channel.sendFile(output, "queue" + queueName + ".txt", null).complete();
+				channel.sendFile(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8.name())), "queue" + queueName + ".txt", null).queue();
 			else
-				channel.sendFile(output, "queue.txt", null).complete();
-			output.deleteOnExit();
+				channel.sendFile(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8.name())), "queue.txt", null).queue();
 		}
 		catch(IOException e) {
 			e.printStackTrace();
