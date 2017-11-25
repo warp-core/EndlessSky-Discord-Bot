@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerControl
 implements CommandExecutor{
@@ -183,7 +184,20 @@ implements CommandExecutor{
 			else{
 				eb.setDescription("The player is not currently playing anything!");
 			}
-			channel.sendMessage(eb.build()).queue();
+			channel.sendMessage(eb.build()).queue((message) -> {
+						while (track.equals(getGuildAudioPlayer(guild).player.getPlayingTrack())) {
+							String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
+									track.getInfo().title,
+									track.getInfo().uri,
+									getTimestamp(track.getPosition()),
+									getTimestamp(track.getDuration()));
+							eb.setDescription(nowplaying);
+							message.editMessage(eb.build()).queue();
+							// this does not affect any other commands
+							try { TimeUnit.SECONDS.sleep(5); } catch (InterruptedException e) {}
+						}
+					}
+			);
 			msg.delete().queue();
 		}
 	}
