@@ -56,4 +56,4 @@ if len(filenames) > 0:
     with open(dataFilePath,'w') as output:
         for line in filenames:
             output.write(line)
-    print 'Completed update operation.'
+    print('Completed update operation.')

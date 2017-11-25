@@ -8,7 +8,7 @@ Meet James, the Discord Bot made specifically for the Endless Sky Server.
 ### Requirements
 - A JDK (recommended Java 8 or better)
 - gradle on Linux, on Ẃindows use depr_gradlew.bat instead
-- Python 2.7+ and the [requests module](http://docs.python-requests.org/en/master/)
+- Python and the [requests module](http://docs.python-requests.org/en/master/)
 ### Setup
 1. Clone or fork this repository
 2. Using the Discord API, make a new Bot and save the "bot token" as token.txt in James' top-level directory (follow [this guide](https://github.com/DV8FromTheWorld/JDA/wiki/3%29-Getting-Started) until "2. Setup JDA Project")
