@@ -24,6 +24,7 @@ backupPath = os.path.join(os.path.dirname(dataFilePath), 'dfn.old')
 authPath = os.path.abspath(os.path.join(scriptDir, *authRelPath.split('/')))
 
 if os.path.exists(dataFilePath):
+    os.remove(backupPath)
     os.rename(dataFilePath, backupPath)
 
 # Read OAuth token for GitHub, if possible.
