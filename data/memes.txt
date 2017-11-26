@@ -10,7 +10,7 @@ bank:It's a crime how much interest the banks charge to first-timers.
 leave:Beat it, old-timer, I've got more important things to do than chat with you.
 notokay:Please don't joke about that sort of thing.
 boarding: You lose 1 crew, they lose 0. You have been killed, your ship is lost.
-The gaping hole in the fabric of the universe does not respond to your hail.
+wormhole:The gaping hole in the fabric of the universe does not respond to your hail.
 wormhole:Wormholes do not understand the language of finite beings like yourself.
 wormhole:You stare into the swirling abyss, but with appalling bad manners it refuses to stare back.
 wormhole:All the messages you try to send disappear into the wormhole without a trace.
