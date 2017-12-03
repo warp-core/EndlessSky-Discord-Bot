@@ -23,6 +23,8 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
+import javax.annotation.Nullable;
+
 public class Helper {
 
 	public static final String ROLE_PLAYBANNED = "Anti-DJ";
@@ -375,11 +377,10 @@ public class Helper {
 	 * @param  Member      member        The server member.
 	 * @return             true / false, as expected.
 	 */
-	public static boolean isBannable(TextChannel channel, Member member){
-		if(member.getUser().isBot())
-			return false;
-
-		if(CanModerate(channel, member))
+	public static boolean isBannable(TextChannel channel, @Nullable Member member){
+		if(member == null)
+			return true;
+		if(member.getUser().isBot() || CanModerate(channel, member))
 			return false;
 
 		return true;
