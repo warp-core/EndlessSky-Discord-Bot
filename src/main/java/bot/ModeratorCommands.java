@@ -131,7 +131,7 @@ implements CommandExecutor{
 		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
 			// Gulag the mentioned user.
 			Member toGulag = guild.getMember(msg.getMentionedUsers().get(0));
-			if (Helper.CanModAndRoleChange(channel, toGulag) || toGulag.getUser().isBot()) {
+			if (!Helper.CanModAndRoleChange(channel, toGulag) && !toGulag.getUser().isBot()) {
 				int banLength = Math.max(1, Integer.valueOf(args[1]));
 				Helper.EnsureRole(guild, Helper.ROLE_GULAG);
 				temporaryGulag(guild, toGulag, Helper.ROLE_GULAG, banLength);
