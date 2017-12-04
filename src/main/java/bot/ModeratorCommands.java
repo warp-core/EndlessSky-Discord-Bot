@@ -27,7 +27,8 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel.\nRange: 2 - 100.\n\nRequires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
 	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args){
-		if (msg.getAuthor().isBot()) {}
+		if (msg.getAuthor().isBot())
+			return;
 		Member author = guild.getMember(msg.getAuthor());
 		// Always remove the requesting message, and delete many after it.
 		msg.delete().queue( y -> {
@@ -55,7 +56,8 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-move", "-wormhole"}, description = "Moves the last X messages in this channel to the linked channel. Can also send participants to the gulag.\nX: Message count to move\nRange: 2 - 100.\n\nY: Total time in the gulag\nRange: 0 - 86400, optional.\n\nRequires moderation abilities.", usage = "-move X #room-name Y", privateMessages = false)
 	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args){
-		if (msg.getAuthor().isBot()) {}
+		if (msg.getAuthor().isBot())
+			return;
 		final String moveHeader = "Incoming wormhole content:\n```";
 		final String moveFooter = "```";
 		if(!Helper.CanModerate(channel, msg.getGuild().getMember(msg.getAuthor()))){
@@ -128,7 +130,8 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-gulag"}, description = "Sends the mentioned member to the gulag.\nX: Total time in the gulag\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-gulag @member X", privateMessages = true)
 	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args){
-		if (msg.getAuthor().isBot()) {}
+		if (msg.getAuthor().isBot())
+			return;
 		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(msg.getAuthor())))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
@@ -154,7 +157,8 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-update"}, description = "Reloads the memes and content of known GitHub files.", usage = "-update", privateMessages = true)
 	public void onUpdateCommand(Message msg, TextChannel channel){
-		if (msg.getAuthor().isBot()) {}
+		if (msg.getAuthor().isBot())
+			return;
 		if(!Helper.CanModerate(channel, msg.getGuild().getMember(msg.getAuthor())))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else{
