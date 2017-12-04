@@ -19,10 +19,10 @@ Meet James, the Discord Bot made specifically for the Endless Sky Server.
 ## Features
 - Displays portions of the Endless Sky data files (Ships & their variants, Outfits, Sprites/Thumbnails, Missions)
 - Links to PRs, commits and issues of the Endless Sky repository
-- Links to the wiki at endless-sky.wikia.com
-- Performs text corrections based on the contents of '/data/spellErrors.txt'
-- Posts both text- and image-based memes (limited to those defined in /data/)
-- Basic Moderation Commands (currently only message purging, but more to come)
+- Links to the wiki at [endless-sky.wikia.com](https://endless-sky.wikia.com)
+- Performs text corrections based on the contents of `data/spellErrors.txt`
+- Posts both text- and image-based memes (limited to those defined in `data/`)
+- Basic Moderation Commands (purge and move messages, gulag bad boys/girls)
 - Reacts when Members join/leave/get banned and gives them the merchant role, if necessary
 - Several tools for Plugin Creators, such as Audio Conversion and Infos about the swizzles used by the game
 - Some fun commands (random dogs and cats, NASA pictures, etc.)
