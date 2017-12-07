@@ -39,6 +39,8 @@ public class AudioPlayerVoteHandler{
 		if(voters.isEmpty())
 			this.requester = voter;
 
+		// possibly fix #101
+		voters.remove(null);
 		// Remove any voters who have left the voice channel after voting.
 		voters.retainAll(channel.getMembers());
 		// Add in the new voter.
