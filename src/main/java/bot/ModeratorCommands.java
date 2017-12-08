@@ -128,7 +128,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-gulag"}, description = "Sends the mentioned member to the gulag.\nX: Total time in the gulag\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-gulag @member X", privateMessages = true)
+	@Command(aliases = {"-timeout"}, description = "Sends the mentioned member to #the-corner.\nX: Time until the member gets released, in seconds.\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-timeout @member X", privateMessages = false)
 	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args){
 		if (msg.getAuthor().isBot())
 			return;
