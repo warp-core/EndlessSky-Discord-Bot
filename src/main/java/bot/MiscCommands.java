@@ -8,6 +8,7 @@ import java.lang.String;
 import java.net.URL;
 
 import net.dv8tion.jda.core.entities.*;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -244,13 +245,16 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-wikia"}, description = "Displays a wikia article or search results for X.", usage = "-wikia [search] X")
+	@Command(aliases = {"-wikia"}, description = "Posts either a wikia article, a link to that article or search results for X.", usage = "-wikia X\n-wikia search X\n-wikia show X")
 	public void onWikiaCommand(Guild guild, MessageChannel channel, String[] args)
 	{
 		String baseUrl = "http://endless-sky.wikia.com/api/v1/";
 		boolean search = false;
+		boolean show = false;
 		if (args[0].toLowerCase().equals("search"))
 			search = true;
+		else if (args[0].toLowerCase().equals("show"))
+			show = true;
 
 		StringBuilder builder = new StringBuilder();
 		if (search){
@@ -272,11 +276,11 @@ implements CommandExecutor{
 
 		try{
 			JSONObject json = getJson(new URL(baseUrl + "Search/List?query=" + query));
+			EmbedBuilder eb = new EmbedBuilder();
+			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
 			if (search){
-				EmbedBuilder eb = new EmbedBuilder();
 				eb.setTitle("Results");
-				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setDescription("Found the following results for '" + query + "':\n");
 				for (Object o : json.getJSONArray("items")){
 					JSONObject r = (JSONObject) o;
@@ -284,13 +288,49 @@ implements CommandExecutor{
 				}
 				channel.sendMessage(eb.build()).queue();
 			}
+			else if (show) {
+				String url = json.getJSONArray("items").getJSONObject(0).getString("url");
+				int id = json.getJSONArray("items").getJSONObject(0).getInt("id");
+				json = getJson(new URL(baseUrl + "Articles/AsSimpleJson?id=" + id));
+				eb.setTitle(json.getJSONArray("sections").getJSONObject(0).getString("title"), url);
+				StringBuilder sb = new StringBuilder();
+				for (Object section : json.getJSONArray("sections"))
+					for (Object o : ((JSONObject) section).getJSONArray("content")) {
+						JSONObject content = (JSONObject) o;
+						if (content.getString("type").equals("paragraph"))
+							try {
+								sb.append(content.getString("text") + "\n");
+							} catch (JSONException e) {}
+						else if (content.getString("type").equals("list"))
+							for (Object element : content.getJSONArray("elements"))
+								try {
+									sb.append( "- " + ((JSONObject) element).getString("text") + "\n");
+								} catch (JSONException e) {}
+					}
+				String text = sb.toString();
+				if (sb.length() > MessageEmbed.TEXT_MAX_LENGTH)
+					text = text.substring(0, MessageEmbed.TEXT_MAX_LENGTH - 3) + "...";
+				eb.setDescription(text);
+				// The API doesn't provide the Image used in the Infobox, so we have to get that ourselves.
+				try {
+					String page = Helper.getPlainHtml(url);
+					String thumbnailUrl = page.substring(page.indexOf("https://vignette.wikia.nocookie.net"), page.indexOf("class=\"image image-thumbnail")).replace("\"", "");
+					eb.setThumbnail(thumbnailUrl);
+				} catch(IndexOutOfBoundsException e) {
+					eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
+				}
+				channel.sendMessage(eb.build()).queue();
+			}
+
 			else{
 				channel.sendMessage(json.getJSONArray("items").getJSONObject(0).getString("url")).queue();
 			}
 		}
 		catch (IOException e){
-			if (e instanceof FileNotFoundException)
+			if (e instanceof FileNotFoundException) {
+				e.printStackTrace();
 				channel.sendMessage("Nothing found.").queue();
+			}
 			else
 				e.printStackTrace(System.out);
 		}

@@ -24,6 +24,7 @@ backupPath = os.path.join(os.path.dirname(dataFilePath), 'dfn.old')
 authPath = os.path.abspath(os.path.join(scriptDir, *authRelPath.split('/')))
 
 if os.path.exists(dataFilePath):
+    os.remove(backupPath)
     os.rename(dataFilePath, backupPath)
 
 # Read OAuth token for GitHub, if possible.
@@ -56,4 +57,4 @@ if len(filenames) > 0:
     with open(dataFilePath,'w') as output:
         for line in filenames:
             output.write(line)
-    print 'Completed update operation.'
+    print('Completed update operation.')

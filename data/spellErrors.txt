@@ -10,6 +10,9 @@ Baction:Bactrian*
 Bakatrain:Bactrian*
 Bakatrian:Bactrian*
 Bacteriana:Bactrian*
+Battlecan:Bactrian*
+Bacatarain:Bactrian*
+Bacatrain:Bactrian*
 Hypderdrive:Hyperdrive*
 sayrd:Saryd*
 Sayrd:Saryd*

@@ -9,7 +9,6 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-import com.sedmelluq.discord.lavaplayer.track.BasicAudioPlaylist;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -24,10 +23,12 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.managers.AudioManager;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerControl
 implements CommandExecutor{
@@ -171,7 +172,7 @@ implements CommandExecutor{
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
-			eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
+			eb.setThumbnail(Helper.getTrackThumbnail(track));
 			if(track != null){
 				String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
 						track.getInfo().title,
@@ -183,7 +184,20 @@ implements CommandExecutor{
 			else{
 				eb.setDescription("The player is not currently playing anything!");
 			}
-			channel.sendMessage(eb.build()).queue();
+			channel.sendMessage(eb.build()).queue((message) -> {
+						while (track.equals(getGuildAudioPlayer(guild).player.getPlayingTrack())) {
+							String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
+									track.getInfo().title,
+									track.getInfo().uri,
+									getTimestamp(track.getPosition()),
+									getTimestamp(track.getDuration()));
+							eb.setDescription(nowplaying);
+							message.editMessage(eb.build()).queue();
+							// this does not affect any other commands
+							try { TimeUnit.SECONDS.sleep(5); } catch (InterruptedException e) {}
+						}
+					}
+			);
 			msg.delete().queue();
 		}
 	}
@@ -192,8 +206,12 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue. Can also print the queue & currently playing track to a .txt file", usage = "-queue [X]\n-queue print", privateMessages = false)
 	public void onqueueCommand(Guild guild, TextChannel channel, Message msg, String[] args){
-		if (args.length > 0 && args[0].equalsIgnoreCase("print"))
-			printQueue(channel);
+		if (args.length > 0 && args[0].equalsIgnoreCase("print")){
+				String name = "";
+				for (int i = 1; i < args.length; i++)
+					name += " " + args[i];
+				printQueue(channel, name);
+		}
 		else {
 			String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 					: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
@@ -570,7 +588,7 @@ implements CommandExecutor{
 					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(%s",
 							track.getInfo().title, trackUrl, requestedby));
 					eb.setColor(guild.getMember(bot.getSelf()).getColor());
-					eb.setThumbnail(Helper.getTrackThumbnail(track.getInfo().uri));
+					eb.setThumbnail(Helper.getTrackThumbnail(track));
 					channel.sendMessage(eb.build()).queue();
 				}
 				track.setUserData(requester);
@@ -594,7 +612,7 @@ implements CommandExecutor{
 					firstTrack.setUserData(requester);
 					eb.setDescription(String.format("Queuing `%s`[\uD83D\uDD17](%s)\n(first track of `%s`, %s",
 							firstTrack.getInfo().title, firstTrack.getInfo().uri, playlist.getName(), requestedby));
-					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack.getInfo().uri));
+					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack));
 					play(guild, musicManager, firstTrack);
 					//If the queue is still empty, we just started now playback.
 					if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
@@ -723,7 +741,7 @@ implements CommandExecutor{
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/stop.png");
 		channel.sendMessage(eb.build()).queue();
-		bot.setGame("-help");
+		bot.setGameListening("-help");
 	}
 
 
@@ -789,10 +807,10 @@ implements CommandExecutor{
 	public void setGameFromTrack(Guild guild) {
 		//Note: This will be buggy should James play music in multiple guilds at once; since James is only active in one Guild atm, it shouldn't be a problem (for now).
 		try {
-			bot.setGame(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
+			bot.setGamePlaying(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
 		}
 		catch (NullPointerException e) {
-			bot.setGame("-help");
+			bot.setGameListening("-help");
 		}
 	}
 
@@ -817,22 +835,17 @@ implements CommandExecutor{
 
 
 
-	public synchronized void printQueue(TextChannel channel) {
+	public void printQueue(TextChannel channel, String queueName) {
 		try {
-			File output = new File(".qprintcache");
-			output.delete();
-			output.createNewFile();
 			StringBuilder sb = new StringBuilder();
 			sb.append(getGuildAudioPlayer(channel.getGuild()).player.getPlayingTrack().getInfo().uri + "\n");
 			LinkedList<AudioTrack> queue = getGuildAudioPlayer(channel.getGuild()).scheduler.getQueue();
 			for (AudioTrack at : queue)
 				sb.append(at.getInfo().uri + "\n");
-			FileWriter ft = new FileWriter(output);
-			ft.write(sb.toString());
-			ft.close();
-			//use complete here, so .qprintcache doesn't get altered before it has been sent
-			channel.sendFile(output, "queue.txt", null).complete();
-			output.deleteOnExit();
+			if(!queueName.equals(""))
+				channel.sendFile(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8.name())), "queue" + queueName + ".txt", null).queue();
+			else
+				channel.sendFile(new ByteArrayInputStream(sb.toString().getBytes(StandardCharsets.UTF_8.name())), "queue.txt", null).queue();
 		}
 		catch(IOException e) {
 			e.printStackTrace();

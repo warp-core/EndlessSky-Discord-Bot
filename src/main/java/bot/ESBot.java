@@ -21,7 +21,7 @@ public class ESBot {
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 	public static final String HOST_PUBLIC_URL = "https://github.com/MCOfficer/EndlessSky-Discord-Bot";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
-	public static  final String DATA_URL = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/data/";
+	public static final String DATA_URL = "https://raw.githubusercontent.com/endless-sky/endless-sky/master/data/";
 
 
 	public Properties keys;
@@ -31,7 +31,7 @@ public class ESBot {
 		try{
 			loadKeys();
 			jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).buildBlocking();
-			jda.getPresence().setGame(Game.of("-help"));
+			setGameListening("-help");
 			update();
 			System.out.println("\nESBot instantiation successful. Ready for chatroom commands.");
 		}
@@ -52,10 +52,11 @@ public class ESBot {
 
 
 	/**
-	 * Shutters the existing data structures, then re-loads everything.
+	 * Removes any existing event listeners, then re-loads everything.
 	 * Does not refresh the known filename lists.
 	 */
 	public synchronized void update(){
+		jda.getRegisteredListeners().forEach(jda::removeEventListener);
 		CommandHandler cmdHandler = new JDA3Handler(jda);
 		cmdHandler.registerCommand(new LookupCommands(this));
 		cmdHandler.registerCommand(new PlayerControl(this, jda));
@@ -89,8 +90,13 @@ public class ESBot {
 	}
 
 
-	public void setGame(String game) {
-		jda.getPresence().setGame(Game.of(game));
+	public void setGamePlaying(String game) {
+		jda.getPresence().setGame(Game.playing(game));
+	}
+
+
+	public void setGameListening(String game) {
+		jda.getPresence().setGame(Game.playing(game));
 	}
 
 
