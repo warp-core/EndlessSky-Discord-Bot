@@ -304,8 +304,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
 	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild	) {
-		String swizzleStr = msg.getRawContent().indexOf(" ") < 0 ? ""
-				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+		String swizzleStr = msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1); // if no number is given, assign 9 (invalid swizzle) to prevent a NumberFormatException
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
