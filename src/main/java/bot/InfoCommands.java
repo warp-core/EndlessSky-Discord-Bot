@@ -7,6 +7,8 @@ import de.btobastian.sdcf4j.CommandHandler.SimpleCommand;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,7 +28,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-help"}, description = "Shows all commands, or the help text for the specified command(s) 'X'.", usage = "-help X")
-	public void onHelpCommand(Guild guild, String[] args, MessageChannel channel) {
+	public void onHelpCommand(Guild guild, String[] args, MessageChannel channel, User author) {
+		if (author.isBot()) return;
 		if(args.length > 0 && !args[0].equals(" ")){
 			for(String arg : args){
 				for(CommandHandler.SimpleCommand simpleCommand : commandHandler.getCommands()){
@@ -111,7 +114,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-info"}, description = "Shows some information about the bot.", usage = "-info")
-	public void onInfoCommand(Guild guild, MessageChannel channel){
+	public void onInfoCommand(Guild guild, MessageChannel channel, User author){
+		if (author.isBot()) return;
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("**EndlessSky-Discord-Bot**", bot.HOST_PUBLIC_URL);
 		String issues = bot.HOST_PUBLIC_URL + "/issues";
@@ -140,7 +144,8 @@ implements CommandExecutor{
 	}
 
 	@Command(aliases = {"-ping"}, description = "Time in milliseconds that discord took to respond to the last heartbeat.", usage = "-ping")
-	public void onPingCommand(Guild guild, MessageChannel channel){
+	public void onPingCommand(Guild guild, MessageChannel channel, User author){
+		if (author.isBot()) return;
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 		eb.setDescription(bot.getPing() + "ms");

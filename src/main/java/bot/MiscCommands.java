@@ -47,8 +47,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-template"}, description = "Sends the template for X. Possible args: outfit, ship, or plugin.", usage = "-template X")
-	public void onTemplatesCommand(Guild guild, MessageChannel channel, String[] args)
-	{
+	public void onTemplatesCommand(Guild guild, MessageChannel channel, String[] args, User author)	{
+		if (author.isBot()) return;
 		if(args.length == 0)
 			channel.sendMessage("Which template would you like? I have three flavours available: 'outfit', 'ship' and 'plugin'.").queue();
 		else
@@ -77,8 +77,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-cat"}, description = "Posts a random cat picture from random.cat", usage = "-cat")
-	public void onCatCommand(MessageChannel channel)
-	{
+	public void onCatCommand(MessageChannel channel, User author) {
+		if (author.isBot()) return;
 		try{
 			URL url = new URL("https://random.cat/meow");
 			channel.sendMessage(getJson(url).getString("file")).queue();
@@ -91,8 +91,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-dog"}, description = "Posts a random dog picture from random.dog", usage = "-dog")
-	public void onDogCommand(MessageChannel channel)
-	{
+	public void onDogCommand(MessageChannel channel, User author) {
+		if (author.isBot()) return;
 		try{
 			URL url = new URL("https://random.dog/woof.json");
 			channel.sendMessage(getJson(url).getString("url")).queue();
@@ -105,8 +105,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-apod"}, description = "posts a random APOD (NASA's Astronomy Picture of the Day).", usage = "-apod")
-	public void onApodCommand(Guild guild, MessageChannel channel)
-	{
+	public void onApodCommand(Guild guild, MessageChannel channel, User author) {
+		if (author.isBot()) return;
 		JSONObject json = null;
 		try{
 			javax.script.ScriptEngine engine = new ScriptEngineManager().getEngineByName("js");
@@ -136,10 +136,10 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-wav"}, description = "Converts an Audio file to a wav file suitable for ES.", usage = "-wav [attached file]")
-	public void onWavCommand(Guild guild, MessageChannel channel, Message message)
-	{
+	public void onWavCommand(Guild guild, MessageChannel channel, Message message, User author) {
+		if (author.isBot()) return;
 		channel.sendMessage("Conversion queued, this may take up to some minutes...").queue();
-	try{
+		try{
 			OkHttpClient client = new OkHttpClient();
 			String url = message.getAttachments().get(0).getUrl();
 			String filename = message.getAttachments().get(0).getFileName();
@@ -246,8 +246,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-wikia"}, description = "Posts either a wikia article, a link to that article or search results for X.", usage = "-wikia X\n-wikia search X\n-wikia show X")
-	public void onWikiaCommand(Guild guild, MessageChannel channel, String[] args)
-	{
+	public void onWikiaCommand(Guild guild, MessageChannel channel, String[] args, User author)	{
+		if (author.isBot()) return;
 		String baseUrl = "http://endless-sky.wikia.com/api/v1/";
 		boolean search = false;
 		boolean show = false;
@@ -339,6 +339,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-translate"}, description = "Translates a query from a language 'source' to a language 'target'. Both 'source' and 'target' are optional ('source' can be auto-detected, 'target' defaults to english). Use the `list` parameter to get all supported languages.", usage = "-translate [source] [target] <query>\n-translate list")
 	public void onTranslateCommand(Guild guild, TextChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if (args.length > 0 && args[0].equalsIgnoreCase("list")) {
 			if (channel.getTopic().contains("spam") || channel.getName().contains("spam")) {
 				StringBuilder sb = new StringBuilder("**Languages Supported by the Yandex Translation API:**");

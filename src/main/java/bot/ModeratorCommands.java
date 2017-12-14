@@ -9,11 +9,7 @@ import java.util.List;
 import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.managers.GuildController;
 
 public class ModeratorCommands 
@@ -26,13 +22,14 @@ implements CommandExecutor{
 	}
 
 	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel.\nRange: 2 - 100.\n\nRequires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
-	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args){
+	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if (msg.getAuthor().isBot())
 			return;
-		Member author = guild.getMember(msg.getAuthor());
+		Member member = guild.getMember(author);
 		// Always remove the requesting message, and delete many after it.
 		msg.delete().queue( y -> {
-			if(!Helper.CanModerate(channel, author))
+			if(!Helper.CanModerate(channel, member))
 				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 			else if(args.length == 1 && Helper.IsIntegerInRange(args[0], 2, 100)){
 				int amount = Integer.valueOf(args[0]);
@@ -45,7 +42,7 @@ implements CommandExecutor{
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
 						TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
-						modLog.sendMessage("Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + author.getEffectiveName() + "`.").queue();
+						modLog.sendMessage("Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + member.getEffectiveName() + "`.").queue();
 					});
 				});
 			}
@@ -55,7 +52,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-move", "-wormhole"}, description = "Moves the last X messages in this channel to the linked channel. Can also send participants to the gulag.\nX: Message count to move\nRange: 2 - 100.\n\nY: Total time in the gulag\nRange: 0 - 86400, optional.\n\nRequires moderation abilities.", usage = "-move X #room-name Y", privateMessages = false)
-	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args){
+	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if (msg.getAuthor().isBot())
 			return;
 		final String moveHeader = "Incoming wormhole content:\n```";
@@ -129,7 +127,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-timeout"}, description = "Sends the mentioned member to #the-corner.\nX: Time until the member gets released, in seconds.\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-timeout @member X", privateMessages = false)
-	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args){
+	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
+		if (author.isBot()) return;
 		if (msg.getAuthor().isBot())
 			return;
 		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(msg.getAuthor())))
@@ -158,7 +157,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-update"}, description = "Reloads the memes and content of known GitHub files.", usage = "-update", privateMessages = true)
-	public void onUpdateCommand(Message msg, TextChannel channel){
+	public void onUpdateCommand(Message msg, TextChannel channel, User author) {
+		if (author.isBot()) return;
 		if (msg.getAuthor().isBot())
 			return;
 		if(!Helper.CanModerate(channel, msg.getGuild().getMember(msg.getAuthor())))

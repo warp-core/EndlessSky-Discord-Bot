@@ -18,6 +18,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
 
 public class LookupCommands
 implements CommandExecutor{
@@ -101,7 +102,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-issue"}, description = "Link to Endless Sky issue #X. If no issue number is given, links the issues page.", usage = "-issue X", privateMessages = true)
-	public void onIssueCommand(MessageChannel channel, String[] args){
+	public void onIssueCommand(MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		final String base = "https://github.com/endless-sky/endless-sky/issues";
 		StringBuilder output = new StringBuilder("");
 		// Check each input for a numeric portion until a non-numeric arg is found.
@@ -123,7 +125,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-pull"}, description = "Link to Endless Sky pull request (PR) #X. If no pull number is given, links the PR page.", usage = "-pull X", privateMessages = true)
-	public void onPullCommand(MessageChannel channel, String[] args){
+	public void onPullCommand(MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		final String base = "https://github.com/endless-sky/endless-sky/pull";
 		StringBuilder output = new StringBuilder("");
 		// Check each input for a numeric portion until a non-numeric arg is found.
@@ -145,7 +148,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-commit"}, description = "Link to Endless Sky commit hash \"X\". Only the first 7 letters are necessary.\nLeave blank for the most recent commit.", usage = "-commit X", privateMessages = true)
-	public void onCommitCommand(MessageChannel channel, String[] args){
+	public void onCommitCommand(MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		final String base = "https://github.com/endless-sky/endless-sky/commit/";
 		StringBuilder output = new StringBuilder("");
 		// Check each input for a hexadecimal hash until a non-hash arg is found.
@@ -167,7 +171,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-lookup"}, description = "Shows the image and description of X.", usage = "-lookup X", privateMessages = true)
-	public void onLookupCommand(Guild guild, MessageChannel channel, String[] args){
+	public void onLookupCommand(Guild guild, MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
@@ -212,7 +217,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-show"}, description = "Shows both image and all data associated with X.", usage = "-show X", privateMessages = true)
-	public void onShowCommand(Guild guild, MessageChannel channel, String[] args){
+	public void onShowCommand(Guild guild, MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
@@ -247,7 +253,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X. Does not print data.", usage = "-showimage X", privateMessages = true)
-	public void onShowimageCommand(Guild guild, MessageChannel channel, String[] args){
+	public void onShowimageCommand(Guild guild, MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
@@ -267,7 +274,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X. Does not print images.", usage = "-showdata X", privateMessages = true)
-	public void onShowdataCommand(MessageChannel channel, String[] args){
+	public void onShowdataCommand(MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if(args.length > 0){
 			String request = args[0];
 			for(int i = 1; i < args.length; ++i){
@@ -285,7 +293,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-quote"}, description = "Quote person X.", usage = "-quote X", privateMessages = true)
-	public void onQuoteCommand(MessageChannel channel, String[] args){
+	public void onQuoteCommand(MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if(args.length < 1)
 			channel.sendMessage("A person! Give me a person!").queue();
 		else{
@@ -303,7 +312,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
-	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild	) {
+	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild, User author) {
+		if (author.isBot()) return;
 		String swizzleStr = msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
 		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1); // if no number is given, assign 9 (invalid swizzle) to prevent a NumberFormatException
 		EmbedBuilder eb = new EmbedBuilder();

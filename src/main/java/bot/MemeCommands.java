@@ -33,7 +33,8 @@ implements CommandExecutor{
 	}
 
 	@Command(aliases = {"-meme"}, description = "Posts meme X, or a random Endless Sky meme if no X is given.", usage = "-meme [X]", privateMessages = true)
-	public void onMemeCommand(Guild guild, MessageChannel channel, String[] args){
+	public void onMemeCommand(Guild guild, MessageChannel channel, String[] args, User author) {
+		if (author.isBot()) return;
 		if(args.length == 0){
 			channel.sendMessage(getRandomMeme()).queue();
 		}
@@ -53,6 +54,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-memelist", "-memes", "-memeList"}, description = "PMs you the current list of memes.", usage = "-memelist", privateMessages = true)
 	public void onListmemesCommand(Guild guild, User user, MessageChannel channel, Message message, String[] args){
+		if (user.isBot()) return;
 		if(args.length == 0){
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Available Memes:", "https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/master/data");

@@ -67,7 +67,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-play"}, description = "Use to request a song while in a voicechannel. If no url is given, it will perform a search on youtube with the given words. Can process multiple inputs separated by commata. As URLs, songs and Playlists from Soundcloud and YouTube can be used", usage = "-play URL [, URL 2, ...]", privateMessages = false)
-	public void onPlayCommand(Guild guild, TextChannel channel, String[] args, User author, Message msg){
+	public void onPlayCommand(Guild guild, TextChannel channel, String[] args, User author, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
 		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
@@ -119,7 +120,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-skip", "-next"}, description = "Skip the current song and start the next one in the queue.\n\nRequires the \"DJ\" role, or a vote will be started. Can be used to skip multiple songs by appending a number to the command", usage = "-skip [amount]\n-next [amount]", privateMessages = false)
-	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onSkipCommand(Guild guild, TextChannel channel, User author, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
 				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
@@ -162,7 +164,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-current"}, description = "Displays the current audiotrack.", usage = "-current", privateMessages = false)
-	public void onCurrentCommand(Guild guild, TextChannel channel, Message msg){
+	public void onCurrentCommand(Guild guild, TextChannel channel, Message msg, User author) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(msg.getAuthor());
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
 		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
@@ -205,7 +208,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue. Can also print the queue & currently playing track to a .txt file", usage = "-queue [X]\n-queue print", privateMessages = false)
-	public void onqueueCommand(Guild guild, TextChannel channel, Message msg, String[] args){
+	public void onqueueCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
+		if (author.isBot()) return;
 		if (args.length > 0 && args[0].equalsIgnoreCase("print")){
 				String name = "";
 				for (int i = 1; i < args.length; i++)
@@ -268,7 +272,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-shuffle", privateMessages = false)
-	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "shuffle");
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
@@ -288,7 +293,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-stop", privateMessages = false)
-	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg, User author) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "stop");
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
@@ -317,6 +323,7 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-playlist"}, description = "This Command saves YouTube or Soundcloud playlists to be quickly accessible. A playlist is associated with a case-insensitive Key.", usage = "-playlist <X>\n-playlist save <X> <URL>\n-playlist info <X>\n-playlist list\n-playlist edit <X> <URL>\n-playlist delete <X>", privateMessages = false)
 	public void onPlaylistCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){return;}
 
@@ -440,7 +447,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via '-play'.\n\nRequires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
-	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		String by = "By order of `" + requester.getEffectiveName() + "`:\n";
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
@@ -486,7 +494,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
-	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "pause");
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
@@ -515,7 +524,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-resume", "-unpause"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume\n-unpause", privateMessages = false)
-	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
+	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "resume");
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
@@ -544,7 +554,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-volume"}, description = "Displays the current volume or sets it to X (10-100). To change, the \"DJ\" role is required.", usage = "-volume X", privateMessages = false)
-	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg){
+	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		String by = " by `" + requester.getEffectiveName() + "`.";
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
