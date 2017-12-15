@@ -166,7 +166,7 @@ implements CommandExecutor{
 	@Command(aliases = {"-current"}, description = "Displays the current audiotrack.", usage = "-current", privateMessages = false)
 	public void onCurrentCommand(Guild guild, TextChannel channel, Message msg, User author) {
 		if (author.isBot()) return;
-		Member requester = guild.getMember(msg.getAuthor());
+		Member requester = guild.getMember(author);
 		if(!channel.getTopic().contains("spam") && !channel.getName().contains("spam")){}
 		else if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
@@ -208,7 +208,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue. Can also print the queue & currently playing track to a .txt file", usage = "-queue [X]\n-queue print", privateMessages = false)
-	public void onqueueCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
+	public void onQueueCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
 		if (author.isBot()) return;
 		if (args.length > 0 && args[0].equalsIgnoreCase("print")){
 				String name = "";
@@ -224,7 +224,7 @@ implements CommandExecutor{
 			int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
 			// Check if there actually was anything after the space. If not, set the position in the queue for the first track to be listed as '1'.
 			// If there is an argument, check if it is bigger than 1 and set the 'ShowFrom' value to the first position of the first track that would be displayed from that page.
-			Member requester = guild.getMember(msg.getAuthor());
+			Member requester = guild.getMember(author);
 			if (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")) {
 			} else if (requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
@@ -293,7 +293,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-stop", privateMessages = false)
-	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg, User author) {
+	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg) {
 		if (author.isBot()) return;
 		Member requester = guild.getMember(author);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "stop");
