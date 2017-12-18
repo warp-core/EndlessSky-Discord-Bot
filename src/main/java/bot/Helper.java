@@ -619,4 +619,13 @@ public class Helper {
 		return playlists;
 	}
 
+
+
+	public static String[] getWords(String[] args){
+		List<String> result = new ArrayList<String>();
+		for(String a : args)
+			if(a.length() > 0)
+				result.add(a);
+		return result.toArray(new String[result.size()]);
+	}
 }
