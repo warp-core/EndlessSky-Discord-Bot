@@ -22,12 +22,11 @@ implements CommandExecutor{
 	}
 
 	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel.\nRange: 2 - 100.\n\nRequires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
-	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
-		if (author.isBot()) return;
-		Member member = guild.getMember(author);
+	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args, Member mod) {
+		if(mod.getUser().isBot()) return;
 		// Always remove the requesting message, and delete many after it.
 		msg.delete().queue( y -> {
-			if(!Helper.CanModerate(channel, member))
+			if(!Helper.CanModerate(channel, mod))
 				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 			else if(args.length == 1 && Helper.IsIntegerInRange(args[0], 2, 100)){
 				int amount = Integer.valueOf(args[0]);
@@ -40,7 +39,7 @@ implements CommandExecutor{
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
 						// Log the command usage.
-						logCommand(guild, "Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + member.getEffectiveName() + "`.");
+						logCommand(guild, "Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + mod.getEffectiveName() + "`.");
 					});
 				});
 			}
@@ -50,11 +49,11 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-move", "-wormhole"}, description = "Moves the last X messages in this channel to the linked channel. Can also send participants to the-corner.\nX: Message count to move\nRange: 2 - 100.\n\nY: Total time in the-corner\nRange: 0 - 86400, optional.\n\nRequires moderation abilities.", usage = "-move X #room-name Y", privateMessages = false)
-	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
-		if (author.isBot()) return;
+	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args, Member mod) {
+		if(mod.getUser().isBot()) return;
 		final String moveHeader = "Incoming wormhole content:\n```";
 		final String moveFooter = "```";
-		if(!Helper.CanModerate(channel, guild.getMember(author)))
+		if(!Helper.CanModerate(channel, mod))
 			msg.delete().queue();
 		else{
 			if(args.length < 2
@@ -119,7 +118,7 @@ implements CommandExecutor{
 					String report = "Moved " + toMove.size() +
 							" messages from " + channel.getAsMention() +
 							" to " + dest.getAsMention() + ", ordered by `" +
-							guild.getMember(author).getEffectiveName() + "`.";
+							mod.getEffectiveName() + "`.";
 					if(!toTempBan.isEmpty() && banLength > 0)
 						report += "\nAlso gave " + toTempBan.size() + " participants a time-out for " + banLength + " seconds.";
 					logCommand(guild, report);
@@ -131,9 +130,9 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-timeout"}, description = "Sends the mentioned member to #the-corner.\nX: Time until the member gets released, in seconds.\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-timeout @member X", privateMessages = false)
-	public void onTimeoutCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author){
-		if(author.isBot()) return;
-		if(!Helper.CanModAndRoleChange(channel, guild.getMember(author)))
+	public void onTimeoutCommand(Guild guild, TextChannel channel, Message msg, String[] args, Member mod){
+		if(mod.getUser().isBot()) return;
+		if(!Helper.CanModAndRoleChange(channel, mod))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
 			// Put the mentioned user in the-corner unless they have the same perms (or are a bot).
@@ -145,7 +144,7 @@ implements CommandExecutor{
 			giveTimeOut(guild, toTimeout, Helper.ROLE_NAUGHTY, banLength);
 			
 			// Log the timeout in mod-log.
-			String message = "Put `" + toTimeout.getEffectiveName() + "` in a time-out for " + banLength + " seconds.\nReason: `" + guild.getMember(author).getEffectiveName() + "` said ";
+			String message = "Put `" + toTimeout.getEffectiveName() + "` in a time-out for " + banLength + " seconds.\nReason: `" + mod.getEffectiveName() + "` said ";
 			if(args.length > 2){
 				message += "'`";
 				for(int i = 2; i < args.length; ++i)
@@ -164,9 +163,9 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-update"}, description = "Reloads the memes and content of known GitHub files.", usage = "-update", privateMessages = true)
-	public void onUpdateCommand(Message msg, TextChannel channel, User author) {
-		if (author.isBot()) return;
-		if(!Helper.CanModerate(channel, msg.getGuild().getMember(author)))
+	public void onUpdateCommand(Message msg, TextChannel channel, Member mod) {
+		if(mod.getUser().isBot()) return;
+		if(!Helper.CanModerate(channel, mod))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else{
 			channel.sendMessage("Updating...").queue();
