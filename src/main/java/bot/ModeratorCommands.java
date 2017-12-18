@@ -24,8 +24,6 @@ implements CommandExecutor{
 	@Command(aliases = {"-purge"}, description = "Deletes the last X messages in this channel.\nRange: 2 - 100.\n\nRequires the \"manage messages\" permission", usage = "-purge X", privateMessages = false)
 	public void onPurgeCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
 		if (author.isBot()) return;
-		if (msg.getAuthor().isBot())
-			return;
 		Member member = guild.getMember(author);
 		// Always remove the requesting message, and delete many after it.
 		msg.delete().queue( y -> {
@@ -54,11 +52,9 @@ implements CommandExecutor{
 	@Command(aliases = {"-move", "-wormhole"}, description = "Moves the last X messages in this channel to the linked channel. Can also send participants to the gulag.\nX: Message count to move\nRange: 2 - 100.\n\nY: Total time in the gulag\nRange: 0 - 86400, optional.\n\nRequires moderation abilities.", usage = "-move X #room-name Y", privateMessages = false)
 	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
 		if (author.isBot()) return;
-		if (msg.getAuthor().isBot())
-			return;
 		final String moveHeader = "Incoming wormhole content:\n```";
 		final String moveFooter = "```";
-		if(!Helper.CanModerate(channel, msg.getGuild().getMember(msg.getAuthor()))){
+		if(!Helper.CanModerate(channel, msg.getGuild().getMember(author))){
 			msg.delete().queue();
 		}
 		else{
@@ -85,15 +81,15 @@ implements CommandExecutor{
 					HashSet<Member> toTempBan = new HashSet<Member>();
 					LinkedList<String> toMove = new LinkedList<String>();
 					for(Message m : toDelete){
-						Member author = guild.getMember(m.getAuthor());
-						if(Helper.isBannable(channel, author))
-							toTempBan.add(author);
+						Member chatter = guild.getMember(m.getAuthor());
+						if(Helper.isBannable(channel, chatter))
+							toTempBan.add(chatter);
 						String what = m.getStrippedContent().trim();
 						if(what.isEmpty())
 							continue;
 						toMove.addFirst(m.getCreationTime()
 								.format(DateTimeFormatter.ISO_INSTANT).substring(11, 19)
-								+ "Z " + author.getEffectiveName() + ": " + what +"\n"
+								+ "Z " + chatter.getEffectiveName() + ": " + what +"\n"
 						);
 					}
 					// Remove the messages from the original channel and log the move.
@@ -129,9 +125,7 @@ implements CommandExecutor{
 	@Command(aliases = {"-timeout"}, description = "Sends the mentioned member to #the-corner.\nX: Time until the member gets released, in seconds.\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-timeout @member X", privateMessages = false)
 	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
 		if (author.isBot()) return;
-		if (msg.getAuthor().isBot())
-			return;
-		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(msg.getAuthor())))
+		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(author)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
 			// Gulag the mentioned user.
@@ -159,9 +153,7 @@ implements CommandExecutor{
 	@Command(aliases = {"-update"}, description = "Reloads the memes and content of known GitHub files.", usage = "-update", privateMessages = true)
 	public void onUpdateCommand(Message msg, TextChannel channel, User author) {
 		if (author.isBot()) return;
-		if (msg.getAuthor().isBot())
-			return;
-		if(!Helper.CanModerate(channel, msg.getGuild().getMember(msg.getAuthor())))
+		if(!Helper.CanModerate(channel, msg.getGuild().getMember(author)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else{
 			channel.sendMessage("Updating...").queue();
