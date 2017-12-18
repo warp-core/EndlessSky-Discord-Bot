@@ -107,6 +107,7 @@ implements CommandExecutor{
 		}
 		catch(IOException e){
 			e.printStackTrace();
+			System.out.println("\nUnable to load memes. Memeing fail.");
 		}
 		return props;
 	}

@@ -1,7 +1,9 @@
 package bot;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -16,7 +18,7 @@ public class SpellCheckListener extends ListenerAdapter{
 
 	public SpellCheckListener(ESBot bot){
 		this.bot = bot;
-		spellErrors = readSpellErrors();
+		spellErrors = readSpellErrors(true);
 	}
 
 
@@ -41,21 +43,29 @@ public class SpellCheckListener extends ListenerAdapter{
 	 * Create a key-value dictionary that holds matched words or phrases, and the "correction" that the bot should respond with.
 	 * @return Properties
 	 */
-	private Properties readSpellErrors(){
+	private Properties readSpellErrors(Boolean local){
 		Properties spellErrors = new Properties();
 		try{
-			BufferedReader br = new BufferedReader(Files.newBufferedReader(
-					Paths.get("data", "spellErrors.txt")));
-			spellErrors.load(br);
+			if(local)
+				spellErrors.load(new BufferedReader(Files.newBufferedReader(
+						Paths.get("data", "spellErrors.txt"))));
+			else
+				spellErrors.load(new URL(bot.HOST_RAW_URL + "/data/spellErrors.txt").openStream());
+		}
+		catch(FileNotFoundException e){
+			e.printStackTrace();
+			if(local){
+				System.out.println("\nNo local spellErrors found. Loading published spellErrors instead...");
+				return readSpellErrors(false);
+			}
 		}
 		catch(IOException e){
-			System.out.println("\nNo datafile found for spellchecking.\nNo spellchecking will be done.\n");
-			System.out.println(e.toString());
 			e.printStackTrace();
+			System.out.println("\nUnable to load spellchecking file.");
 		}
 		catch(IllegalArgumentException e){
-			System.out.println("\nMalformed Unicode escape in the input spellErrors file.");
 			e.printStackTrace();
+			System.out.println("\nMalformed Unicode escape in the input spellErrors file.");
 		}
 		return spellErrors;
 	}
