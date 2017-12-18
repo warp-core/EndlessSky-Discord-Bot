@@ -39,8 +39,8 @@ implements CommandExecutor{
 						eb.setDescription("Spaced " + m.size() + " messages! Who's next?!");
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
-						TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
-						modLog.sendMessage("Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + member.getEffectiveName() + "`.").queue();
+						// Log the command usage.
+						logCommand(guild, "Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + member.getEffectiveName() + "`.");
 					});
 				});
 			}
@@ -49,14 +49,13 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-move", "-wormhole"}, description = "Moves the last X messages in this channel to the linked channel. Can also send participants to the gulag.\nX: Message count to move\nRange: 2 - 100.\n\nY: Total time in the gulag\nRange: 0 - 86400, optional.\n\nRequires moderation abilities.", usage = "-move X #room-name Y", privateMessages = false)
+	@Command(aliases = {"-move", "-wormhole"}, description = "Moves the last X messages in this channel to the linked channel. Can also send participants to the-corner.\nX: Message count to move\nRange: 2 - 100.\n\nY: Total time in the-corner\nRange: 0 - 86400, optional.\n\nRequires moderation abilities.", usage = "-move X #room-name Y", privateMessages = false)
 	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args, User author) {
 		if (author.isBot()) return;
 		final String moveHeader = "Incoming wormhole content:\n```";
 		final String moveFooter = "```";
-		if(!Helper.CanModerate(channel, msg.getGuild().getMember(author))){
+		if(!Helper.CanModerate(channel, guild.getMember(author)))
 			msg.delete().queue();
-		}
 		else{
 			if(args.length < 2
 					|| !Helper.IsIntegerInRange(args[0], 2, 100)
@@ -109,12 +108,21 @@ implements CommandExecutor{
 
 					// Place the temporary bans.
 					if(!toTempBan.isEmpty() && banLength > 0){
-						Helper.EnsureRole(guild, Helper.ROLE_GULAG);
-						List<Role> gulag = guild.getRolesByName(Helper.ROLE_GULAG, true);
+						Helper.EnsureRole(guild, Helper.ROLE_NAUGHTY);
+						List<Role> naughty = guild.getRolesByName(Helper.ROLE_NAUGHTY, true);
 						GuildController gc = guild.getController();
 						for(Member b : toTempBan)
-							temporaryGulag(gc, b, gulag, banLength);
+							giveTimeOut(gc, b, naughty, banLength);
 					}
+					
+					// Log the move in mod-log.
+					String report = "Moved " + toMove.size() +
+							" messages from " + channel.getAsMention() +
+							" to " + dest.getAsMention() + ", ordered by `" +
+							guild.getMember(author).getEffectiveName() + "`.";
+					if(!toTempBan.isEmpty() && banLength > 0)
+						report += "\nAlso gave " + toTempBan.size() + " participants a time-out for " + banLength + " seconds.";
+					logCommand(guild, report);
 				});
 			}
 		}
@@ -123,29 +131,34 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-timeout"}, description = "Sends the mentioned member to #the-corner.\nX: Time until the member gets released, in seconds.\nRange: 1 - 86400\n\nRequires moderation and role change abilities.", usage = "-timeout @member X", privateMessages = false)
-	public void onGulagCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
-		if (author.isBot()) return;
-		if(!Helper.CanModAndRoleChange(channel, msg.getGuild().getMember(author)))
+	public void onTimeoutCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author){
+		if(author.isBot()) return;
+		if(!Helper.CanModAndRoleChange(channel, guild.getMember(author)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(args.length >= 2 && Helper.IsIntegerInRange(args[1], 1, 86400)){
-			// Gulag the mentioned user.
-			Member toGulag = guild.getMember(msg.getMentionedUsers().get(0));
-			if (!Helper.CanModAndRoleChange(channel, toGulag) && !toGulag.getUser().isBot()) {
-				int banLength = Math.max(1, Integer.valueOf(args[1]));
-				Helper.EnsureRole(guild, Helper.ROLE_GULAG);
-				temporaryGulag(guild, toGulag, Helper.ROLE_GULAG, banLength);
-				String message = "Gulagged: `" + toGulag.getEffectiveName() + "` for " + banLength + " seconds.";
-				if (args.length > 2) {
-					message += "\nReason: ";
-					for (int i = 2; i < args.length - 1; i++) {
-						message += (args[i] + " ");
-					}
-					message += args[args.length - 1] + ".";
-				}
-				TextChannel modLog = guild.getTextChannelsByName("mod-log", false).get(0);
-				modLog.sendMessage(message).queue();
+			// Put the mentioned user in the-corner unless they have the same perms (or are a bot).
+			Member toTimeout = guild.getMember(msg.getMentionedUsers().get(0));
+			if(Helper.CanModAndRoleChange(channel, toTimeout) || toTimeout.getUser().isBot())
+				return;
+			int banLength = Math.max(1, Integer.valueOf(args[1]));
+			Helper.EnsureRole(guild, Helper.ROLE_NAUGHTY);
+			giveTimeOut(guild, toTimeout, Helper.ROLE_NAUGHTY, banLength);
+			
+			// Log the timeout in mod-log.
+			String message = "Put `" + toTimeout.getEffectiveName() + "` in a time-out for " + banLength + " seconds.\nReason: `" + guild.getMember(author).getEffectiveName() + "` said ";
+			if(args.length > 2){
+				message += "'`";
+				for(int i = 2; i < args.length; ++i)
+					message += " " + args[i].trim();
+				message += "`'";
 			}
+			else
+				message += "(no reason given).";
+			
+			logCommand(guild, message);
 		}
+		else
+			channel.sendMessage("You forgot some arguments: `@member seconds reason`").queue();
 	}
 
 
@@ -164,32 +177,44 @@ implements CommandExecutor{
 
 
 
+	private void logCommand(Guild guild, String report){
+		try{
+			TextChannel modlog = guild.getTextChannelsByName("mod-log", false).get(0);
+			modlog.sendMessage(report).queue();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+
+
 	/**
 	 * Utility functions to send the given member to a timeout room by means of
 	 * changing the assigned roles.
 	 * TODO: The callback does not persist if the bot is destroyed before the
 	 * duration is reached, so some more permanent storage is needed, and should
 	 * be checked upon startup.
-	 * @param Guild   guild        The server with a gulag and a naughty member.
+	 * @param Guild   guild        The server with a corner and a naughty member.
 	 * @param Member  member       The member who needs a time-out.
 	 * @param String  newRoleName  The result of a name-search for the role.
 	 * @param int     duration     The length of the time-out.
 	 */
-	private void temporaryGulag(Guild guild, Member member, String newRoleName, int duration){
+	private void giveTimeOut(Guild guild, Member member, String newRoleName, int duration){
 		List<Role> newRole = guild.getRolesByName(newRoleName, true);
 		List<Role> oldRoles = member.getRoles();
 		GuildController gc = guild.getController();
 		temporaryRoleSwapAfterDuration(gc, member, newRole, oldRoles, duration);
 	}
 
-	private void temporaryGulag(GuildController gc, Member member, List<Role> newRoles, int duration){
+	private void giveTimeOut(GuildController gc, Member member, List<Role> newRoles, int duration){
 		List<Role> oldRoles = member.getRoles();
 		temporaryRoleSwapAfterDuration(gc, member, newRoles, oldRoles, duration);
 	}
 
+	// TODO: Include a "restored role" log entry in mod-log when a more robust unbanner is implemented.
 	private void temporaryRoleSwapAfterDuration(GuildController gc, Member m, List<Role> newRoles, List<Role> oldRoles, int duration){
 		gc.modifyMemberRoles(m, newRoles, oldRoles).queue( x -> {
-			System.out.println(x);
 			gc.modifyMemberRoles(m, oldRoles, newRoles).queueAfter(
 					duration, TimeUnit.SECONDS);
 		});

@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 public class Helper {
 
 	public static final String ROLE_PLAYBANNED = "Anti-DJ";
-	public static final String ROLE_GULAG = "Bad Boy/Girl";
+	public static final String ROLE_NAUGHTY = "Bad Boy/Girl";
 
 	// Count the number of the given character in the given string.
 	public static int CountOf(String input, char token){
@@ -371,7 +371,7 @@ public class Helper {
 	/**
 	 * Checks if the given member has special rights in the linked channel
 	 * (and corresponding guild). If so, they are not bannable.
-	 * This function ensures that bots do not attempt to ban / gulag other
+	 * This function ensures that bots do not attempt to ban / time-out other
 	 * bots or moderators as a part of batch operations.
 	 * @param  TextChannel channel       The channel to inspect for mod rights.
 	 * @param  Member      member        The server member.

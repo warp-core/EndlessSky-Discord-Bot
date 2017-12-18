@@ -74,7 +74,7 @@ public class AudioPlayerVoteHandler{
 		int votes = 0;
 		List<Role> noVote = new LinkedList<Role>();
 		noVote.addAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true));
-		noVote.addAll(guild.getRolesByName(Helper.ROLE_GULAG, true));
+		noVote.addAll(guild.getRolesByName(Helper.ROLE_NAUGHTY, true));
 		List<Member> nonVoters = guild.getMembersWithRoles(noVote);
 		for(Member voter : voters)
 			if(channel == voter.getVoiceState().getChannel()
