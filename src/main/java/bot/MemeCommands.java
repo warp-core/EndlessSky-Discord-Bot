@@ -42,15 +42,14 @@ implements CommandExecutor{
 	@Command(aliases = {"-meme"}, description = "Posts meme X, or a random Endless Sky meme if no X is given.", usage = "-meme [X]", privateMessages = true)
 	public void onMemeCommand(Guild guild, MessageChannel channel, String[] args, User author) {
 		if (author.isBot()) return;
-		if(args.length == 0){
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length == 0)
 			channel.sendMessage(getRandomMeme()).queue();
-		}
-		else if(args.length == 1){
-			if(!isImgMeme(args[0])){
-				channel.sendMessage(getMeme(args[0])).queue();
-			}
+		else if(parsed.length == 1){
+			if(!isImgMeme(parsed[0]))
+				channel.sendMessage(getMeme(parsed[0])).queue();
 			else{
-				String path = HOST_RAW_URL + "/data/memes/" + getImgMemePath(args[0]);
+				String path = HOST_RAW_URL + "/data/memes/" + getImgMemePath(parsed[0]);
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
 				eb.setImage(path);
@@ -63,8 +62,9 @@ implements CommandExecutor{
 
 	@Command(aliases = {"-memelist", "-memes", "-memeList"}, description = "PMs you the current list of memes.", usage = "-memelist", privateMessages = true)
 	public void onListMemesCommand(Guild guild, User user, MessageChannel channel, Message message, String[] args){
-		if (user.isBot()) return;
-		if(args.length == 0){
+		if(user.isBot()) return;
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length == 0){
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Available Memes:", "https://github.com/MCOfficer/EndlessSky-Discord-Bot/tree/master/data");
 			eb.addField("Text-based Memes", getMemelist(), false);
@@ -74,9 +74,8 @@ implements CommandExecutor{
 			user.openPrivateChannel().queue(c -> {
 				c.sendMessage(eb.build()).queue();
 			});
-			if(channel instanceof TextChannel){
+			if(channel instanceof TextChannel)
 				message.delete().queue();
-			}
 		}
 	}
 
