@@ -6,7 +6,7 @@ mainClassName = 'bot.ESBotMain'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-ext.logbackVersion = '1.1.8'
+ext.logbackVersion = '1.2.3'
 
 repositories {
 	jcenter()
@@ -16,27 +16,14 @@ repositories {
 }
 
 dependencies {
-	compile 'com.sedmelluq:lavaplayer:1.2.44'
-	compile 'net.dv8tion:JDA:3.3.1_306'
+	compile 'com.sedmelluq:lavaplayer:1.2.45'
+	compile 'net.dv8tion:JDA:3.4.0_317'
 	compile 'com.github.BtoBastian.sdcf4j:sdcf4j-core:v1.0.8'
 	compile 'com.github.BtoBastian.sdcf4j:sdcf4j-jda3:v1.0.8'
 	compile 'junit:junit:4.12'
 	runtime "ch.qos.logback:logback-classic:$logbackVersion"
 	runtime "ch.qos.logback:logback-core:$logbackVersion"
-	compile 'com.squareup.okhttp3:okhttp:3.9.0'
-}
-
-task writeVersion(type: Exec) {
-	executable "bash"
-	args "./scripts/version_logger.sh"
-}
-task writeBranch(type: Exec) {
-	executable "bash"
-	args "./scripts/branch_writer.sh"
-}
-task updateData(type: Exec) {
-	executable "python"
-	args "./scripts/updateFileNames.py"
+	compile 'com.squareup.okhttp3:okhttp:3.9.1'
 }
 
 run.dependsOn {

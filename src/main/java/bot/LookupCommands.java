@@ -313,7 +313,7 @@ implements CommandExecutor{
 	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
 	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild, User author){
 		if(author.isBot()) return;
-		String swizzleStr = msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+		String swizzleStr = msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
 		// If no number is given, assign 9 to handle a NumberFormatException.
 		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1);
 		EmbedBuilder eb = new EmbedBuilder();

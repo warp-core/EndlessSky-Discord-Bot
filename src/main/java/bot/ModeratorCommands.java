@@ -84,7 +84,7 @@ implements CommandExecutor{
 						Member chatter = guild.getMember(m.getAuthor());
 						if(Helper.isBannable(channel, chatter))
 							toTempBan.add(chatter);
-						String what = m.getStrippedContent().trim();
+						String what = m.getContentStripped().trim();
 						if(what.isEmpty())
 							continue;
 						toMove.addFirst(m.getCreationTime()

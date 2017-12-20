@@ -26,7 +26,7 @@ public class SpellCheckListener extends ListenerAdapter{
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event){
 		if(event.getAuthor().isBot()) return;
-		String msg = event.getMessage().getContent().toLowerCase();
+		String msg = event.getMessage().getContentDisplay().toLowerCase();
 		Enumeration<?> keys = getSpellErrors();
 		// Find and send the first occurence of a match.
 		while(keys.hasMoreElements()){

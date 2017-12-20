@@ -128,8 +128,8 @@ implements CommandExecutor{
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
-		String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
-				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+		String countStr = msg.getContentRaw().indexOf(" ") < 0 ? ""
+				: msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
 		int count = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue(), 1);
 		AudioPlayerVoteHandler voteHandler = getVoteHandler(guild, "skip");
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
@@ -221,8 +221,8 @@ implements CommandExecutor{
 				printQueue(channel, name);
 		}
 		else{
-			String countStr = msg.getRawContent().indexOf(" ") < 0 ? ""
-					: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
+			String countStr = msg.getContentRaw().indexOf(" ") < 0 ? ""
+					: msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
 			// Check if the command was followed by a space indicating an argument to indicate the page of the queue to display.
 			// Then set 'CountStr' to everything following the space in the command.
 			int showFrom = countStr.length() == 0 ? 1 : Math.max(new Integer(countStr).intValue() * 10 - 9, 1);
