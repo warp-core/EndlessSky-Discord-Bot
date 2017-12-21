@@ -16,6 +16,8 @@ bacteriana : Bactrian*
 battlecan : Bactrian*
 bacatarain : Bactrian*
 bacatrain : Bactrian*
+bactiran : Bactrian*
+Bactarian : Bactrian*
 ypderdrive : Hyperdrive*
 sayrd : Saryd*
 sadry : Saryd*
