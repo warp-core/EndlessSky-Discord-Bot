@@ -1,21 +1,31 @@
-Bactrain:Bactrian*
-Bacterian:Bactrian*
-Backtrian:Bactrian*
-Backtrain:Bactrian*
-Backterian:Bactrian*
-Bacceterian:Bactrian*
-Battican:Bactrian*
-Bacatercran:Bactrian*
-Baction:Bactrian*
-Bakatrain:Bactrian*
-Bakatrian:Bactrian*
-Bacteriana:Bactrian*
-Battlecan:Bactrian*
-Bacatarain:Bactrian*
-Bacatrain:Bactrian*
-Hypderdrive:Hyperdrive*
-sayrd:Saryd*
-Sayrd:Saryd*
-Sadry:Saryd*
-Kimik:Kimek*
-Kimke:Kimek*
+# If you wish to create a multi-word key phrase, you must escape whitespace.
+# e.g. `navy license` matches only `navy`, while `navy\ license` matches `navy license`.
+# Matching is done to lower-cased strings, with lower-cased keys.
+bactrain : Bactrian*
+bacterian : Bactrian*
+backtrian : Bactrian*
+backtrain : Bactrian*
+backterian : Bactrian*
+bacceterian : Bactrian*
+battican : Bactrian*
+bacatercran : Bactrian*
+baction : Bastion*
+bakatrain : Bactrian*
+bakatrian : Bactrian*
+bacteriana : Bactrian*
+battlecan : Bactrian*
+bacatarain : Bactrian*
+bacatrain : Bactrian*
+bactiran : Bactrian*
+Bactarian : Bactrian*
+ypderdrive : Hyperdrive*
+sayrd : Saryd*
+sadry : Saryd*
+kimik : Kimek*
+kimke : Kimek*
+morgage : Mortgage*\n(It's a crime how much interest the banks charge to first-timers.)
+navy\ license : <@251148565479555072> says, "IT'S BEING WORKED ON, OK?"
+navy\ lisense : <@251148565479555072> says, "IT'S BEING WORKED ON, OK?"
+navy\ licence : <@251148565479555072> says, "IT'S BEING WORKED ON, OK?"
+lisense : License*
+licence : License*

@@ -1,8 +1,11 @@
 package bot;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -15,51 +18,67 @@ public class SpellCheckListener extends ListenerAdapter{
 
 	public SpellCheckListener(ESBot bot){
 		this.bot = bot;
-		spellErrors = readSpellErrors();
+		spellErrors = readSpellErrors(true);
 	}
 
 
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event){
-		if(event.getAuthor() != bot.getSelf()){
-			String msg = event.getMessage().getContent().toLowerCase();
-			Enumeration<?> keys = getSpellErrors();
-			while(keys.hasMoreElements()){
-				String key = (String) keys.nextElement();
-				if(msg.contains(key.toLowerCase())){
-					event.getChannel().sendMessage(getCorrection(key)).queue();
-					break;
-				}
+		if(event.getAuthor().isBot()) return;
+		String msg = event.getMessage().getContentDisplay().toLowerCase();
+		Enumeration<?> keys = getSpellErrors();
+		// Find and send the first occurence of a match.
+		while(keys.hasMoreElements()){
+			String key = (String) keys.nextElement();
+			if(msg.contains(key.toLowerCase())){
+				event.getChannel().sendMessage(getCorrection(key)).queue();
+				break;
 			}
 		}
 	}
 
 
-
-	private Properties readSpellErrors(){
+	/**
+	 * Create a key-value dictionary that holds matched words or phrases, and the "correction" that the bot should respond with.
+	 * @return Properties
+	 */
+	private Properties readSpellErrors(Boolean local){
 		Properties spellErrors = new Properties();
 		try{
-			spellErrors.load(new URL(bot.HOST_RAW_URL + "/data/spellErrors.txt").openStream());
+			if(local)
+				spellErrors.load(new BufferedReader(Files.newBufferedReader(
+						Paths.get("data", "spellErrors.txt"))));
+			else
+				spellErrors.load(new URL(bot.HOST_RAW_URL + "/data/spellErrors.txt").openStream());
 		}
 		catch(FileNotFoundException e){
 			e.printStackTrace();
+			if(local){
+				System.out.println("\nNo local spellErrors found. Loading published spellErrors instead...");
+				return readSpellErrors(false);
+			}
 		}
 		catch(IOException e){
 			e.printStackTrace();
+			System.out.println("\nUnable to load spellchecking file.");
+		}
+		catch(IllegalArgumentException e){
+			e.printStackTrace();
+			System.out.println("\nMalformed Unicode escape in the input spellErrors file.");
 		}
 		return spellErrors;
 	}
 
 
 
-	public Enumeration<?> getSpellErrors(){
+	private Enumeration<?> getSpellErrors(){
 		return spellErrors.keys();
 	}
 
 
 
-	public String getCorrection(String key){
+	private String getCorrection(String key){
 		return spellErrors.getProperty(key, "No correct spelling found!");
 	}
 }

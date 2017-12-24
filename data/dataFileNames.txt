@@ -62,6 +62,7 @@ remnant%20ships
 remnant
 sales
 ships
+stars
 start
 syndicate%20world%20jobs
 tooltips

@@ -18,6 +18,7 @@ import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
 
 public class LookupCommands
 implements CommandExecutor{
@@ -101,7 +102,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-issue"}, description = "Link to Endless Sky issue #X. If no issue number is given, links the issues page.", usage = "-issue X", privateMessages = true)
-	public void onIssueCommand(MessageChannel channel, String[] args){
+	public void onIssueCommand(MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
 		final String base = "https://github.com/endless-sky/endless-sky/issues";
 		StringBuilder output = new StringBuilder("");
 		// Check each input for a numeric portion until a non-numeric arg is found.
@@ -123,7 +125,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-pull"}, description = "Link to Endless Sky pull request (PR) #X. If no pull number is given, links the PR page.", usage = "-pull X", privateMessages = true)
-	public void onPullCommand(MessageChannel channel, String[] args){
+	public void onPullCommand(MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
 		final String base = "https://github.com/endless-sky/endless-sky/pull";
 		StringBuilder output = new StringBuilder("");
 		// Check each input for a numeric portion until a non-numeric arg is found.
@@ -145,7 +148,8 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-commit"}, description = "Link to Endless Sky commit hash \"X\". Only the first 7 letters are necessary.\nLeave blank for the most recent commit.", usage = "-commit X", privateMessages = true)
-	public void onCommitCommand(MessageChannel channel, String[] args){
+	public void onCommitCommand(MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
 		final String base = "https://github.com/endless-sky/endless-sky/commit/";
 		StringBuilder output = new StringBuilder("");
 		// Check each input for a hexadecimal hash until a non-hash arg is found.
@@ -167,21 +171,21 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-lookup"}, description = "Shows the image and description of X.", usage = "-lookup X", privateMessages = true)
-	public void onLookupCommand(Guild guild, MessageChannel channel, String[] args){
-		if(args.length > 0){
-			String request = args[0];
-			for(int i = 1; i < args.length; ++i){
-				request += " " + args[i];
-			}
+	public void onLookupCommand(Guild guild, MessageChannel channel, String[] args, User author){
+		if (author.isBot()) return;
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length > 0){
+			String request = parsed[0];
+			for(int i = 1; i < parsed.length; ++i)
+				request += " " + parsed[i];
 			String message = "";
 			boolean printedImage = false;
 			String variantParsedRequest = ParseVariants(request);
 			if(PrintImage(guild, channel, lookupData(request))
 					|| PrintImage(guild, channel, lookupData(variantParsedRequest))
 					|| (IsShipVariantRequest(request)
-								&& PrintImage(guild, channel, lookupData(Helper.GetBaseModelName(request))))){
+								&& PrintImage(guild, channel, lookupData(Helper.GetBaseModelName(request)))))
 				printedImage = true;
-			}
 			else
 				message = "There is no image associated with '" + request + "'";
 
@@ -212,21 +216,21 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-show"}, description = "Shows both image and all data associated with X.", usage = "-show X", privateMessages = true)
-	public void onShowCommand(Guild guild, MessageChannel channel, String[] args){
-		if(args.length > 0){
-			String request = args[0];
-			for(int i = 1; i < args.length; ++i){
-				request += " " + args[i];
-			}
+	public void onShowCommand(Guild guild, MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length > 0){
+			String request = parsed[0];
+			for(int i = 1; i < parsed.length; ++i)
+				request += " " + parsed[i];
 			String message = "";
 			boolean printedImage = false;
 			String variantParsedRequest = ParseVariants(request);
 			if(PrintImage(guild, channel, lookupData(request))
 					|| PrintImage(guild, channel, lookupData(variantParsedRequest))
 					|| (IsShipVariantRequest(request)
-								&& PrintImage(guild, channel, lookupData(Helper.GetBaseModelName(request))))){
+								&& PrintImage(guild, channel, lookupData(Helper.GetBaseModelName(request)))))
 				printedImage = true;
-			}
 			else
 				message = "I could not find an image associated with '" + request + "'";
 
@@ -247,12 +251,13 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-showimage", "-showImage"}, description = "Shows image of X. Does not print data.", usage = "-showimage X", privateMessages = true)
-	public void onShowimageCommand(Guild guild, MessageChannel channel, String[] args){
-		if(args.length > 0){
-			String request = args[0];
-			for(int i = 1; i < args.length; ++i){
-				request += " " + args[i];
-			}
+	public void onShowimageCommand(Guild guild, MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length > 0){
+			String request = parsed[0];
+			for(int i = 1; i < parsed.length; ++i)
+				request += " " + parsed[i];
 			if(PrintImage(guild, channel, lookupData(request))
 					|| PrintImage(guild, channel, lookupData(ParseVariants(request)))
 					|| (IsShipVariantRequest(request)
@@ -267,12 +272,13 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-showdata", "-showData"}, description = "Shows data of X. Does not print images.", usage = "-showdata X", privateMessages = true)
-	public void onShowdataCommand(MessageChannel channel, String[] args){
-		if(args.length > 0){
-			String request = args[0];
-			for(int i = 1; i < args.length; ++i){
-				request += " " + args[i];
-			}
+	public void onShowdataCommand(MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length > 0){
+			String request = parsed[0];
+			for(int i = 1; i < parsed.length; ++i)
+				request += " " + parsed[i];
 			request = ParseVariants(request);
 			String output = lookupData(request);
 			if(output.length() < 1){
@@ -285,13 +291,15 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-quote"}, description = "Quote person X.", usage = "-quote X", privateMessages = true)
-	public void onQuoteCommand(MessageChannel channel, String[] args){
-		if(args.length < 1)
+	public void onQuoteCommand(MessageChannel channel, String[] args, User author){
+		if(author.isBot()) return;
+		String[] parsed = Helper.getWords(args);
+		if(parsed.length < 1)
 			channel.sendMessage("A person! Give me a person!").queue();
 		else{
-			String request = args[0];
-			for(int i = 1; i < args.length; ++i)
-				request += " " + args[i];
+			String request = parsed[0];
+			for(int i = 1; i < parsed.length; ++i)
+				request += " " + parsed[i];
 			String quote = generateQuote(request);
 			if(quote.length() > 0)
 				channel.sendMessage("```\n``" + quote + "``\n\n" + "\t-- " + request + "```").queue();
@@ -303,14 +311,15 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
-	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild	) {
-		String swizzleStr = msg.getRawContent().indexOf(" ") < 0 ? ""
-				: msg.getRawContent().substring(msg.getRawContent().indexOf(" ")).trim();
-		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1); // if no number is given, assign 9 (invalid swizzle) to prevent a NumberFormatException
+	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild, User author){
+		if(author.isBot()) return;
+		String swizzleStr = msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
+		// If no number is given, assign 9 to handle a NumberFormatException.
+		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1);
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
-		if (swizzle >= 0 && swizzle <= 8) {
+		if(swizzle >= 0 && swizzle <= 8){
 			String[] vectors = {
 					"{GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA} // red + yellow markings (republic)",
 					"{GL_RED, GL_BLUE, GL_GREEN, GL_ALPHA} // red + magenta markings",
@@ -325,7 +334,7 @@ implements CommandExecutor{
 			eb.setDescription("**Swizzle Vector:**\n```" + vectors[swizzle] + "```\n\n**Governments using this swizzle:**\n" + getGovernmentsBySwizzle(swizzle));
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/swizzles/" + swizzle + ".png");
 		}
-		else {
+		else{
 			eb.setDescription("This swizzle does not exist.");
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 		}
@@ -347,12 +356,12 @@ implements CommandExecutor{
 			category = lookup.substring(0, lookup.indexOf(" ")).toLowerCase();
 			boolean isCategory = false;
 			// Is the first word a dataType?
-			for(String str : dataTypes){
+			for(String str : dataTypes)
 				if(str.contains(category)){
 					isCategory = true;
 					break;
 				}
-			}
+			
 			if(isCategory)
 				lookup = lookup.substring(lookup.indexOf(" ") + 1);
 			else
@@ -383,26 +392,22 @@ implements CommandExecutor{
 	// subjected to capitalization and quoting.
 	private String checkLookup(String dataType, String lookup, boolean helper){
 		// The lookup may be exact:
-		if(data.contains("\n" + lookup)){
+		if(data.contains("\n" + lookup))
 			return "\n" + lookup;
-		}
+
 		// A supported dataType limiter may have been used.
 		if(dataType.length() > 0){
-			if(data.contains("\n" + dataType + " \"" + lookup + "\"")){
+			if(data.contains("\n" + dataType + " \"" + lookup + "\""))
 				return "\n" + dataType + " \"" + lookup + "\"";
-			}
-			else if(data.contains("\n" + dataType + " " + lookup)){
+			else if(data.contains("\n" + dataType + " " + lookup))
 				return "\n" + dataType + " " + lookup;
-			}
 		}
 		else{
 			for(String str : dataTypes){
-				if(data.contains("\n" + str + " \"" + lookup + "\"")){
+				if(data.contains("\n" + str + " \"" + lookup + "\""))
 					return "\n" + str + " \"" + lookup + "\"";
-				}
-				else if(data.contains("\n" + str + " " + lookup)){
+				else if(data.contains("\n" + str + " " + lookup))
 					return "\n" + str + " " + lookup;
-				}
 			}
 		}
 		// The input may not have been capitalized correctly.
@@ -444,7 +449,7 @@ implements CommandExecutor{
 			URL u = new URL(url);
 			return ImageIO.read(u) != null;
 		}
-		catch (Exception e){
+		catch(Exception e){
 			return false;
 		}
 	}
@@ -510,9 +515,8 @@ implements CommandExecutor{
 		if((input.indexOf('(') > 0 || input.indexOf(')') > 0) && lookupData(input).length() < 1){
 			String baseModel = Helper.GetBaseModelName(input);
 			if(baseModel.length() > 0
-					&& input.indexOf(baseModel) == input.lastIndexOf(baseModel)){
+					&& input.indexOf(baseModel) == input.lastIndexOf(baseModel))
 				input = "\"" + baseModel.replace("\"", "") + "\" \"" + input.replace("\"", "") + "\"";
-			}
 		}
 
 		return input;
@@ -524,14 +528,14 @@ implements CommandExecutor{
 		Scanner sc = new Scanner(data);
 		String formerLine = "";
 		ArrayList<String> results = new ArrayList<>();
-		while (sc.hasNext()) {
+		while(sc.hasNext()){
 			String line = sc.nextLine();
 			if(line.contains("swizzle " + swizzle))
 				results.add(formerLine);
 			formerLine = line;
 		}
 		StringBuilder sb = new StringBuilder("");
-		for (String s : results)
+		for(String s : results)
 			sb.append("\n• " + s.replace("government \"", "").replace("\"", "").trim());
 		return sb.toString();
 	}
