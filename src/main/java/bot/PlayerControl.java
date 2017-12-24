@@ -104,7 +104,7 @@ implements CommandExecutor{
 				s = s.substring(0, s.length() - 1);
 			}
 			if(output[i] == null){
-				if(s.contains("soundcloud.com") || s.contains("youtu.be"))
+				if(s.contains("soundcloud.com") || s.contains("youtu.be") || s.startsWith("/") || s.substring(1).startsWith(":\\"))
 					output[i] = s;
 				else if(s.contains("://youtube.") || s.contains("www.youtube."))
 					output[i] = s.replaceAll("youtube.*/", "youtube.com/");
