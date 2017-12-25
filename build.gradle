@@ -26,11 +26,6 @@ dependencies {
 	compile 'com.squareup.okhttp3:okhttp:3.9.1'
 }
 
-task updateData(type: Exec) {
-	executable "py"
-	args "./scripts/updateFileNames.py"
-}
-
 run.dependsOn {
 	tasks.withType(Exec)
 }
