@@ -335,37 +335,7 @@ implements CommandExecutor{
 		eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/info.png");
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
 
-		if(!msg.getAttachments().isEmpty() && requester.getVoiceState().getChannel() != null){
-			if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true))){
-				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
-				return;
-			}
-			checkVoiceChannel(guild.getAudioManager(), requester);
-			for(Message.Attachment att : msg.getAttachments()){
-				File input = new File(".playlistinput");
-				input.delete();
-				if(!att.download(input))
-					eb.setDescription("Failed downloading file " + att.getFileName()).setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
-				else{
-					int counter = 0;
-					try (BufferedReader br = new BufferedReader(new FileReader(".playlistinput"))){
-						String line;
-						while((line = br.readLine()) != null){
-							loadAndPlay(guild, channel, line, requester, false);
-							++counter;
-						}
-					}
-					catch(IOException e){
-						e.printStackTrace();
-					}
-					eb.setDescription(String.format("Queuing playlist `%s`\n(%d tracks)",
-							att.getFileName(), counter));
-				}
-				channel.sendMessage(eb.build()).queue();
-				input.deleteOnExit();
-			}
-		}
-		else if(args[0].equalsIgnoreCase("save")){
+		if(args[0].equalsIgnoreCase("save")){
 			if(Helper.getPlaylistbyKey(args[1]) != null)
 				eb.setDescription("This Playlist already exists.");
 			else if(args[1].equalsIgnoreCase("save") || args[1].equalsIgnoreCase("edit")
@@ -431,6 +401,30 @@ implements CommandExecutor{
 			}
 			channel.sendMessage(eb.build()).queue();
 		}
+
+		else if(!msg.getAttachments().isEmpty() && requester.getVoiceState().getChannel() != null) {
+			if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true))) {
+				channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
+				return;
+			}
+			checkVoiceChannel(guild.getAudioManager(), requester);
+			for(Message.Attachment att : msg.getAttachments()){
+				int counter = 0;
+				try (BufferedReader br = new BufferedReader(new InputStreamReader(att.getInputStream()))){
+					String line;
+					while((line = br.readLine()) != null){
+						loadAndPlay(guild, channel, line, requester, false);
+						++counter;
+					}
+				}
+				catch(IOException e){
+					e.printStackTrace();
+				}
+				eb.setDescription(String.format("Queuing playlist `%s`\n(%d tracks)",
+						att.getFileName(), counter));
+				}
+				channel.sendMessage(eb.build()).queue();
+			}
 
 		else{
 			String[] playlist = Helper.getPlaylistbyKey(args[0]);
