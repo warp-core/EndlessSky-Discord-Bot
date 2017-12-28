@@ -622,7 +622,7 @@ public class Helper {
 
 
 	public static String[] getWords(String[] args){
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for(String a : args)
 			if(a.length() > 0)
 				result.add(a);
