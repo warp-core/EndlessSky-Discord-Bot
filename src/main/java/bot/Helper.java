@@ -473,6 +473,8 @@ public class Helper {
 		int pos = html.indexOf("\"artwork_url\":") + 15;
 		try {
 			String artwork_url = html.substring(pos, html.indexOf("-large.jpg\"", pos) + 10);
+			if (artwork_url.contains("-large.png"))
+				artwork_url = html.substring(pos, html.indexOf("-large.png\"", pos) + 10);
 			return artwork_url;
 		}
 		catch (IndexOutOfBoundsException e) {
