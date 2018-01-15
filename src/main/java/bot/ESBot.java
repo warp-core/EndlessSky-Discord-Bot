@@ -38,13 +38,7 @@ public class ESBot {
 		catch(LoginException e){
 			e.printStackTrace();
 			jda.shutdown();
-		} catch (IllegalArgumentException e){
-			e.printStackTrace();
-		}
-		catch(InterruptedException e){
-			e.printStackTrace();
-		}
-		catch(RateLimitedException e){
+		} catch (IllegalArgumentException | InterruptedException e){
 			e.printStackTrace();
 		}
 	}
