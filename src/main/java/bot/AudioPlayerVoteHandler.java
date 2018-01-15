@@ -133,7 +133,7 @@ public class AudioPlayerVoteHandler{
 		List<Member> nonVoters = guild.getMembersWithRoles(noVote);
 		// Anyone who is deafened in this channel cannot vote.
 		for(Member member : channel.getMembers())
-			if(member.getVoiceState().isDeafened())
+			if(member.getVoiceState().isDeafened() || member.getUser().isBot())
 				nonVoters.add(member);
 
 		return nonVoters;

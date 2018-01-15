@@ -603,7 +603,7 @@ implements CommandExecutor{
 				}
 				track.setUserData(requester);
 				play(guild, musicManager, track);
-				//If the queue is still empty, we just started now playback.
+				// If the queue is still empty, we just started playback.
 				if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
 					setGameFromTrack(guild);
 			}
@@ -624,7 +624,7 @@ implements CommandExecutor{
 							firstTrack.getInfo().title, firstTrack.getInfo().uri, playlist.getName(), requestedby));
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack));
 					play(guild, musicManager, firstTrack);
-					//If the queue is still empty, we just started now playback.
+					// If the queue is still empty, we just started playback.
 					if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
 						setGameFromTrack(guild);
 				}
@@ -744,6 +744,7 @@ implements CommandExecutor{
 		mng.scheduler.getQueue().clear();
 		player.stopTrack();
 		player.setPaused(false);
+		voteHandlers.clear();
 		guild.getAudioManager().closeAudioConnection();
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -827,19 +828,21 @@ implements CommandExecutor{
 
 	public synchronized boolean vote(AudioPlayerVoteHandler handler, Member requester, TextChannel channel, String subject)
 	{
+		int previousVotes = handler.getVotes();
 		handler.vote(requester);
+		int currentVotes = handler.getVotes();
 		if(handler.checkVotes())
 			return true;
-		else{
+		else if(previousVotes != currentVotes){
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(channel.getGuild().getMember(bot.getSelf()).getColor());
 			eb.setDescription(String.format("Currently are %d captains voting to %s, but %d are needed to %s!",
-					handler.getVotes(), subject, handler.getRequiredVotes(), subject));
+					currentVotes, subject, handler.getRequiredVotes(), subject));
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
 			channel.sendMessage(eb.build()).queue();
-			return false;
 		}
+		return false;
 	}
 
 
