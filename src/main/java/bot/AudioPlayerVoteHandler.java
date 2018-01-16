@@ -41,7 +41,14 @@ public class AudioPlayerVoteHandler{
 		if(voters.isEmpty())
 			this.requester = voter;
 
-		// possibly fix #101
+		// Ensure James is in a channel.
+		if(channel == null){
+			if(guild.getAudioManager().isConnected())
+				channel = guild.getAudioManager().getConnectedChannel();
+			else
+				return;
+		}
+		// Ensure only real voters exist.
 		voters.remove(null);
 		// Remove any voters who have left the voice channel after voting.
 		voters.retainAll(channel.getMembers());
@@ -62,8 +69,8 @@ public class AudioPlayerVoteHandler{
 			clear();
 			return true;
 		}
-		else
-			return false;
+
+		return false;
 	}
 
 
