@@ -135,30 +135,29 @@ implements CommandExecutor{
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
+			// DJs do what they want.
 			if(hasDJPerms(requester, channel, guild)){
 				skipTrack(channel, requester, count);
 				voteHandler.clear();
 			}
-			else if(getGuildAudioPlayer(guild).player.getPlayingTrack().getUserData().equals(requester)){
-				if(count <= 1)
-					skipTrack(channel, requester, count);
-				else{
-					LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
-					boolean permitted = true;
-					for (int i = 0; i < count - 1; ++i)
-						if (!queue.get(i).getUserData().equals(requester)){
-							permitted = false;
-							break;
-						}
-					if(permitted)
-						skipTrack(channel, requester, count);
-					else if(vote(voteHandler, requester, channel, "skip"))
-						skipTrack(channel, voteHandler.getRequester(), count);
+			else{
+				List<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+				// The requester of a track can always skip it.
+				boolean canSkip = getGuildAudioPlayer(guild).player.getPlayingTrack().getUserData().equals(requester);
+				// Determine how many of the to-skip tracks belong to this requester.
+				if(canSkip){
+					int autoSkip = 0;
+					while(autoSkip < count - 1 && queue.get(autoSkip).getUserData().equals(requester))
+						++autoSkip;
+					// Advance through all auto-skippable tracks.
+					skipTrack(channel, requester, 1 + autoSkip);
+					voteHandler.clear();
+					count -= autoSkip + 1;
 				}
+				// Call for a vote to skip any remaining tracks.
+				if(count > 0 && vote(voteHandler, requester, channel, "skip"))
+					skipTrack(channel, voteHandler.getRequester(), count);
 			}
-			else if(vote(voteHandler, requester, channel, "skip"))
-				skipTrack(channel, voteHandler.getRequester(), count);
-
 			msg.delete().queue();
 		}
 	}
