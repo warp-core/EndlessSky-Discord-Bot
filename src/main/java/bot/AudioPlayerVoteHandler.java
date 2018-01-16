@@ -117,6 +117,18 @@ public class AudioPlayerVoteHandler{
 
 
 	/**
+	 * Determine who has voted for this action so far.
+	 * 
+	 * @return Returns a list of the voters, separated by the token.
+	 */
+	public String getVoters(String separator){
+		List<String> names = new LinkedList<String>();
+		voters.forEach(m -> names.add(m.getEffectiveName()));
+		return String.join(separator, names);
+	}
+
+
+	/**
 	 * Get a list of those members that should not be counted when determining
 	 * who votes, or should be able to vote.
 	 * 
