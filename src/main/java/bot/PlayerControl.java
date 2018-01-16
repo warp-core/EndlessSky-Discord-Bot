@@ -135,30 +135,29 @@ implements CommandExecutor{
 		if(requester.getRoles().containsAll(guild.getRolesByName(Helper.ROLE_PLAYBANNED, true)))
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
+			// DJs do what they want.
 			if(hasDJPerms(requester, channel, guild)){
 				skipTrack(channel, requester, count);
 				voteHandler.clear();
 			}
-			else if(getGuildAudioPlayer(guild).player.getPlayingTrack().getUserData().equals(requester)){
-				if(count <= 1)
-					skipTrack(channel, requester, count);
-				else{
-					LinkedList<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
-					boolean permitted = true;
-					for (int i = 0; i < count - 1; ++i)
-						if (!queue.get(i).getUserData().equals(requester)){
-							permitted = false;
-							break;
-						}
-					if(permitted)
-						skipTrack(channel, requester, count);
-					else if(vote(voteHandler, requester, channel, "skip"))
-						skipTrack(channel, voteHandler.getRequester(), count);
+			else{
+				List<AudioTrack> queue = getGuildAudioPlayer(guild).scheduler.getQueue();
+				// The requester of a track can always skip it.
+				boolean canSkip = getGuildAudioPlayer(guild).player.getPlayingTrack().getUserData().equals(requester);
+				// Determine how many of the to-skip tracks belong to this requester.
+				if(canSkip){
+					int autoSkip = 0;
+					while(autoSkip < count - 1 && queue.get(autoSkip).getUserData().equals(requester))
+						++autoSkip;
+					// Advance through all auto-skippable tracks.
+					skipTrack(channel, requester, 1 + autoSkip);
+					voteHandler.clear();
+					count -= autoSkip + 1;
 				}
+				// Call for a vote to skip any remaining tracks.
+				if(count > 0 && vote(voteHandler, requester, channel, "skip"))
+					skipTrack(channel, voteHandler.getRequester(), count);
 			}
-			else if(vote(voteHandler, requester, channel, "skip"))
-				skipTrack(channel, voteHandler.getRequester(), count);
-
 			msg.delete().queue();
 		}
 	}
@@ -178,31 +177,20 @@ implements CommandExecutor{
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(guild.getMember(bot.getSelf()).getColor());
 			eb.setThumbnail(Helper.getTrackThumbnail(track));
-			if(track != null){
-				String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
-						track.getInfo().title,
-						track.getInfo().uri,
-						getTimestamp(track.getPosition()),
-						getTimestamp(track.getDuration()));
-				eb.setDescription(nowplaying);
-			}
-			else{
+			if(track != null)
+				eb.setDescription(NowPlayingInfo(track));
+			else
 				eb.setDescription("The player is not currently playing anything!");
-			}
+
+			// Post the message, and update the progress every 15 seconds.
 			channel.sendMessage(eb.build()).queue((message) -> {
-						while (track.equals(getGuildAudioPlayer(guild).player.getPlayingTrack())) {
-							String nowplaying = String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
-									track.getInfo().title,
-									track.getInfo().uri,
-									getTimestamp(track.getPosition()),
-									getTimestamp(track.getDuration()));
-							eb.setDescription(nowplaying);
-							message.editMessage(eb.build()).queue();
-							// this does not affect any other commands
-							try { TimeUnit.SECONDS.sleep(5); } catch (InterruptedException e) {}
-						}
-					}
-			);
+				while (track.equals(getGuildAudioPlayer(guild).player.getPlayingTrack())){
+					eb.setDescription(NowPlayingInfo(track));
+					message.editMessage(eb.build()).queue();
+					// This does not affect any other commands
+					try { TimeUnit.SECONDS.sleep(15); } catch (InterruptedException e) {}
+				}
+			});
 			msg.delete().queue();
 		}
 	}
@@ -210,7 +198,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-queue"}, description = "Displays the current queue, or the given page of the current queue. Can also print the queue & currently playing track to a .txt file", usage = "-queue [X]\n-queue print", privateMessages = false)
-	public void onQueueCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author) {
+	public void onQueueCommand(Guild guild, TextChannel channel, Message msg, String[] args, User author){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		String[] parsed = Helper.getWords(args);
@@ -275,7 +263,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-shuffle"}, description = "Shuffle the queue.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-shuffle", privateMessages = false)
-	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg) {
+	public void onShuffleCommand(Guild guild, TextChannel channel, User author, Message msg){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
@@ -289,6 +277,7 @@ implements CommandExecutor{
 			}
 			else if(vote(voteHandler, requester, channel, "shuffle"))
 				shuffle(guild, voteHandler.getRequester(), msg, channel);
+			msg.delete().queue();
 		}
 	}
 
@@ -296,7 +285,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-stop"}, description = "Stop the music, clear the queue, and disconnect the bot from the channel.\n\nRequires the \"DJ\" role, or starts a vote.", usage = "-stop", privateMessages = false)
-	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg) {
+	public void onStopCommand(Guild guild, TextChannel channel, User author, Message msg){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
@@ -446,7 +435,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-playban"}, description = "Ban or unban a user from requesting songs via '-play'.\n\nRequires the \"DJ\" role.", usage = "-playban @mention", privateMessages = false)
-	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg) {
+	public void onPlaybanCommand(Guild guild, TextChannel channel, User author, Message msg){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
@@ -493,7 +482,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-pause"}, description = "Pause the music player.\n\nRequires the \"DJ\" role.", usage = "-pause", privateMessages = false)
-	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg) {
+	public void onPauseCommand(Guild guild, TextChannel channel, User author, Message msg){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
@@ -502,8 +491,8 @@ implements CommandExecutor{
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
-				voteHandler.clear();
 				setPauseState(true, guild, requester, channel);
+				voteHandler.clear();
 			}
 			else if(vote(voteHandler, requester, channel, "pause"))
 				setPauseState(true, guild, voteHandler.getRequester(), channel);
@@ -523,7 +512,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-resume", "-unpause"}, description = "Un-pause the music player.\n\nRequires the \"DJ\" role.", usage = "-resume\n-unpause", privateMessages = false)
-	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg) {
+	public void onResumeCommand(Guild guild, TextChannel channel, User author, Message msg){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
@@ -532,8 +521,8 @@ implements CommandExecutor{
 			channel.sendMessage(Helper.GetRandomDeniedMessage()).queue();
 		else if(canDoCommand(guild, requester)){
 			if(hasDJPerms(requester, channel, guild)){
-				voteHandler.clear();
 				setPauseState(false, guild, requester, channel);
+				voteHandler.clear();
 			}
 			else if(vote(voteHandler, requester, channel, "resume"))
 				setPauseState(false, guild, voteHandler.getRequester(), channel);
@@ -553,7 +542,7 @@ implements CommandExecutor{
 
 
 	@Command(aliases = {"-volume"}, description = "Displays the current volume or sets it to X (10-100). To change, the \"DJ\" role is required.", usage = "-volume X", privateMessages = false)
-	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg) {
+	public void onVolumeCommand(Guild guild, TextChannel channel, User author, String[] args, Message msg){
 		if(author.isBot() || (!channel.getTopic().contains("spam") && !channel.getName().contains("spam")))
 			return;
 		Member requester = guild.getMember(author);
@@ -603,7 +592,7 @@ implements CommandExecutor{
 				}
 				track.setUserData(requester);
 				play(guild, musicManager, track);
-				//If the queue is still empty, we just started now playback.
+				// If the queue is still empty, we just started playback.
 				if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
 					setGameFromTrack(guild);
 			}
@@ -624,7 +613,7 @@ implements CommandExecutor{
 							firstTrack.getInfo().title, firstTrack.getInfo().uri, playlist.getName(), requestedby));
 					eb.setThumbnail(Helper.getTrackThumbnail(firstTrack));
 					play(guild, musicManager, firstTrack);
-					//If the queue is still empty, we just started now playback.
+					// If the queue is still empty, we just started playback.
 					if (getGuildAudioPlayer(guild).scheduler.getQueue().isEmpty())
 						setGameFromTrack(guild);
 				}
@@ -736,14 +725,14 @@ implements CommandExecutor{
 
 
 
-	private void stopPlayback(Guild guild, Member requester, Message msg, TextChannel channel)
-	{
+	private void stopPlayback(Guild guild, Member requester, Message msg, TextChannel channel){
 		String requestedby = "\n(requested by `" + requester.getEffectiveName() + "`)";
 		GuildMusicManager mng = getGuildAudioPlayer(guild);
 		AudioPlayer player = mng.player;
 		mng.scheduler.getQueue().clear();
 		player.stopTrack();
 		player.setPaused(false);
+		voteHandlers.clear();
 		guild.getAudioManager().closeAudioConnection();
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
@@ -757,10 +746,10 @@ implements CommandExecutor{
 
 
 	private static String getTimestamp(long milliseconds){
-		int seconds = (int) (milliseconds / 1000) % 60 ;
-		int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
-		int hours   = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
-		int days   = (int) (milliseconds / (1000 * 60 * 60 * 24));
+		int seconds = (int) (milliseconds / 1000) % 60;
+		int minutes = (int) (seconds / 60) % 60;
+		int hours = (int) (minutes / 60) % 24;
+		int days = (int) (hours / 24);
 
 		if(days > 0)
 			return String.format("%2dd %02d:%02d:%02d", days, hours, minutes, seconds);
@@ -780,8 +769,7 @@ implements CommandExecutor{
 
 
 
-	private boolean hasDJPerms(Member member, TextChannel channel, Guild guild)
-	{
+	private boolean hasDJPerms(Member member, TextChannel channel, Guild guild){
 		if(member.getRoles().containsAll(guild.getRolesByName("DJ", true))
 				|| member.getPermissions(channel).contains(Permission.ADMINISTRATOR)
 				|| member.isOwner())
@@ -806,45 +794,52 @@ implements CommandExecutor{
 
 
 
-	public void onNextTrack(Guild guild) {
-		getVoteHandler(guild, "skip").clear();
+	/**
+	 * Set up the environment for the next track being played, by clearing all
+	 * vote handlers and updating the "help" text for James.
+	 * 
+	 * @param Guild guild   The guild with the playing track.
+	 */
+	public void onNextTrack(Guild guild){
+		voteHandlers.clear();
 		setGameFromTrack(guild);
 	}
 
 
 
-	public void setGameFromTrack(Guild guild) {
+	private void setGameFromTrack(Guild guild){
 		//Note: This will be buggy should James play music in multiple guilds at once; since James is only active in one Guild atm, it shouldn't be a problem (for now).
-		try {
+		try{
 			bot.setGamePlaying(getGuildAudioPlayer(guild).player.getPlayingTrack().getInfo().title);
 		}
-		catch (NullPointerException e) {
+		catch(NullPointerException e){
 			bot.setGameListening("-help");
 		}
 	}
 
 
 
-	public synchronized boolean vote(AudioPlayerVoteHandler handler, Member requester, TextChannel channel, String subject)
-	{
+	private synchronized boolean vote(AudioPlayerVoteHandler handler, Member requester, TextChannel channel, String subject){
+		int previousVotes = handler.getVotes();
 		handler.vote(requester);
+		int currentVotes = handler.getVotes();
 		if(handler.checkVotes())
 			return true;
-		else{
+		else if(previousVotes != currentVotes){
 			EmbedBuilder eb = new EmbedBuilder();
 			eb.setTitle("Audio-Player:", "https://github.com/sedmelluq/lavaplayer");
 			eb.setColor(channel.getGuild().getMember(bot.getSelf()).getColor());
-			eb.setDescription(String.format("Currently are %d captains voting to %s, but %d are needed to %s!",
-					handler.getVotes(), subject, handler.getRequiredVotes(), subject));
+			eb.setDescription(String.format("Currently are %d captains voting to %s, but %d are needed to %s!\n(Voters:%s)",
+					currentVotes, subject, handler.getRequiredVotes(), subject, handler.getVoters(", ")));
 			eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/vote.png");
 			channel.sendMessage(eb.build()).queue();
-			return false;
 		}
+		return false;
 	}
 
 
 
-	public void printQueue(TextChannel channel, String queueName) {
+	private void printQueue(TextChannel channel, String queueName){
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append(getGuildAudioPlayer(channel.getGuild()).player.getPlayingTrack().getInfo().uri + "\n");
@@ -863,7 +858,7 @@ implements CommandExecutor{
 
 
 
-	public synchronized AudioPlayerVoteHandler getVoteHandler(Guild guild, String key){
+	private synchronized AudioPlayerVoteHandler getVoteHandler(Guild guild, String key){
 		if(voteHandlers.containsKey(key))
 			return voteHandlers.get(key);
 		else{
@@ -871,5 +866,15 @@ implements CommandExecutor{
 			voteHandlers.put(key, handler);
 			return handler;
 		}
+	}
+
+
+
+	private static String NowPlayingInfo(AudioTrack track){
+		return String.format("**Playing:** %s [\uD83D\uDD17](%s)\n**Time:** [%s / %s]",
+				track.getInfo().title,
+				track.getInfo().uri,
+				getTimestamp(track.getPosition()),
+				getTimestamp(track.getDuration()));
 	}
 }

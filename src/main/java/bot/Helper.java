@@ -241,11 +241,10 @@ public class Helper {
 	 */
 	public static boolean EnsureRole(Guild guild, String role){
 		try{
-			if(guild.getRolesByName(role, true).size() == 0){
+			if(guild.getRolesByName(role, true).size() == 0)
 				guild.getController().createRole().queue( r -> {
 					r.getManager().setName(role).queue();
 				});
-			}
 			return true;
 		}
 		catch(Exception e){
@@ -354,9 +353,8 @@ public class Helper {
 	// Send the message 'output' to the desired channel, cutting into
 	// multiple messages as needed.
 	public static void OutputHelper(MessageChannel channel, String output){
-		if(output.length() < 1993){
+		if(output.length() < 1993)
 			channel.sendMessage(":\n```" + output + "```").queue();
-		}
 		else{
 			int cut = output.lastIndexOf('\n', 0 + 1992);
 			String o = output.substring(0, cut);
@@ -454,10 +452,11 @@ public class Helper {
 	public static String getTrackThumbnail(AudioTrack track){
 		String trackUrl = track.getInfo().uri;
 		String thumbnail = null;
-		if (trackUrl.contains("soundcloud.com/"))
+		if(trackUrl.contains("soundcloud.com/"))
 			thumbnail = getSoundcloudThumbnail(trackUrl);
-		else if (trackUrl.contains("youtube.com/") || trackUrl.contains("youtu.be/"))
+		else if(trackUrl.contains("youtube.com/") || trackUrl.contains("youtu.be/"))
 			thumbnail = "http://i1.ytimg.com/vi/" + track.getIdentifier() + "/0.jpg";
+
 		return thumbnail;
 	}
 
@@ -471,13 +470,13 @@ public class Helper {
 	public static String getSoundcloudThumbnail(String TrackUrl){
 		String html = getPlainHtml(TrackUrl);
 		int pos = html.indexOf("\"artwork_url\":") + 15;
-		try {
+		try{
 			String artwork_url = html.substring(pos, html.indexOf("-large.jpg\"", pos) + 10);
-			if (artwork_url.contains("-large.png"))
+			if(artwork_url.contains("-large.png"))
 				artwork_url = html.substring(pos, html.indexOf("-large.png\"", pos) + 10);
 			return artwork_url;
 		}
-		catch (IndexOutOfBoundsException e) {
+		catch(IndexOutOfBoundsException e){
 			System.out.println("Getting Soundcloud thumbnail failed, falling back to default");
 			return ESBot.HOST_RAW_URL + "/thumbnails/info.png";
 		}
@@ -494,9 +493,8 @@ public class Helper {
 		String pattern = "(?<=watch\\?v=|/videos/|embed\\/)[^#\\&\\?]*";
 		Pattern p = Pattern.compile(pattern);
 		Matcher m = p.matcher(url);
-		if(m.find()){
+		if(m.find())
 			return m.group();
-		}
 		else
 			return null;
 	}
@@ -508,24 +506,23 @@ public class Helper {
 	 * @param  String      path    The URL linking to the site.
 	 * @return             The HTML content as String.
 	 */
-	public static String getPlainHtml(String path) {
+	public static String getPlainHtml(String path){
 		URL url;
 		StringBuilder sb = new StringBuilder();
-		try {
+		try{
 			url = new URL(path);
 			URLConnection c = url.openConnection();
 			BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
 			String inputLine;
-			while ((inputLine = br.readLine()) != null) {
+			while((inputLine = br.readLine()) != null)
 				sb.append(inputLine);
-			}
 			br.close();
 			return sb.toString();
 		}
-		catch (MalformedURLException e) {
+		catch(MalformedURLException e){
 			e.printStackTrace();
 		}
-		catch (IOException e) {
+		catch(IOException e){
 			e.printStackTrace();
 		}
 		return sb.toString();
