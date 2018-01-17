@@ -746,10 +746,10 @@ implements CommandExecutor{
 
 
 	private static String getTimestamp(long milliseconds){
-		int seconds = (int) (milliseconds / 1000) % 60;
-		int minutes = (int) (seconds / 60) % 60;
-		int hours = (int) (minutes / 60) % 24;
-		int days = (int) (hours / 24);
+		int seconds = (int) ((milliseconds / 1000) % 60);
+		int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
+		int hours = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
+		int days = (int) (milliseconds / (1000 * 60 * 60 * 24));
 
 		if(days > 0)
 			return String.format("%2dd %02d:%02d:%02d", days, hours, minutes, seconds);
