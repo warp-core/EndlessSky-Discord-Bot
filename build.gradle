@@ -26,6 +26,19 @@ dependencies {
 	compile 'com.squareup.okhttp3:okhttp:3.9.1'
 }
 
+task writeVersion(type: Exec) {
+	executable "bash"
+	args "./scripts/version_logger.sh"
+	}
+task writeBranch(type: Exec) {
+	executable "bash"
+	args "./scripts/branch_writer.sh"
+	}
+task updateData(type: Exec) {
+	executable "python"
+	args "./scripts/updateFileNames.py"
+}
+
 run.dependsOn {
 	tasks.withType(Exec)
 }
