@@ -35,7 +35,7 @@ implements CommandExecutor{
 		System.out.println("Lookups instantiated.");
 	}
 
-	// These datatypes are automatically checked for ttalization and
+	// These datatypes are automatically checked for capitalization and
 	// quotation errors during lookups.
 	static final String[] dataTypes = {
 		"ship",
@@ -44,6 +44,8 @@ implements CommandExecutor{
 		"person",
 		"planet",
 		"system",
+		"shipyard",
+		"outfitter",
 		"effect",
 		"scene",
 		"fleet",
