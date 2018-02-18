@@ -46,6 +46,7 @@ map
 marauders
 names
 nanobots
+news
 outfits
 paradise%20world%20jobs
 persons
