@@ -120,10 +120,11 @@ public class Helper {
 
 		switch(lookupType.toLowerCase()){
 			case "mission":
-				return false;
 			case "event":
-				return false;
 			case "fleet":
+			case "government":
+			case "shipyard":
+			case "outfitter":
 				return false;
 			default:
 				return true;
@@ -427,7 +428,7 @@ public class Helper {
 	 * Determine if the input string is a valid channel that is different
 	 * from the origin channel, and in which the bot can post.
 	 * @param  TextChannel origin    The channel from which the command came.
-	 * @param  TextChannel input     The passed "channel" to test.
+	 * @param  TextChannel dest     The passed "channel" to test.
 	 * @return             true / false depending if a channel and also different.
 	 */
 	public static boolean IsDiffAndWritable(TextChannel origin, TextChannel dest){
@@ -446,7 +447,7 @@ public class Helper {
 
 	/**
 	 * Gets the thumbnail of a track/video to be used in an embed.
-	 * @param  String      TrackUrl    The URL of the track in question.
+	 * @param  AudioTrack  track    The URL of the track in question.
 	 * @return             The URL of the thumbnail. Defaults to /thumbnails/info.png ,if no fitting thumbnail is found.
 	 */
 	public static String getTrackThumbnail(AudioTrack track){
