@@ -1,18 +1,19 @@
-apply plugin: 'java'
-apply plugin: 'application'
+plugins {
+	id'java'
+	id'application'
+	id'com.github.johnrengelman.shadow' version '2.0.2'
+}
 
 mainClassName = 'bot.ESBotMain'
+
+version '1.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-ext.logbackVersion = '1.2.3'
-
 repositories {
 	jcenter()
-	maven {
-		url "https://jitpack.io"
-	}
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -21,22 +22,22 @@ dependencies {
 	compile 'com.github.BtoBastian.sdcf4j:sdcf4j-core:v1.0.9'
 	compile 'com.github.BtoBastian.sdcf4j:sdcf4j-jda3:v1.0.9'
 	compile 'junit:junit:4.12'
-	runtime "ch.qos.logback:logback-classic:$logbackVersion"
-	runtime "ch.qos.logback:logback-core:$logbackVersion"
+	runtime 'ch.qos.logback:logback-classic:1.2.3'
+	runtime 'ch.qos.logback:logback-core:1.2.3'
 	compile 'com.squareup.okhttp3:okhttp:3.9.1'
 }
 
 task writeVersion(type: Exec) {
-	executable "bash"
-	args "./scripts/version_logger.sh"
+	executable 'bash'
+	args './scripts/version_logger.sh'
 	}
 task writeBranch(type: Exec) {
-	executable "bash"
-	args "./scripts/branch_writer.sh"
+	executable 'bash'
+	args './scripts/branch_writer.sh'
 	}
 task updateData(type: Exec) {
-	executable "python"
-	args "./scripts/updateFileNames.py"
+	executable 'python'
+	args './scripts/updateFileNames.py'
 }
 
 run.dependsOn {
@@ -50,7 +51,7 @@ test {
 allprojects {
 	gradle.projectsEvaluated {
 		tasks.withType(JavaCompile) {
-			options.compilerArgs << "-Xlint:deprecation"
+			options.compilerArgs << '-Xlint:deprecation'
 		}
 	}
 }
@@ -58,3 +59,5 @@ allprojects {
 run {
 	standardInput = System.in
 }
+
+compileJava.options.encoding = 'UTF-8'
