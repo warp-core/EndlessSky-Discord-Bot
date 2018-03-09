@@ -216,9 +216,11 @@ implements CommandExecutor{
 
 	// TODO: Include a "restored role" log entry in mod-log when a more robust unbanner is implemented.
 	private void temporaryRoleSwapAfterDuration(GuildController gc, Member m, List<Role> newRoles, List<Role> oldRoles, int duration){
-		gc.modifyMemberRoles(m, newRoles, oldRoles).queue( x -> {
-			gc.modifyMemberRoles(m, oldRoles, newRoles).queueAfter(
-					duration, TimeUnit.SECONDS);
-		});
+		gc.modifyMemberRoles(m, newRoles, oldRoles).queue(x -> {
+			gc.removeSingleRoleFromMember(m, newRoles.get(0)).queueAfter(duration, TimeUnit.SECONDS);
+			for (Role r : oldRoles)
+				gc.addSingleRoleToMember(m, r).queueAfter(duration, TimeUnit.SECONDS);
+			}
+		);
 	}
 }

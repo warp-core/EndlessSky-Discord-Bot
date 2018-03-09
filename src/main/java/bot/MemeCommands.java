@@ -46,6 +46,7 @@ implements CommandExecutor{
 		if(parsed.length == 0)
 			channel.sendMessage(getRandomMeme()).queue();
 		else if(parsed.length == 1){
+			parsed[0] = parsed[0].toLowerCase();
 			if(!isImgMeme(parsed[0]))
 				channel.sendMessage(getMeme(parsed[0])).queue();
 			else{

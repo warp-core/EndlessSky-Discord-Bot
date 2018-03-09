@@ -35,7 +35,7 @@ implements CommandExecutor{
 		System.out.println("Lookups instantiated.");
 	}
 
-	// These datatypes are automatically checked for ttalization and
+	// These datatypes are automatically checked for capitalization and
 	// quotation errors during lookups.
 	static final String[] dataTypes = {
 		"ship",
@@ -44,6 +44,8 @@ implements CommandExecutor{
 		"person",
 		"planet",
 		"system",
+		"shipyard",
+		"outfitter",
 		"effect",
 		"scene",
 		"fleet",
@@ -314,8 +316,8 @@ implements CommandExecutor{
 	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild, User author){
 		if(author.isBot()) return;
 		String swizzleStr = msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
-		// If no number is given, assign 9 to handle a NumberFormatException.
-		int swizzle = swizzleStr.length() == 0 ? 9 : Math.max(new Integer(swizzleStr).intValue(), 1);
+		// If no number is given, assign 9 to prevent a NumberFormatException.
+		int swizzle = swizzleStr.length() == 0 ? 9 : new Integer(swizzleStr).intValue();
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle("EndlessSky-Discord-Bot", bot.HOST_PUBLIC_URL);
 		eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -536,7 +538,7 @@ implements CommandExecutor{
 		}
 		StringBuilder sb = new StringBuilder("");
 		for(String s : results)
-			sb.append("\n• " + s.replace("government \"", "").replace("\"", "").trim());
+			sb.append("\n\u2022 " + s.replace("government \"", "").replace("\"", "").trim());
 		return sb.toString();
 	}
 

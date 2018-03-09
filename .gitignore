@@ -1,16 +1,35 @@
+# Gradle
 /build/
 /.gradle/
 /gradle/
+/out/
+
+# IntelliJ
+/.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+/bin/
+
+# James Auths
 /token*.txt
 /keys.txt
 james.sh
 /gitauth.txt
-*.old
-hs_err_pid*
-/.idea
-/src/main/main.iml
+
+# James Data
 *_version.txt
 branch_name.txt
+data/dataFileNames.txt
+*.old
 /data/playlists.txt
 .playlistinput
-data/dataFileNames.txt
+data/playlists/*
+
+# Other
+hs_err_pid*
