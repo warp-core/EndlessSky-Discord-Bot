@@ -81,7 +81,7 @@ implements CommandExecutor{
 	public void onCatCommand(MessageChannel channel, User author) {
 		if(author.isBot()) return;
 		try{
-			URL url = new URL("https://random.cat/meow");
+			URL url = new URL("https://aws.random.cat/meow");
 			channel.sendMessage(getJson(url).getString("file")).queue();
 		}
 		catch(IOException e){
