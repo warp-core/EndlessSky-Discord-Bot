@@ -26,6 +26,7 @@ implements CommandExecutor{
 	private String data;
 	public static final String HOST_RAW_URL = "https://raw.githubusercontent.com/MCOfficer/EndlessSky-Discord-Bot/master";
 	public static final String CONTENT_URL = "https://github.com/endless-sky/endless-sky/raw/master";
+	public static final String CONTENT_HDPI_URL = "https://github.com/endless-sky/endless-sky-high-dpi/raw/master";
 
 	private ESBot bot;
 
@@ -429,9 +430,13 @@ implements CommandExecutor{
 	private boolean PrintImage(Guild guild, MessageChannel channel, String input){
 		if(Helper.HasImageToPrint(input)){
 			String imageName = Helper.GetImageName(input);
-			String filepath = Helper.urlEncode(CONTENT_URL + "/images/" + imageName);
+			String filepath = Helper.urlEncode(CONTENT_HDPI_URL + "/images/" + imageName);
 			String ending = GetImageEnding(filepath);
-			if(ending.length() > 0){
+			if(ending.length() == 0) {
+				filepath = Helper.urlEncode(CONTENT_URL + "/images/" + imageName);
+				ending = GetImageEnding(filepath);
+			}
+			else if (ending.length() > 0){
 				EmbedBuilder eb = new EmbedBuilder();
 				eb.setImage(filepath + ending);
 				eb.setColor(guild.getMember(bot.getSelf()).getColor());
@@ -465,20 +470,21 @@ implements CommandExecutor{
 	public String GetImageEnding(String url){
 		String[] modes = {"", "-0", "+0", "~0", "=0", "-00", "+00", "~00", "=00"};
 		String[] filetypes = {".png", ".jpg"};
+		boolean hdpi = url.contains("/endless-sky-high-dpi/");
 		int m = 0;
 		int t = 0;
-		boolean hasEnding = isImage(url + modes[m] + filetypes[t] + "?raw=true");
+		boolean hasEnding = isImage(url + modes[m] + (hdpi ? "%402x" : "") + filetypes[t] + "?raw=true");
 
 		while(!hasEnding && t < filetypes.length){
 			m = t > 0 ? -1 : 0;
 			while(!hasEnding && ++m < modes.length){
-				hasEnding = isImage(url + modes[m] + filetypes[t] + "?raw=true");
+				hasEnding = isImage(url + modes[m] + (hdpi ? "%402x" : "") + filetypes[t] + "?raw=true");
 			}
 			if(!hasEnding)
 				++t;
 		}
 		if(hasEnding)
-			return modes[m] + filetypes[t] + "?raw=true";
+			return modes[m] + (hdpi ? "%402x" : "") + filetypes[t] + "?raw=true";
 
 		return "";
 	}
