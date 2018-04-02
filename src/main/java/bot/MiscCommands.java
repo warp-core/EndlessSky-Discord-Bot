@@ -32,12 +32,15 @@ import de.btobastian.sdcf4j.Command;
 import de.btobastian.sdcf4j.CommandExecutor;
 import de.btobastian.sdcf4j.CommandHandler;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.Role;
 
 public class MiscCommands
 implements CommandExecutor{
 
 	private final CommandHandler commandHandler;
 	private ESBot bot;
+	//Free-To-Join Roles have to be lowercase
+	private List<String> OPTINROLES = Arrays.asList("weeb", "notes");
 
 	public MiscCommands(CommandHandler commandHandler, ESBot bot) {
 		this.commandHandler = commandHandler;
@@ -133,6 +136,49 @@ implements CommandExecutor{
 		else
 			channel.sendMessage("Incompatible Media Type, please try again").queue();
 	}
+
+
+
+	@Command(aliases = {"-optin"}, description = "Grants access to hidden rooms by assigning one or more Roles X [Y, Z, ...]. Available Roles: \n- Weeb\n- NotES", privateMessages = false, usage = "-optin X [Y, Z, ...]")
+	public void onOptinCommand(Guild guild, MessageChannel channel, Message msg, String[] args, User author) {
+		if (author.isBot()) return;
+		ArrayList<Role> toAssign = new ArrayList<>();
+		for (String arg : args) {
+			try {
+				if (OPTINROLES.contains(arg.toLowerCase()))
+					toAssign.add(guild.getRolesByName(arg, true).get(0));
+			}
+			catch (IndexOutOfBoundsException e) {
+				System.out.println("Failed to find a Role for '" + arg + "'");
+			}
+		}
+		guild.getController().addRolesToMember(guild.getMember(author), toAssign).queue(success -> {
+			msg.addReaction("\uD83D\uDC4C").queue();
+			msg.delete().queueAfter(15, TimeUnit.SECONDS);
+		});
+	}
+
+
+
+	@Command(aliases = {"-optout"}, description = "Revokes access to hidden rooms by removing one or more Roles X [Y, Z, ...]. Available Roles: \n- Weeb\n- NotES", privateMessages = false, usage = "-optout X [Y, Z, ...]")
+	public void onOptoutCommand(Guild guild, MessageChannel channel, Message msg, String[] args, User author) {
+		if (author.isBot()) return;
+		ArrayList<Role> toRemove = new ArrayList<>();
+		for (String arg : args) {
+			try {
+				if (OPTINROLES.contains(arg.toLowerCase()))
+					toRemove.add(guild.getRolesByName(arg, true).get(0));
+			}
+			catch (IndexOutOfBoundsException e) {
+				System.out.println("Failed to find a Role for '" + arg + "'");
+			}
+		}
+		guild.getController().removeRolesFromMember(guild.getMember(author), toRemove).queue(success -> {
+			msg.addReaction("\uD83D\uDC4C").queue();
+			msg.delete().queueAfter(15, TimeUnit.SECONDS);
+		});
+	}
+
 
 
 
