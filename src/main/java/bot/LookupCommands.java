@@ -538,7 +538,7 @@ implements CommandExecutor{
 		ArrayList<String> results = new ArrayList<>();
 		while(sc.hasNext()){
 			String line = sc.nextLine();
-			if(line.contains("swizzle " + swizzle))
+			if(line.contains("swizzle " + swizzle) && fomerLine.contains("government"))
 				results.add(formerLine);
 			formerLine = line;
 		}
