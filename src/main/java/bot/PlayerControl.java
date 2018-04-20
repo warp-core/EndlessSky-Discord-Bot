@@ -341,7 +341,7 @@ implements CommandExecutor{
 		}
 
 		else if(args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("delete")){
-			String[] playlist = Helper.getPlaylistbyKey(args[0]);
+			String[] playlist = Helper.getPlaylistbyKey(args[1]);
 			if(playlist != null){
 				if(Long.toString(author.getIdLong()).equals(playlist[3])){
 					if(args[0].equalsIgnoreCase("edit")){
