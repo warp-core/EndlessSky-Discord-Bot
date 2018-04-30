@@ -249,7 +249,7 @@ implements CommandExecutor{
 						}
 						++queuePos;
 					}
-					sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ((qsize - (qsize % 10)) / 10 + 1)
+					sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + (qsize / 10 + ((qsize % 10) & 1))
 							+ ", Tracks " + (showFrom) + " - " + countMax + "/" + qsize + ".");
 					sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 				}
