@@ -40,7 +40,7 @@ implements CommandExecutor{
 						eb.setThumbnail(bot.HOST_RAW_URL + "/thumbnails/cross.png");
 						channel.sendMessage(eb.build()).queue();
 						// Log the command usage.
-						logCommand(guild, "Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + mod.getEffectiveName() + "`.");
+						logCommand(guild, "Purged " + amount + " messages in " + channel.getAsMention() + ", ordered by `" + mod.getEffectiveName() + "`.", "mod-log");
 					});
 				});
 			}
@@ -123,7 +123,7 @@ implements CommandExecutor{
 							mod.getEffectiveName() + "`.";
 					if(!toTempBan.isEmpty() && banLength > 0)
 						report += "\nAlso gave " + toTempBan.size() + " participants a time-out for " + banLength + " seconds.";
-					logCommand(guild, report);
+					logCommand(guild, report, "mod-log");
 				});
 			}
 		}
@@ -157,7 +157,9 @@ implements CommandExecutor{
 			else
 				message += "(no reason given).";
 			
-			logCommand(guild, message);
+			
+			logCommand(guild, message, "mod-log");
+			logCommand(guild, message, "the-corner");
 		}
 		else
 			channel.sendMessage("You forgot some arguments: `@member seconds reason`").queue();
@@ -179,10 +181,14 @@ implements CommandExecutor{
 
 
 
-	private void logCommand(Guild guild, String report){
+	private void logCommand(Guild guild, String report, String room){
 		try{
-			TextChannel modlog = guild.getTextChannelsByName("mod-log", false).get(0);
-			modlog.sendMessage(report).queue();
+			TextChannel outputroom;
+			if(!room)
+				outputroom = guild.getTextChannelsByName("mod-log", false).get(0);
+			else
+				outputroom = guild.getTextChannelsByName(room, false).get(0);
+			outputroom.sendMessage(report).queue();
 		}
 		catch(Exception e){
 			e.printStackTrace();
