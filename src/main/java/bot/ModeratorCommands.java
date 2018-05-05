@@ -184,7 +184,7 @@ implements CommandExecutor{
 	private void logCommand(Guild guild, String report, String room){
 		try{
 			TextChannel outputroom;
-			if(!room)
+			if(room == "null")
 				outputroom = guild.getTextChannelsByName("mod-log", false).get(0);
 			else
 				outputroom = guild.getTextChannelsByName(room, false).get(0);
