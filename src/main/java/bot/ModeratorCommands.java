@@ -53,7 +53,7 @@ implements CommandExecutor{
 	public void onMoveCommand(Guild guild, Message msg, TextChannel channel, String[] args, Member mod) {
 		if(mod.getUser().isBot()) return;
 		String[] parsed = Helper.getWords(args);
-		final String moveHeader = "Incoming wormhole content:\n```";
+		final String moveHeader = "Incoming wormhole content from " + channel.getAsMention() + ":\n```";
 		final String moveFooter = "```";
 		if(!Helper.CanModerate(channel, mod))
 			msg.delete().queue();
