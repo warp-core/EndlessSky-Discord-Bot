@@ -2,6 +2,7 @@ package bot;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
@@ -313,10 +314,29 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8).", usage = "-swizzle X", privateMessages = true)
+	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8). \nIf an image is attached, a swizzled version of that image will be returned, if X is not specified, swizzles 1-6 will be returned.", usage = "-swizzle X\n-swizzle X [attached image]\n-swizzle [attached image]", privateMessages = false)
 	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild, User author){
 		if(author.isBot()) return;
-		String swizzleStr = msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
+		String swizzleStr;
+		try {
+			 swizzleStr = msg.getContentRaw().substring(msg.getContentRaw().indexOf(" ")).trim();
+		}
+		catch (StringIndexOutOfBoundsException e) {
+			swizzleStr = null;
+		}
+
+		if(!msg.getAttachments().isEmpty()) {
+			ImageSwizzler swizzler = new ImageSwizzler();
+			try {
+				InputStream image = swizzler.swizzle(msg.getAttachments().get(0).getInputStream(), swizzleStr);
+				channel.sendFile(image, "swizzles.png").queue();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+
 		// If no number is given, assign 9 to prevent a NumberFormatException.
 		int swizzle = swizzleStr.length() == 0 ? 9 : new Integer(swizzleStr).intValue();
 		EmbedBuilder eb = new EmbedBuilder();
@@ -538,7 +558,7 @@ implements CommandExecutor{
 		ArrayList<String> results = new ArrayList<>();
 		while(sc.hasNext()){
 			String line = sc.nextLine();
-			if(line.contains("swizzle " + swizzle))
+			if(line.contains("swizzle " + swizzle) && formerLine.contains("government"))
 				results.add(formerLine);
 			formerLine = line;
 		}

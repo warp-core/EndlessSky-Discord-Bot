@@ -249,7 +249,7 @@ implements CommandExecutor{
 						}
 						++queuePos;
 					}
-					sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + ((qsize - (qsize % 10)) / 10 + 1)
+					sb.append("\n").append("Showing Page " + ((showFrom - 1) / 10 + 1) + "/" + (qsize / 10 + ((qsize % 10) & 1))
 							+ ", Tracks " + (showFrom) + " - " + countMax + "/" + qsize + ".");
 					sb.append("\n").append("Total Queue Time Length: ").append(getTimestamp(queueLength));
 				}
@@ -341,7 +341,7 @@ implements CommandExecutor{
 		}
 
 		else if(args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("delete")){
-			String[] playlist = Helper.getPlaylistbyKey(args[0]);
+			String[] playlist = Helper.getPlaylistbyKey(args[1]);
 			if(playlist != null){
 				if(Long.toString(author.getIdLong()).equals(playlist[3])){
 					if(args[0].equalsIgnoreCase("edit")){

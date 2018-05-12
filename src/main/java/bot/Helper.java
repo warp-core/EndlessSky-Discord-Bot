@@ -354,12 +354,12 @@ public class Helper {
 	// Send the message 'output' to the desired channel, cutting into
 	// multiple messages as needed.
 	public static void OutputHelper(MessageChannel channel, String output){
-		if(output.length() < 1993)
-			channel.sendMessage(":\n```" + output + "```").queue();
+		if(output.length() < 1985)
+			channel.sendMessage(":\n```parser3\n" + output + "```").queue();
 		else{
-			int cut = output.lastIndexOf('\n', 0 + 1992);
+			int cut = output.lastIndexOf('\n', 0 + 1984);
 			String o = output.substring(0, cut);
-			channel.sendMessage(":\n```" + o + "```").queue(x -> {
+			channel.sendMessage(":\n```parser3\n" + o + "```").queue(x -> {
 				OutputHelper(channel, output.substring(cut + 1));
 			});
 		}
