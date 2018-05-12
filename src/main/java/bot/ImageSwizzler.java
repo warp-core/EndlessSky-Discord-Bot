@@ -12,7 +12,7 @@ import java.io.InputStream;
 public class ImageSwizzler {
 
     final static String[] swizzles = {
-            "rgb",
+            "rbg",
             "grb",
             "brg",
             "gbr",
