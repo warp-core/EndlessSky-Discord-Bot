@@ -49,12 +49,12 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-template"}, description = "Sends the template for X. Possible args: outfit, ship, or plugin.", usage = "-template X")
+	@Command(aliases = {"-template"}, description = "Sends the template for X. Possible args: outfit, ship, thumbnail or plugin.", usage = "-template X")
 	public void onTemplatesCommand(Guild guild, MessageChannel channel, String[] args, User author)	{
 		if(author.isBot()) return;
 		String[] parsed = Helper.getWords(args);
 		if(parsed.length == 0)
-			channel.sendMessage("Which template would you like? I have three flavours available: 'outfit', 'ship' and 'plugin'.").queue();
+			channel.sendMessage("Which template would you like? I have three flavours available: 'outfit', 'ship', 'thumbnail' and 'plugin'.").queue();
 		else
 			for(String str : parsed){
 				String name = "";
@@ -64,8 +64,10 @@ implements CommandExecutor{
 					name = "outfittemplate.blend";
 				else if(str.equals("ship"))
 					name = "shiptemplate.blend";
+				else if(str.equals("thumbnail"))
+					name = "thumbnail.blend";
 				else
-					channel.sendMessage("Sorry, I only have templates for 'outfit', 'ship' and 'plugin'.").queue();
+					channel.sendMessage("Sorry, I only have templates for 'outfit', 'ship', 'thumbnail' and 'plugin'.").queue();
 				// Link to the desired template.
 				if(name.length() > 0){
 					String url = bot.HOST_RAW_URL + "/data/templates/" + name;
