@@ -314,7 +314,7 @@ implements CommandExecutor{
 
 
 
-	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8). \nIf an image is attached, a swizzled version of that image will be returned, if X is not specified, swizzles 1-6 will be returned.", usage = "-swizzle X\n-swizzle X [attached image]\n-swizzle [attached image]", privateMessages = false)
+	@Command(aliases = {"-swizzle"}, description = "Get information about a swizzle X (0-8). \nIf an image is attached, a swizzled version of that image will be returned, if X is not specified, swizzles 1-6 will be returned.", usage = "-swizzle X (Warning: Spoilers!)\n-swizzle X [attached image]\n-swizzle [attached image]", privateMessages = false)
 	public void onSwizzleCommand(MessageChannel channel, Message msg, Guild guild, User author){
 		if(author.isBot()) return;
 		String swizzleStr;
